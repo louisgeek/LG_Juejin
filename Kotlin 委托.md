@@ -2,9 +2,9 @@
 
 ## 委托和代理
 - Delegate 委托和 Proxy 代理有点大同小异：代理比较严格，一般是同一个对象（实现了同一个接口或继承了同一个类），委托一般是不同的对象，但通常也对外提供被委托对象的同名方法，委托引用了被委托对象
-- Delegate 例子： AppCompatActivity 委托给一个叫 AppCompatDelegate 的抽象类，AppCompatDelegateImpl 是其实现，其中 AppCompatActivity#setContentView 方法就是委托了 AppCompatDelegate#setContentView 方法，可以在其前后增加额外的处理逻辑
+- 应用：Android 中 AppCompatActivity 委托给一个叫 AppCompatDelegate 的抽象类，AppCompatDelegateImpl 是其实现，其中 AppCompatActivity#setContentView 方法就是委托了 AppCompatDelegate#setContentView 方法，可以在其前后增加额外的处理逻辑
 
-```
+```java
 public class AppCompatActivity extends FragmentActivity implements AppCompatCallback,
         TaskStackBuilder.SupportParentable, ActionBarDrawerToggle.DelegateProvider {
 
@@ -32,8 +32,7 @@ public class AppCompatActivity extends FragmentActivity implements AppCompatCall
 
 ## by 关键字
 
-by 
-Kotlin 中用来实现委托，编译器会生成委托模式的模板代码，使我们能够更方便的利用聚合来替代继承
+by 是 Kotlin 中用来实现委托的，编译器会生成委托模式的模板代码，使我们能够更方便的利用聚合来替代继承
 - 类委托（需要实现同一个接口，不能是抽象类）
 - 属性委托（ getValue / setValue 方法的委托）
 
@@ -106,7 +105,7 @@ PS：写着麻烦？写完 by Delegate() 后，AS 会提示报错需要生成；
 
 ```
 
-# 应用
+# 常见应用
 
 ```kotlin
     //简化项目里 ShareDataManage#save 和 ShareDataManage#get
@@ -139,7 +138,7 @@ class SpString(private val spName: String, val key: String, private val defValue
 ```
 
 ## Kotlin 标准库里内置的
-- lazy
+- lazy 顶层函数
 - Delegates.notNull
 - Delegates.observable //其实 ObservableProperty 就是在 setValue 赋值的前后插入抽象方法，而 Delegates.observable 就采用理其中的 afterChange
 - Delegates.vetoable //其实 ObservableProperty 就是在 setValue 赋值的前后插入抽象方法，而 Delegates.vetoable 就采用理其中的 beforeChange，但是比较特殊的就是 beforeChange 返回一个布尔值，决定了后续是否继续执行赋值，默认返回 true，如果返回 false 值则不继续赋值
@@ -148,7 +147,7 @@ class SpString(private val spName: String, val key: String, private val defValue
 - 延迟委托
 ```kotlin
 
-//lazy 是一个顶层函数，默认返回的是一个 Lazy 接口实现 SynchronizedLazyImpl 类，逻辑基本和 Java 的双重检验单例一致 ，线程安全，内部值只初始化一次
+//lazy 是一个顶层函数，默认返回的是一个 Lazy 接口的实现类 SynchronizedLazyImpl，逻辑基本和 Java 的双重检验单例一致 ，线程安全，内部值只初始化一次
 val gzLayout: GZLayout by lazy { 
     this.findViewById(R.id.gzLayout) 
 }
@@ -179,9 +178,9 @@ val gzLayout: GZLayout by findView(R.id.gzLayout)
 ```
 
 
-## lateinit 和 by Delegates.notNull
+## lateinit 关键字和 by Delegates.notNull
 - 两者都需要自行保证在访问之前必须已经被初始化完成了
-- lateinit 只适用于引用类型
+- lateinit 关键字只适用于引用类型
 - by Delegates.notNull 适用于基本类型和引用类型
 
 ```kotlin

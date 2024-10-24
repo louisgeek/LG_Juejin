@@ -1,5 +1,5 @@
-# Windows cmd 命令提示符 cd chdir 命令
-- 文中讨论的知识基于 Windows cmd  命令提示符在 `cmd /e:on` 命令扩展启用的情况下（默认是开启的 ，可以通过 `cmd /e:off` 关闭）
+# Windows cmd 命令提示符之 cd chdir 命令
+- 文中讨论的知识基于 Windows cmd 命令提示符在 `cmd /e:on` 命令扩展启用的情况下（默认是开启的 ，可以通过 `cmd /e:off` 关闭）
 
 # CD
 
