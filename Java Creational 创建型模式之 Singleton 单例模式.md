@@ -1,5 +1,4 @@
-# Java Singleton 单例模式
-
+# Java Creational 创建型模式之 Singleton 单例模式
 - 单例模式属于创建型模式
 - 自行完成实例化，私有化构造函数
 
