@@ -162,3 +162,6 @@ mainHandler.post {
 # 同步屏障和异步消息
 都是两个 Message 对象，同步屏障的特点是 msg.target = null，就是没有关联 Handler 的消息，相当于一个标志位，通过 postSyncBarrier 发送，异步消息的特点isAsynchronous 为 true 的消息，同步屏障的作用是为了保证异步消息可以优先执行，当出队操作遇到队头为同步屏障时，则其后面的同步消息将暂时不会被执行，只会优先执行异步消息，直至同步屏障通过 removeSyncBarrier 被移除，常见的就是 ViewRootImpl 里会发 postSyncBarrier 确保 UI 绘制任务可以被及时执行，不造成界面卡顿
  
+
+# IdleHandler
+是一个 MessageQueue 里的接口，通常应用于在消息队列空闲的时候去执行一些低优先级、轻量级的任务
