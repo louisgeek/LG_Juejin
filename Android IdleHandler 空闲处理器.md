@@ -1,4 +1,4 @@
-# Android IdleHandler
+# Android IdleHandler 空闲处理器
 - android.os.MessageQueue.IdleHandler 是一个接口，通常用于在消息队列空闲的时候执行低优先级的任务
 - 可以实现延迟初始化一些不是马上需要用到的资源，可以运行一些低优先级任务，比如一些数据的预加载
 - 不推荐执行较耗时的操作，比如会占用主线程的时间，从而导致界面卡顿和响应延迟
