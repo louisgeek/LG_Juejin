@@ -8,7 +8,7 @@ onCreate —— onStart 可见 —— onResume 有焦点 —— onPause 无焦�
 ```
 - onRestart 回调方法是在 Activity 从不可见（onStop）重新回到前台时调用的
 
-![Activity 生命周期](https://developer.android.google.cn/guide/components/images/activity_lifecycle.png)
+![Activity 生命周期](https://developer.android.google.cn/guide/components/images/activity_lifecycle.png "https://developer.android.google.cn/guide/components/images/activity_lifecycle.png")
 
 - 所有生命周期回调方法重写实现时必须调用其父类方法
 - 由于 Activity 经常在暂停和恢复之间来回切换，所以 onResume 和 onPause 的逻辑应该是轻量级的
