@@ -1,15 +1,12 @@
 # Java System.arraycopy 和 Arrays.copyOf 的区别
 
-
-## System.arraycopy 
-
+## System.arraycopy
 - 只有数组为一维数组且元素为基本类型、String 类型的时候是深拷贝，其它情况下都属于浅拷贝，比如元素是引用类型、二维数组的情况
 - 调用的是 native 方法，性能好
 - 需要传入 dest
 - 可以指定起始位置和拷贝的长度，比较灵活
 
 ```java
-
     /**
      * Copies an array from the specified source array, beginning at the
      * specified position, to the specified position of the destination array.
@@ -113,23 +110,21 @@
 ```
 
 
-
-测试
-
 ```java
-        String[] array = {"a", "b", "c", "b", "d"};
-        System.out.println("array.length:" + array.length);
-        String[] arrayCopy = new String[10];
-        System.out.println("arrayCopy.length:" + arrayCopy.length);
+//测试
+String[] array = {"a", "b", "c", "b", "d"};
+System.out.println("array.length:" + array.length);
+String[] arrayCopy = new String[10];
+System.out.println("arrayCopy.length:" + arrayCopy.length);
 
-        //源数组起始位置1 目标数组起始位置1 要拷贝的元素数量4
-        System.arraycopy(array,1,arrayCopy,1,4);
-        System.out.println(Arrays.toString(array));
-        System.out.println(Arrays.toString(arrayCopy));
+//源数组起始位置1 目标数组起始位置1 要拷贝的元素数量4
+System.arraycopy(array,1,arrayCopy,1,4);
+System.out.println(Arrays.toString(array));
+System.out.println(Arrays.toString(arrayCopy));
 
-        array[2] = "cc";
-        System.out.println(Arrays.toString(array));
-        System.out.println(Arrays.toString(arrayCopy));
+array[2] = "cc";
+System.out.println(Arrays.toString(array));
+System.out.println(Arrays.toString(arrayCopy));
 
 //------------------------ 结果 ---------------------
 array.length:5
@@ -144,9 +139,7 @@ arrayCopy.length:10
 ```
 
 
-
-## Arrays.copyOf 
-
+## Arrays.copyOf
 - 内部调用了 System.arraycopy 方法
 - 适合目标数组不明确的情况下使用，自动创建新的数组
 
@@ -212,21 +205,19 @@ arrayCopy.length:10
     }
 ```
 
-测试
 
 ```java
- 		String[] array = {"a", "b", "c", "b", "d"};
-        System.out.println("array.length:" + array.length);
-        //拷贝得到的新数组长度是 10
-        String[] arrayCopyed = Arrays.copyOf(array, 10);
-        System.out.println("arrayCopyed.length:" + arrayCopyed.length);
-
-        System.out.println(Arrays.toString(array));
-        System.out.println(Arrays.toString(arrayCopyed));
-
-        array[2] = "cc";
-        System.out.println(Arrays.toString(array));
-        System.out.println(Arrays.toString(arrayCopyed));
+//测试
+String[] array = {"a", "b", "c", "b", "d"};
+System.out.println("array.length:" + array.length);
+//拷贝得到的新数组长度是 10
+String[] arrayCopyed = Arrays.copyOf(array, 10);
+System.out.println("arrayCopyed.length:" + arrayCopyed.length);
+System.out.println(Arrays.toString(array));
+System.out.println(Arrays.toString(arrayCopyed));
+array[2] = "cc";
+System.out.println(Arrays.toString(array));
+System.out.println(Arrays.toString(arrayCopyed));
 //------------------------ 结果 ---------------------
 array.length:5
 arrayCopyed.length:10

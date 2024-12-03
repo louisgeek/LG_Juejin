@@ -27,7 +27,7 @@ java.lang.IllegalStateException: Can not perform this action after onSaveInstanc
 
 ### 原因分析
 
-```
+```kotlin
 //commit 抽象方法
 FragmentTransaction#commit
 //commit 抽象方法实现
@@ -78,7 +78,7 @@ Handler(mainLooper).postDelayed({
 
 ### 原因分析
 
-```
+```kotlin
 DialogFragment#show
 //commit 抽象方法
 - FragmentTransaction#commit
@@ -110,7 +110,7 @@ override fun show(manager: FragmentManager, tag: String?) {
 
 #### 思路 2 增加 showAllowingStateLoss 方法
 
-```
+```kotlin
 因为有 
 DialogFragment#dismiss -> 直接调用 DialogFragment#dismissInternal(allowStateLoss = false)
 //

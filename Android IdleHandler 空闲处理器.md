@@ -1,5 +1,5 @@
 # Android IdleHandler 空闲处理器
-- android.os.MessageQueue.IdleHandler 是一个接口，通常用于在消息队列空闲的时候执行低优先级的任务
+- android.os.MessageQueue.IdleHandler 是一个接口，通常用于在消息队列空闲的时候执行低优先级、轻量级的任务
 - 可以实现延迟初始化一些不是马上需要用到的资源，可以运行一些低优先级任务，比如一些数据的预加载
 - 不推荐执行较耗时的操作，比如会占用主线程的时间，从而导致界面卡顿和响应延迟
 - 可以替换一些 Handler#postDelayed 使用的场景，因为通常延迟的时间比较不靠谱，改用 IdleHandler 反而更合理
@@ -35,15 +35,19 @@
                 return false;
             }
         };
+        //MessageQueue
         Looper.myQueue().addIdleHandler(idleHandler);
 
 
         //可以通过 removeIdleHandler 移除 IdleHandler，可以在合适的地方调用，以免出现内存泄漏
         Looper.myQueue().removeIdleHandler(idleHandler);
+        //
+        Looper.getMainLooper().getQueue().addIdleHandler(idleHandler);
+        Looper.getMainLooper().getQueue().removeIdleHandler(idleHandler);
 ```
  
 
-## 特点
+## 总结
 - IdleHandler 的执行时机是不可控的，如果 MessageQueue 一直有待处理的消息，那么 IdleHander 的执行时机会很靠后
 - IdleHandler 的目的是在消息队列空闲时执行一些轻量级的、不紧急的任务，不推荐进行较耗时的操作
 - Android 系统的 GC 回收场景就使用了这个机制，当空闲的时候会去执行 GC 操作
