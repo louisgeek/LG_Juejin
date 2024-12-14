@@ -23,7 +23,7 @@ public class MainActivity extends AppCompatActivity {
 ```
 
 ### 2 静态集合
-- 静态集合持有了被添加进来的对象的引用，解决办法可以是及时移除释放引用，或者是用集合一开始存放就引入 WeakReference 弱引用
+- 静态集合持有了被添加进来的对象的引用，解决办法可以是及时移除释放引用，或者是在集合一开始存放的时候就引入 WeakReference 弱引用进行规避
 
 ### 3 单例类
 - 单例类的生命周期通常和应用程序的生命周期相同，假设单例类持有了一个 Activity 的 Context 的引用，当该 Activity 在生命周期结束后本该被 GC 回收的却未能被回收，就导致了内存泄露，可以考虑改用 Application 的 Context
@@ -35,7 +35,7 @@ public class Singleton {
     private static Singleton sInstance;
 
     private Singleton(Context context) {
-        this.context = context;
+        this.context = context; //可以改用 this.context = context.getApplicationContext(); 避免
     }
 
     public synchronized static Singleton getInstance(Context context) {
@@ -48,8 +48,8 @@ public class Singleton {
 ```
 
 ### 4 非静态内部类或匿名内部类
-- 每一层内部类由一个 $ 符号隔开，有名字的内部类在 $ 后面的是类的名字（OuterClass$InnerClass.class），而匿名内部类在 $ 后面的是数字序号（OuterClass$1.class），从 1 开始递增
-- 非静态内部类或匿名内部类都可以访问外部类的变量，非静态内部类 OuterClass$InnerClass.class 通过变量 this.this$0 持有外部类的引用，而匿名内部类 OuterClass$1.class 通过变量 this.this$0 持有外部类的引用，这个变量都是编译器添加的
+- 每一层内部类由一个 `$` 符号隔开，有名字的内部类在 `$` 后面的是类的名字（`OuterClass$InnerClass.class`），而匿名内部类在 `$` 后面的是数字序号（`OuterClass$1.class`），从 1 开始递增
+- 非静态内部类或匿名内部类都可以访问外部类的变量，非静态内部类 `OuterClass$InnerClass.class` 通过变量 `this.this$0` 持有外部类的引用，而匿名内部类 `OuterClass$1.class` 通过变量 `this.this$0` 持有外部类的引用，这个变量都是编译器添加的
 - 由于非静态内部类或匿名内部类都会隐式地持有外部类的引用，如果非静态内部类或匿名内部类的生命周期长于外部类，而外部类已经不再需要时，外部类无法被 GC 回收，从而就导致了内存泄露
 - 比如一个 Activity 中创建了非静态内部类或匿名内部类的实例，而这个实例在 Activity 生命周期结束后仍然存在，就会导致这个 Activity 无法被 GC 回收
 
@@ -84,18 +84,21 @@ public class MainActivity extends AppCompatActivity {
 - MainActivity 生命周期结束时，线程任务还没有执行完毕的情况，所以要考虑及时终止线程
 
 ### 7 资源未关闭相关
-- 数据库连接、网络连接、IO 连接、File、游标 Cursor、Stream 和 Bitmap 等资源使用后忘记关闭
-- 注册 BroadcastReceiver 广播时忘记反注册，设置完自定义监听器后忘记在合适的地方 remove 移除，EventBus 等观察者模式的框架忘记解除注册
+- 数据库连接、网络连接、IO 连接（比如 File、Stream）、Cursor 游标和 Bitmap（通常不需要手动回收，除非大量大尺寸或者很明确不再使用的）等资源使用后忘记关闭
+- 注册 BroadcastReceiver 广播时忘记反注册，设置完自定义监听器后忘记在合适的地方 remove 移除，EventBus 等观察者模式忘记反注册
 - Service 服务执行完成后忘记 stopSelf
 - WebView 内存泄漏
+- 动画相关的内存泄露
 
 ## 避免内存泄漏方法
-- 1 减少静态对象的使用，及时清理（比如赋值为 null）释放引用
-- 2 使用 WeakReference 弱引用
-- 3 减少单例类的使用，约束滥用行为
-- 4 尽可能的改用 Application 的 Context
-- 5 避免使用非静态内部类或匿名内部类
-- 6 注意 Handler 导致的内存泄漏，及时在 onStop 或 onDestroy 时候用 removeCallbacksAndMessages 移除消息
-- 7 针对线程相关及时做好取消、终止等工作
-- 8 针对资源性对象，需要及时做好回收关闭工作
-- 9 做好广播、监听器、观察者的移除注销工作
+- 1 减少静态对象的使用，需要及时进行清理（比如赋值为 null）释放引用
+- 2 确保静态集合中的对象在不需要的时候能够被及时移除
+- 3 使用 WeakReference 弱引用
+- 4 减少单例类的使用，约束滥用行为
+- 5 尽可能的改用 Application 的 Context
+- 6 避免使用非静态内部类或匿名内部类
+- 7 注意 Handler 导致的内存泄漏，及时在 onStop 或 onDestroy 时候用 removeCallbacksAndMessages 移除消息
+- 8 针对线程相关及时做好取消、终止等工作
+- 9 针对资源性对象（比如数据库、File 等）、WebView 和动画等需要及时做好回收关闭工作，做好 BroadcastReceiver 广播、监听器和观察者等的移除反注册工作
+- 10 多使用 try–catch-finally、try-with-resources 特性或者 Kotlin 的 T.use 函数
+ 
