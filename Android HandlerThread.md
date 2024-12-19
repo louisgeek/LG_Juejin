@@ -46,12 +46,11 @@ workHandler.sendMessage(msg);
 workHandler.post(new Runnable() {
    @Override
    public void run() {
-                // ...
+      // ...
    }
 })
 ```
 
-  
 
 ## 退出
 - 不再需要 HandlerThread 时记得在合适的地方停止它，比如 Activity 的 onDestroy 里

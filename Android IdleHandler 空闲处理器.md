@@ -23,13 +23,11 @@
 ```
 
 
-
 ```java
         MessageQueue.IdleHandler idleHandler = new MessageQueue.IdleHandler() {
             @Override
             public boolean queueIdle() {
                 //消息队列空闲时处理逻辑
-                
                 //如果返回 keep = true 表示保持这个 IdleHandler 一直处于活跃状态，只要消息队列空闲了 queueIdle 方法就会被回调
                 //如果返回 keep = false 那么这个 IdleHandler 就会被 remove 移除列表，也就是说当下次队列空闲的时候，不会继续被回调了
                 return false;
@@ -37,7 +35,6 @@
         };
         //MessageQueue
         Looper.myQueue().addIdleHandler(idleHandler);
-
 
         //可以通过 removeIdleHandler 移除 IdleHandler，可以在合适的地方调用，以免出现内存泄漏
         Looper.myQueue().removeIdleHandler(idleHandler);

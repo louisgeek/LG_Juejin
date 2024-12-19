@@ -7,7 +7,7 @@
 - 解析 init.rc 文件后 fork 生成 Zygote 进程
 
 ## Zygote 进程
-- 由 init 进程启动，是所有 App 应用程序进程的父进程
+- 由 Init 进程启动，是所有 App 应用程序进程的父进程
 - 初始化 Java 虚拟机并注册 JNI 方法，预加载 Android 框架的核心类库
 - 通过 fork 复制自身来启动 SystemServer 进程
 - 创建 Server Socket 用于接收创建新进程的请求消息

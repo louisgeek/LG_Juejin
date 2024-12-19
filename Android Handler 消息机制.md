@@ -163,7 +163,7 @@ mainHandler.post {
 
 
 ## HandlerThread
-是一个组合了 Handler 和 Looper 的 Thread，说白了就是子线程在使用 Handler 需要手动处理 Looper.prepare 和 Looper.loop 等操作，而 HandlerThread 就是为了方便我们处理使用，通过使用 HandlerThread 创建带有消息队列的线程，常用于单线程串行执行多个耗时任务的场景，避免频繁地创建线程，不过记得需要调用 quit 或 quitSafe 方法来结束线程
+就是一个自带 Looper 的线程，说白了就是子线程在使用 Handler 需要手动处理 Looper.prepare 和 Looper.loop 等操作，而 HandlerThread 就是为了方便我们处理使用，通过使用 HandlerThread 直接创建带有消息队列的 Thread，常用于单线程串行执行多个耗时任务的场景，避免频繁地创建线程，也保证了线程安全，不过记得需要在合适的调用 quit 或 quitSafe 方法来结束线程以避免可能出现的内存泄露
 
 ## IdleHandler 空闲处理器
 IdleHandler 是一个 MessageQueue 里的接口，通常用于在消息队列空闲的时候去执行一些低优先级、轻量级的任务，可以实现一些延迟初始化的应用

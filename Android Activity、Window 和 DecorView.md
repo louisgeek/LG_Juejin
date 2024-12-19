@@ -122,7 +122,7 @@ public class DecorView extends FrameLayout implements RootViewSurfaceTaker, Wind
 ## 总结
 - Activity 包含了一个 Window（PhoneWindow）
 - Window 包含了一个 DecorView（FrameLayout）
-- DecorView 包含了一个 ContentRoot（ViewGroup，跟据主题决定，比如 ActionBarOverlayLayout）
+- DecorView 包含了一个 ContentRoot（ViewGroup，跟据主题决定，比如 ActionBarOverlayLayout、LinearLayout 等）
 - ContentRoot 包含了一个 ActionBar 和一个 ContentParent（FrameLayout，id 是 android:id/content）
 - 而 setContentView 设置 layoutResID 的 ContentView 布局就是被添加到 ContentParent 中的
 - Activity 和 Window 都是抽象概念的，是肉眼看不见的，而实际看得见其实就是 DecorView

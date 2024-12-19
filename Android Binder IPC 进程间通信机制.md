@@ -1,6 +1,6 @@
 # Android Binder IPC 进程间通信机制
-- Binder 粘合剂：顾名思义就是粘和不同的进程，使之实现通信
-- 进程隔离：进程与进程间内存是不共享的，一个进程无法直接另一个进程的数据，所以要引入进程间通信
+- Binder 粘合剂：顾名思义就是粘合不同的进程，使他们之间能够实现通信
+- 进程隔离：进程与进程间内存是不共享的，一个进程无法直接访问另一个进程的数据，所以要引入进程间通信
 - IPC：Inter-Process Communication 进程间通信，是指在不同进程之间进行数据交换、共享资源和信息传递的机制
 - Binder 是 Android 提供的一种 IPC 进程间通信机制，是一种高效、安全、易用的跨进程通信方式
 - Binder 是一种基于消息传递的 IPC 机制，其核心就是一个内核驱动程序，它负责在不同进程之间传递消息，使用 C/S 架构（服务端/客户端架构），易用性高
@@ -40,7 +40,7 @@ android {
 ```
 
 服务端：
-- 1 AS 创建 aidl 文件（创建完后需要 build 一下生成同名 java 文件）
+- 1 Android Studio 创建 aidl 文件（创建完后需要 build 一下生成同名 java 文件）
 - 2 自定义 Service 类，onBind 方法传入 IBinder 的实例（实现 Xxx.Stub 的接口方法）
 - 3 在 AndroidManifest.xml 文件中注册 Service
 
@@ -51,7 +51,6 @@ android {
 package com.louisgeek.louisaidlserver;
 
 // Declare any non-default types here with import statements
-
 interface IMyAidlInterface {
     /**
      * Demonstrates some basic types that you can use as parameters
@@ -81,12 +80,12 @@ class MyAidlService : Service() {
         ): String {
             val result = "$anInt $aLong $aBoolean $aFloat $aDouble $aString"
             Log.e(TAG, "basicTypes: louis===")
-            return "MyAidlService服务端：result=$result"
+            return "MyAidlService 服务端：result=$result"
         }
     }
 
     override fun onBind(intent: Intent): IBinder {
-        Log.e(TAG, "onBind: louis===")
+        Log.e(TAG, "onBind: louis ===")
         return binder
     }
 }
@@ -94,17 +93,17 @@ class MyAidlService : Service() {
 
 ```xml
 <service
-            android:name=".MyAidlService"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="actionMyAidlService" />
-            </intent-filter>
-        </service>
+    android:name=".MyAidlService"
+    android:exported="true">
+    <intent-filter>
+        <action android:name="actionMyAidlService" />
+    </intent-filter>
+ </service>
 ```
 
 
 客户端：
-- 1 AS 创建 aidl 文件（和服务端一样，也可以直接复制过来，然后 build 一下）
+- 1 Android Studio 创建 aidl 文件（和服务端一样，也可以直接复制过来，然后 build 一下）
 - 2 调用 bindService 绑定远程 Service，传入自定义 ServiceConnection 实例
 - 3 在 onServiceConnected 方法中 Xxx.Stub.asInterface(service) 获取到 IBinder 对象
 
@@ -130,8 +129,8 @@ class MyAidlService : Service() {
 
     override fun onStart() {
         super.onStart()
-        val intent = Intent("actionMyAidlService")//服务端action
-        intent.setPackage("com.louisgeek.louisaidlserver")//服务端包名
+        val intent = Intent("actionMyAidlService") //服务端action
+        intent.setPackage("com.louisgeek.louisaidlserver") //服务端包名
         val result = this.bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
         Log.e("TAG", "onStart: louis==result=$result" )
     }
@@ -172,7 +171,7 @@ class MyAidlService : Service() {
 - 性能：Binder 数据拷贝只需要一次，有开销低、速度快、耗电少等优势（管道、消息队列和 Socket 都需要两次，但共享内存方式一次内存拷贝都不需要，从性能角度看，Binder 性能仅次于共享内存），Binder 相对出传统的 Socket 方式显得更加高效
 - 安全鉴权：传统的跨进程通信方式对于通信双方的身份并没有做出严格的验证，而 Binder 机制从协议本身就支持对通信双方做身份校检，也是 Android 权限模型的基础，它为每个进程都分配了自己的 UID/PID 作为标识，它是鉴别进程身份的重要标志，有效提高了安全性
 - 简单易用：Binder 使用面向对象的方式设计，使用 C/S 架构，相互独立、职责明确、架构清晰和易于使用
-- 其他：Binder 是安卓架构师基于自己的开源项目 OpenBinder 重新实现的 Android IPC 机制，优先采用现成的          
+- 其他因素：Binder 是安卓架构师基于自己的开源项目 OpenBinder 重新实现的 Android IPC 机制，优先采用现成的方案       
 
 两次拷贝：指的是需要先将数据从发送方进程拷贝到内核缓存区（内核空间内），然后再将数据从内核缓存区拷贝到接收方进程
 内存映射：指的是将用户空间的一块内存区域映射到内核空间，当映射关系建立后，用户对这块内存区域的修改可以直接反应到内核空间，反之内核空间对这段区域的修改也能直接反应到用户空间，内存映射能够减少数据拷贝的次数，实现用户空间和内核空间的高效互动，发送方进程将数据拷贝到内核缓存区（内核空间内），由于内核缓存区和接收进程的用户空间存在内存映射，因此也就相当于把数据发送到了接收进程的用户空间内，这样便完成了一次进程间的通信，只进行了一次拷贝

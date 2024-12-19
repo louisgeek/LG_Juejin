@@ -3,34 +3,34 @@
 
 ## 核心回调
 - 6 个核心的生命周期
-```
+```java
 onCreate —— onStart 可见 —— onResume 有焦点 —— onPause 无焦点 —— onStop 不可见 —— onDestory
 ```
 - onRestart 回调方法是在 Activity 从不可见（onStop）重新回到前台时调用的
 
 ![Activity 生命周期](https://developer.android.google.cn/guide/components/images/activity_lifecycle.png "https://developer.android.google.cn/guide/components/images/activity_lifecycle.png")
 
-- 所有生命周期回调方法重写实现时必须调用其父类方法
+- 所有生命周期回调方法重写时必须调用其父类方法
 - 由于 Activity 经常在暂停和恢复之间来回切换，所以 onResume 和 onPause 的逻辑应该是轻量级的
 - 图中显示系统在某些情况下回收内存导致 onStop 和 onDestory 可能不被调用，因此可以根据实际情况在 onPause 中保存一些非常重要的数据，耗时操作需要开子线程处理
 
 ## 经典场景
 - 1 第一次启动 Activity  A
-```
+```java
 //Activity A
 onCreate -> onStart -> onResume
 ```
 
 - 2 在 Activity A 上启动 Activity B    
-```
-//Activity A
-onPause ->（A 被 B 覆盖后走）onStop ->（如果 A 自身 finish 或被系统回收后走）onDestory
-//Activity B，如果 B 是完全透明或是对话框主题的情况下，那么 A 就不继续走 onStop 了
+```java
+//Activity A，如果 Activity B 是完全透明或是对话框主题的话，那么 A 就不继续走 onStop 了
+onPause ->（A 被 B 覆盖不可见后走）onStop ->（如果 A 自身 finish 或被系统回收后走）onDestory
+//Activity B
 onCreate -> onStart ->（B 会等到 A 的 onPause 执行后走）onResume
 ```
 
 - 3 从 Activity B 返回到 Activity A  
-```
+```java
 //Activity B
 onPause -> onStop -> onDestory
 //Activity A
@@ -40,7 +40,7 @@ onCreate（重新创建） -> onStart -> onResume
 ```
 
 - 4 点击 HOME 键、来电
-```
+```java
 //点击 Home 键、来电
 onPause　->　onStop 
 //回到 App
@@ -50,9 +50,9 @@ onCreate（重新创建） -> onStart -> onResume
 ```
 
 - 5 锁屏与解锁
-```
+```java
 //锁屏
-onPause，不会走 onStop
+onPause（不会继续走 onStop）
 //解锁
 onResume
 ```
@@ -61,21 +61,20 @@ onResume
 - 应该尽量减少 onCreate 的工作量，避免程序启动太久而看不见界面，这里可以通过 savedInstanceState 参数恢复一些状态，如果 Activity 是第一次创建的话此时 savedInstanceState 为 null ，所以需要做判空处理
 - 应该调用 setContentView 方法初始化布局
 - 定义成员变量（全局变量），初始化相关数据
-- 初始化视图控件等 UI 元素
-- 配置 UI，将数据绑定到列表等 
-- 将 Activity 与 ViewModel 相关联
-- 可能需要启动与服务的绑定
+- 初始化视图控件等 UI 元素、配置 UI，将数据绑定到列表等 
+- 可能需要将 Activity 与 ViewModel 相关联
+- 可能需要启动与 Service 服务的绑定操作
 
 ### onStart
-- 注册广播接收器
-- 定位相关的初始化
+- 注册 BroadcastReceiver 广播接收器
+- 地图导航位置更新等相关的初始化
 - 把在 onStop 中释放的资源重新创建回来
 
 ### onResume
 - 意味着此时 Activity 位于 Activity 堆栈的顶部，获取了焦点
-- 把 onPause 中停止的操作恢复回来，如 Camera 预览
+- 把 onPause 中暂停的操作恢复回来，如 Camera 预览
 - 开始动画、视频的播放
-- 可能需要注册传感器监听
+- 可能需要注册传感器（如 GPS）监听
 
 ### onPause
 - 不推荐在这里保存应用或用户数据、进行网络请求调用或执行数据库事务（可根据实际情况在 onPause 中保存一些非常重要的数据），即不适合做耗时较长的工作，应最大程度减少 onPause 的工作量避免 Activity 切换缓慢卡顿
@@ -87,13 +86,13 @@ onResume
 - 可以在这里保存应用或用户数据（比如将用户编写的邮箱草稿保存到持久性存储空间）、进行网络调用、用户首选项持久性数据和执行数据库事务
 - 应该释放那些不再需要的资源
 - 关闭那些 CPU 执行相对密集的操作
-- 可根据实际情况按需从精确位置更新切换到粗略位置更新
+- 地图导航可根据实际情况按需从精确位置更新切换到粗略位置更新
 - 可以停止通过 Service 定时更新 UI 上的数据的 Service
-- 取消注册广播接收器
+- 取消注册 BroadcastReceiver 广播接收器
 
 ### onDestoty
 - 应释放先前的回调（如 onStop）中尚未释放的所有资源
-- 解除与服务的绑定
+- 解除与 Service 服务的绑定
 - 其实不推荐在 onDestroy 里执行销毁资源的工作，因为 onDestroy 执行的时机可能较晚，可根据实际需求在
 onPause 或 onStop 中结合 isFinishing 判断来执行
 
@@ -119,26 +118,31 @@ onPause 或 onStop 中结合 isFinishing 判断来执行
 - 如果是重建 Activity 的情况下，需要利用 onSaveInstanceState 和 onRestoreInstanceState 方法处理数据的保存与恢复，来保证用户数据或状态不丢失
 - 如果是不重建 Activity 情况下，那么我们可以按需利用 onConfigurationChanged 回调进行判断来展示横竖屏不同界面的展示
 
-#### Android 3.2 API 13 以前
-- 不设置 Activity 的 android:configChanges 时，切屏会重新调用各个生命周期，切横屏时会执行一次，切竖屏时会执行两次
-- 设置了 Activity 的 android:configChanges="orientation" 时，切屏还是会重新调用各个生命周期，切横、竖屏时都只会执行一次
-- 设置了 Activity 的 android:configChanges="orientation|keyboardHidden" 时，切屏不会重新调用各个生命周期，只会执行 onConfigurationChanged 方法
+```java
+//Android 3.2 API 13 以前
+不设置 Activity 的 android:configChanges 时，切屏会重新调用各个生命周期，切横屏时会执行一次，切竖屏时会执行两次
+设置了 Activity 的 android:configChanges="orientation" 时，切屏还是会重新调用各个生命周期，切横、竖屏时都只会执行一次
+设置了 Activity 的 android:configChanges="orientation|keyboardHidden" 时，切屏不会重新调用各个生命周期，只会执行 onConfigurationChanged 方法
 
-#### Android 3.2 API 13 及以后
-- 不设置 Activity 的 android:configChanges 时，或者设置了 Activity 的 android:configChanges="orientation" 时，或者设置了 Activity 的android:configChanges="orientation|keyboardHidden" 时，切屏会重新调用各个生命周期，切横屏时会执行一次，切竖屏时会执行一次
-- 设置了 Activity 的 android:configChanges="orientation|screenSize|keyboardHidden"，切屏不会重新调用各个生命周期，只会执行 onConfigurationChanged 方法
+//Android 3.2 API 13 及以后
+不设置 Activity 的 android:configChanges 时，或者设置了 Activity 的 android:configChanges="orientation" 时，或者设置了 Activity 的android:configChanges="orientation|keyboardHidden" 时，切屏会重新调用各个生命周期，切横屏时会执行一次，切竖屏时会执行一次
+设置了 Activity 的 android:configChanges="orientation|screenSize|keyboardHidden"，切屏不会重新调用各个生命周期，只会执行 onConfigurationChanged 方法
+```
 
 ## 常见问题
 1 如果在 onCreate 、onStart 和 onResume 等方法中直接调用 finish 方法，生命周期是怎样的？
+- 系统会跳过对应的生命周期方法，可以简单理解 onCreate 和 onDestory ，onStart 和 onStop ，onResume 和 onPause 是对应的，原理可以参见源码里 Instrumentation 的判断逻辑
 
-系统会跳过对应的生命周期方法，可以简单理解 onCreate 和 onDestory ，onStart 和 onStop ，onResume 和 onPause 是对应的，原理可以参见源码里 Instrumentation 的判断逻辑
-- onCreate：onCreate -> onDestroy
-- onStart ：onCreate -> onStart -> onStop -> onDestroy
-- onResume：onCreate -> onStart -> onResume -> onPause -> onStop -> onDestroy
+```java
+//调用 finish 方法的时机
+onCreate：onCreate -> onDestroy
+onStart ：onCreate -> onStart -> onStop -> onDestroy
+onResume：onCreate -> onStart -> onResume -> onPause -> onStop -> onDestroy
+```
 
 2 什么时候只会走 onPause 方法，而不会走 onStop 方法？
 - 锁屏的情况
-- 打开一个完全透明或是对话框主题的情况下的 Activity
+- 打开一个完全透明或是对话框主题的 Activity 的情况
 
 3 Activity 在什么时候可能会出现不执行 onDestory 方法的情况？
 - 系统资源不足的情况下
@@ -147,6 +151,5 @@ onPause 或 onStop 中结合 isFinishing 判断来执行
 - 切到多窗口或分屏模式
 
 4 下拉状态栏时 Activity 的生命周期是什么？
-
-不走任何生命周期，状态栏和 AlertDialog、Toast 等都是通过 WindowManager.addView 方法来显示的，对 Activity 的生命周期没有影响，另外可以通过 onWindowFocusChanged(boolean hasFocus) 来监听状态栏，hasFocus 为 false 可以表示下拉状态，从而可以实现暂停视频等需求
+- 不走任何生命周期，状态栏和 AlertDialog、Toast 等都是通过 WindowManager.addView 方法来显示的，对 Activity 的生命周期没有影响，另外可以通过 onWindowFocusChanged(boolean hasFocus) 来监听状态栏，hasFocus 为 false 可以表示下拉状态，从而可以实现暂停视频等需求
 
