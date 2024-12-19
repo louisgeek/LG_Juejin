@@ -37,7 +37,7 @@ public class Singleton {
    	 	sInstance = new Singleton();
 	}
     private Singleton() {}
-	public Singleton getInstance() {
+	public static Singleton getInstance() {
     	return sInstance;
 	}
 }
@@ -54,7 +54,7 @@ public class Singleton {
 public class Singleton {
     private static Singleton sInstance;
     private Singleton() {}
-    //只适合在单线程情况下使用，如果是多线程情况下，一个线程进入 if (singleton == null) 判断语句块，还没来得及往下执行，另一个线程也通过了这个 if 判断语句，此时就会产生多个实例
+    //只适合在单线程情况下使用，如果是多线程情况下，一个线程进入 if (sInstance == null) 判断语句块，还没来得及往下执行，另一个线程也通过了这个 if 判断语句，此时就会产生多个实例
     public static Singleton getInstance() {
         if (sInstance == null) {
             sInstance = new Singleton();
@@ -80,12 +80,12 @@ public class Singleton {
 	private Singleton() {}
 	public static Singleton getInstance() {
         if (sInstance == null) {
-        //多个线程仍旧能够通过 if 判断，虽然同步了实例化的代码，但还是会多次实例化
+          //多个线程依旧能够通过 if 判断，虽然同步了实例化的代码，但还是会多次实例化
           synchronized (Singleton.class) {
               sInstance = new Singleton();
           }
         }
-    return sInstance;
+        return sInstance;
 	}
 }
 //2.4 上面的例子 if 判断外面加 synchronized(Singleton.class) {} 代码块，其实这个就和上面的 2.2 是一样的，线程安全
@@ -158,7 +158,7 @@ public class Singleton {
 ```java
 public enum Singleton {
     INSTANCE;
-    public void doSome1(){
+    public void doSomething(){
       //
     }
 }
@@ -176,7 +176,6 @@ PS：注意
 
 ```java
 //源码位置 /frameworks/base/core/java/android/util/Singleton.java
-
 /**
  * Singleton helper class for lazily initialization.
  *
@@ -185,10 +184,13 @@ PS：注意
  * @hide
  */
 public abstract class Singleton<T> {
+    @UnsupportedAppUsage
+    public Singleton() {
+    }
+    @UnsupportedAppUsage
     private T mInstance;
-
     protected abstract T create();
-
+    @UnsupportedAppUsage
     public final T get() {
         synchronized (this) {
             if (mInstance == null) {

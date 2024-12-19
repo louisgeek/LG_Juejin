@@ -1,4 +1,4 @@
-# Java 创建线程的 3 种方式
+# Java 线程创建的 3 种方式
 ## 1 通过继承 Thread 类
 ```java
 //匿名 Thread 类

@@ -71,7 +71,7 @@ by 是 Kotlin 中用来实现委托的，编译器会生成委托模式的模板
 ```
 
 ## 属性委托
-- 需要提供 getValue 或者 setValue 约定函数
+- 类需要提供 getValue 或者 setValue 约定函数
 ```kotlin
    private var test03: String by Delegate()
 

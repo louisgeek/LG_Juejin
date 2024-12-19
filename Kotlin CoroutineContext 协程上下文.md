@@ -15,7 +15,8 @@
 - 是用来给协程命名的，支持传入 name 参数，重写的 toString 方法可输出 "CoroutineName($name)" 格式字符串
 
 ## Job 任务
-- Job 是一个接口，继承了 CoroutineContext.Element 接口，
+- Job 是一个接口，继承了 CoroutineContext.Element 接口
+- 拥有 isActive、isCompleted 和 isCancelled 等属性
 - 拥有 start、 cancel 和 join 等方法，比如可以调用 job.cancel() 取消协程
 - Deferred 接口继承了 Job
 
