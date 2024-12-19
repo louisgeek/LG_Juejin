@@ -1,4 +1,4 @@
-# Android Init 进程、Zygote 进程和 SystemServer 进程
+# Android Init、Zygote 和 SystemServer 进程
 
 ## Init 进程
 - 由 Linux 系统内核启动，是第一个用户空间进程，其 PID 为 1
