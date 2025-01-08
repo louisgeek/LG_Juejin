@@ -1,7 +1,21 @@
 # Kotlin suspendCoroutine 和 suspendCancellableCoroutine 的区别
-- 两者作用都是允许我们在协程中将回调式的异步非挂起的操作转化为挂起操作，换句话说就是将异步操作封装为挂起操作，是用于连接异步回调函数和协程之间的桥梁
+- 两个函数的作用都是允许在协程中将回调式的异步非挂起的操作转化为挂起操作，换句话说就是将异步操作封装为挂起操作，用于适配已有的回调式代码，是连接异步回调函数和协程之间的桥梁
 - 将回调函数转换为协程挂起函数，比如 onSuccess 走 Continuation.resume, 而 onFailure 走 Continuation.resumeWithException
 - suspendCancellableCoroutine 的基本功能和 suspendCoroutine 一样，只是多了一个监听协程取消的功能，更推荐使用
+
+```kotlin
+public interface Continuation<in T> {
+    public val context: CoroutineContext
+    public fun resumeWith(result: Result<T>)
+}
+@InlineOnly
+public inline fun <T> Continuation<T>.resume(value: T): Unit =
+    resumeWith(Result.success(value))
+
+@InlineOnly
+public inline fun <T> Continuation<T>.resumeWithException(exception: Throwable): Unit =
+    resumeWith(Result.failure(exception))
+```
 
 ```kotlin
 //suspendCoroutine 函数的参数是一个 Continuation 接口
@@ -31,8 +45,8 @@ public suspend inline fun <T> suspendCancellableCoroutine(
 ```
 
 ## suspendCoroutine
+- 将普通函数转化成挂起函数
 
-普通函数
 ```kotlin
 interface Callback {
     fun onSuccess(data: String)
@@ -61,7 +75,7 @@ val callback = object : Callback {
 }
 fetchData(callback) //设置回调
 ```
-普通函数转化成挂起函数
+
 ```kotlin
 //挂起函数
 suspend fun fetchDataBySuspendCoroutine(): String = suspendCoroutine { continuation ->
@@ -87,7 +101,6 @@ launch {
 }
 ```
 
-
 常见使用场景
 
 ```kotlin
@@ -108,8 +121,8 @@ launch {
 ```
 
 ## suspendCancellableCoroutine
+- 将普通函数转化成可取消的挂起函数
 
-普通函数转化成可取消的挂起函数
 ```kotlin
 suspend fun fetchDataBySuspendCancellableCoroutine(): String =
     suspendCancellableCoroutine { continuation ->
