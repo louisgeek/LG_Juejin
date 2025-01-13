@@ -35,7 +35,7 @@ open class LifecycleRegistry private constructor(
     provider: LifecycleOwner, //传入一个 LifecycleOwner
     private val enforceMainThread: Boolean
 ) : Lifecycle() {
-  //FastSafeIterableMap 在 SafeIterableMap 的基础（是一个基于双向链表的数据结构，支持在遍历过程中安全地删除元素）上增加了一个 HashMap 来实际存储数据，使得数据的查询速度更快
+  //FastSafeIterableMap 在 SafeIterableMap 的基础（是一个基于双向链表的数据结构，支持在遍历过程中安全地删除元素，线程不安全的）上增加了一个 HashMap 来实际存储数据，使得数据的查询速度更快
   private var observerMap = FastSafeIterableMap<LifecycleObserver, ObserverWithState>()
   //
   private var state: State = State.INITIALIZED
@@ -169,6 +169,8 @@ class MyLifecycleOwner : LifecycleOwner {
     init {
         //设置初始状态
         lifecycleRegistry.currentState = Lifecycle.State.CREATED
+        //lifecycleRegistry.setCurrentState(Lifecycle.State.CREATED);
+        //或者使用 lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.CREATED)
     }
 
     override val lifecycle: Lifecycle
@@ -177,11 +179,10 @@ class MyLifecycleOwner : LifecycleOwner {
     //模拟启动
     private fun onStart() {
         lifecycleRegistry.currentState = Lifecycle.State.STARTED
-        //或者使用 lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.STARTED)
     }
     //模拟停止
     private void stop() {
-        lifecycleRegistry.setCurrentState(Lifecycle.State.STOPPED);
+        lifecycleRegistry.currentState = Lifecycle.State.STOPPED
     }
     //模拟销毁
     private fun onDestroy() {
