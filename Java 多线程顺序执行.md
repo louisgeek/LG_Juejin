@@ -1,9 +1,9 @@
 # Java 多线程顺序执行
-- 最基础的就是按顺序调用各个线程去实现
+- 最基础的方法就是按顺序调用各个线程去实现
 - 可以利用 Executors.newSingleThreadExecutor 单线程池来保证
 - 利用设计模式（比如职责链模式或者管道模式）也可以实现多线程顺序执行的逻辑
 
-## 1 利用 ExecutorService 和 Future 配合使用
+## 1 ExecutorService 和 Future 配合
 - 利用 java.util.concurrent.Future 的阻塞特性，Future#get 方法会阻塞当前线程去获取异步执行任务的结果
 
 ```java
@@ -110,7 +110,6 @@ thread3.start();
 //当前线程等待线程 3 执行完毕
 thread3.join(); //这里可按需省略
 ```
-
 
 
 ## 3 CountDownLatch   

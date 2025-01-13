@@ -31,7 +31,7 @@ public synchronized void waitForFlag() {
             try {
                 wait(); //synchronized 方法锁默认的锁对象是 this，就是当前类对象锁，而这里 this.wait 也是省略了 this.
             } catch (InterruptedException e) {
-                // 处理中断
+                //处理中断
                 Thread.currentThread().interrupt();
             }
         }

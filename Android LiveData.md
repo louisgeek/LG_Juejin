@@ -1,7 +1,7 @@
 # Android LiveData
 - LiveData 是一个可观察的数据持有类，旨在存储和传递数据，遵循观察者模式，基于 Lifecycle 生命周期感知组件进行工作，意味着 LiveData 有感知其他组件生命周期（比如 Activity 和 Fragment 等）的能力，在应用程序中实现数据和 UI 组件之间的响应式绑定（能在数据发生变化时通知 UI 进行相应的更新），这种感知能力可确保 LiveData 只更新处于活跃生命周期状态（比如 ```Lifecycle$State#STARTED 或 Lifecycle$State#RESUMED```）下的观察者，而且通常情况下不需要手动移除观察者（LiveData 会自动管理，当观察者被销毁时 LiveData 会自动取消对其的订阅），有助于避免在观察者不可见或已销毁时发送不必要的更新，从而减少内存泄漏和资源浪费等问题
 - LiveData 在更新数据时是线程安全的，LiveData#setValue 必须在主线程中调用，而 LiveData#postValue 可以在后台子线程中调用，无论数据是在主线程还是子线程中更新，LiveData 都会确保在主线程中通知观察者，有助于简化多线程编程中的线程同步问题
-- LiveData 默认被设计为 Sticky Events 粘性事件（事件发送后，观察者才订阅，能收到订阅之前的事件）的，先更新数据，再注册观察者依然能接收到之前的数据，新注册的观察者版本号为 -1 符合小于数据版本号的条件，所以注册时会立即收到一次数据（LiveData 每次改变数据都会对 LiveData#mVersion 数据版本号加 1，并触发 LiveData$ObserverWrapper#mLastVersion 观察者版本号小于 LiveData#mVersion 数据版本号的观察者进行 Observer#onChanged 回调，同时将数据版本号赋值给观察者版本号进行保持一致），所以粘性事件这一特性本身并不算是一种问题，反而这种特性在很多情况下都很实用，符合 LiveData 设计出来被用来处理的场景（返回的是 “UiState”，比如页面重建展示时，自动推送最后一次数据而不必重新进行请求），而在 “页面间通信” 这种场景（返回的是 “UiEvent”，比如显示 Toast、显示 Snackbar 、界面 Navigation 跳转或者 Dialog 的展示等）下，相当于侧重用来保存数据状态的，而不侧重用来事件传递的
+- LiveData 默认被设计为 Sticky Events 粘性事件（事件发送后，观察者才订阅，能收到订阅之前的事件）的，先更新数据，再注册观察者依然能接收到之前的数据，新注册的观察者版本号为 -1 符合小于数据版本号的条件，所以注册时会立即收到一次数据（LiveData 每次改变数据都会对 LiveData#mVersion 数据版本号加 1，并触发 LiveData$ObserverWrapper#mLastVersion 观察者版本号小于 LiveData#mVersion 数据版本号的观察者进行 Observer#onChanged 回调，同时将数据版本号赋值给观察者版本号进行保持一致），所以粘性事件这一特性本身并不算是一种问题，反而这种特性在很多情况下都很实用，符合 LiveData 设计出来被用来处理的场景（返回的是 “UiState”，比如页面重建展示时，自动推送最后一次数据而不必重新进行请求），而在 “页面间通信” 这种场景（返回的是 “UiEvent”，比如显示 Toast、显示 Snackbar 、界面跳转或者 Dialog 的展示等）下，相当于侧重用来保存数据状态的，而不侧重用来事件传递的
 
 
 被观察者

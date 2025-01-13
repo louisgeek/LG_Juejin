@@ -101,11 +101,35 @@ public class ScheduledThreadPoolExecutor extends ThreadPoolExecutor implements S
 
 
 ## 线程池的 BlockingQueue 阻塞队列
+- BlockingQueue 阻塞队列是一种支持阻塞、线程安全的队列，通常支持在队列为空时阻塞消费者线程，而在队列满时阻塞生产者线程
+- BlockingQueue 是一个接口，常用实现有 LinkedBlockingQueue 和 ArrayBlockingQueue 等
 - LinkedBlockingQueue 基于链表实现的无界阻塞队列（默认 capacity 容量长度传值 Integer.MAX_VALUE），理论上可以存放无限个任务，但受限于系统资源
 - ArrayBlockingQueue 基于数组实现的有界阻塞队列，需要在创建时指定队列容量大小
 - SynchronousQueue 同步队列，是一种特殊的阻塞队列，队列容量为 0，即不存储元素，本质上只是一个同步机制，允许线程间在队列中直接交换元素，SynchronousQueue 的 put 插入和 take 移除操作会相互阻塞，插入操作和移除操作必须是成对出现的并且是同步进行的
-- PriorityBlockingQueue ：优先队列，可以针对任务排序
+- PriorityBlockingQueue 优先队列，可以针对任务排序
 
+```kotlin
+private val blockingQueue: BlockingQueue<Int> = LinkedBlockingQueue()
+//生产者线程使用
+fun put(value: Int) {
+    try {
+        //如果队列已满，则阻塞
+        blockingQueue.put(value)
+    } catch (e: InterruptedException) {
+        Thread.currentThread().interrupt()
+    }
+}
+//消费者线程使用
+fun get(): Int {
+    try {
+        //如果队列为空，则阻塞直到有元素可用
+        return blockingQueue.take()
+    } catch (e: InterruptedException) {
+        Thread.currentThread().interrupt()
+        return 0
+    }
+}
+```
 
 ## 线程池的 RejectedExecutionHandler 拒绝策略
 - AbortPolicy 默认策略，直接丢弃后来的任务并抛出 RejectedExecutionException 异常

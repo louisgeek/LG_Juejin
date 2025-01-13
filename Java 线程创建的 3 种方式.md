@@ -6,7 +6,7 @@ new Thread(){
     //重写 run 方法
      @Override
     public void run() {
-       //do
+       //doSomething
     }
 }.start();
 ```
@@ -16,7 +16,7 @@ new Thread(){
 class MyThread extends Thread {
     @Override
     public void run() {
-       //do
+       //doSomething
     }
 }
 //假设把 run 方法看成一个任务，那么每创建一个线程，就有一个新的任务
@@ -36,7 +36,7 @@ new Thread(new Runnable() {
    //重写 run 方法  
      @Override
      public void run() {
-       //do
+       //doSomething
      }
 }).start();
 ```
@@ -45,7 +45,7 @@ new Thread(new Runnable() {
 class MyRunnable implements Runnable {
           @Override
          public void run() {
-          //do
+          //doSomething
          }
 }
 //其实还是通过 Thread 类对象来创建线程的，每创建一个线程，传入的可以是同一个任务
