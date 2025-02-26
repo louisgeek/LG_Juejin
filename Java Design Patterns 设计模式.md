@@ -2,30 +2,30 @@
 - GoF 在《设计模式》这本书里列举并描述了 23 种设计模式
 
 ## Creational Patterns 创建型模式
-- Singleton 单例
+- Singleton 单例（比如 Calendar#getInstance、InputMethodManager#getInstance）
 - Factory Method 工厂方法
-- Abstract Factory 抽象工厂
-- Builder 建造者
+- Abstract Factory 抽象工厂（比如 BaseActivity）
+- Builder 建造者（比如 AlertDialog.Builder）
 - Prototype 原型
 
   额外有个 Simple Factory 简单工厂模式
 
 ## Structural Patterns 结构型模式
-- Adapter 适配器
+- Adapter 适配器（比如 ListView 或 RecyclerView 的 Adapter）
 - Bridge 桥接
-- Proxy 代理
+- Proxy 代理（比如 AppCompatActivity 的 AppCompatDelegate）
 - Decorator 装饰器
 - Composite 组合
 - Facade 外观
-- Flyweight 享元
+- Flyweight 享元（比如 Message#obtain）
 
 ## Behavioral Patterns 行为型模式
-- Observer 观察者
+- Observer 观察者（比如 LiveData、ContentObserver）
 - Chain of Responsibility 责任链
 - Strategy 策略
 - Template Method 模板方法
 - Iterator 迭代器
-- Command 命令
+- Command 命令（比如 Handler#post）
 - Memento 备忘录
 - State 状态
 - Visitor 访问者
