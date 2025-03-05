@@ -162,8 +162,8 @@ class MyAidlService : Service() {
 - Xxx.Stub.Proxy 是编译工具自动生成的 aidl 文件同名接口里的静态内部类，也实现了编译工具自动生成的 aidl 文件同名接口，同时组合了一个 IBinder 对象（是 IBinder 代理对象，也就 Binder 代理对象）,代表远程进程的 Binder 对象的本地代理，对应BinderProxy？
 
 固定套路：
-- 一个需要跨进程传输的对象一定实现了 IBinder这个接口，如果是 Binder 本地对象，那么一定继承了 Binder 然后实现 IInterface 子接口，如果是代理对象，那么就实现了 IInterface 子接口并持有了 IBinder 引用（代理）
-- 服务端：Service#onBind 返回 IBinder 对象，Server 端实现了 Xxx.Stub（继承 Binder（实现 IBinder））抽象类
+- 一个需要跨进程传输的对象一定实现了 IBinder 这个接口，如果是 Binder 本地对象，那么一定继承了 Binder（实现 IBinder）然后实现 IInterface 子接口，如果是代理对象，那么就实现了 IInterface 子接口并持有了 IBinder 引用（代理）
+- 服务端：Service#onBind 返回 IBinder 对象，Server 端实现了 Xxx.Stub（继承 Binder）抽象类
 - 客户端：bind 一个 Service 之后，在 onServiceConnected 的回调里通过 asInterface 这个方法返回 Xxx.Stub.Proxy 就是拿到了一个远程的 Service
 
 

@@ -183,7 +183,6 @@ class MainActivity : AppCompatActivity() {
 - 就是通常情况下当 Activity 或 Fragment 在因配置更改（比如屏幕旋转）后被销毁并重建的时候，由于 ViewModel 保留了内部的 LiveData，而导致可能会收到之前旧的观察者已经处理过的数据，就好像数据 “倒流、倒灌” 回来了一样
 - 数据倒灌可以理解成在粘性事件前提条件的基础上，当第二次调用 observe 时候，如果还能收到第一次调用 observe 旧的观察者已经处理过的数据的情形，所以只要将 LiveData 变为非粘性事件的也能避免出现数据倒灌的问题，通常有以下几种解决方案：修改干涉版本号、SingleLiveEvent、Event Wrapper 事件包装器、UnPeekLiveData 和 SharedFlow 等
 
-
 ### 修改干涉版本号
 - 利用反射等手段修改版本号，在 observe 方法之前将 mVersion 赋值给 mLastVersion 使得 mLastVersion = mVersion 以解决问题
 - 通过实现非粘性事件以解决数据倒灌的问题

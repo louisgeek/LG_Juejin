@@ -27,7 +27,7 @@ onFinishInflate —— onAttachedToWindow —— onWindowVisibilityChanged(VISIB
 ## 生命周期使用场景
 
 ### onAttachedToWindow
-- 可以进行一些资源准备、注册监听器或开启一些动画相关等操作、
+- 可以进行一些资源准备、注册监听器或开启一些动画相关等操作
  
 ### onDetachedFromWindow
 - 销毁自定义 View 使用的资源、取消之前注册的监听器和停止相关动画等操作，以避免可能发生的内存泄漏等问题

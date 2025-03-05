@@ -2,7 +2,7 @@
 - android.app.Activity 负责承载 UI 用户界面、处理用户事件交互和管理生命周期，内部会包含一个 Window 对象
 - android.view.Window 是一个抽象类，代表了一个窗口的抽象
 - com.android.internal.policy.PhoneWindow 类继承自 Window 类，负责确定窗口外观属性（比如窗口大小、位置、背景、颜色、透明度、全屏和分屏等）、控制窗口行为策略和用于承载 DecorView 这个视图容器的
-- com.android.internal.policy.DecorView 类继承自 FrameLayout，用于承载视图的，它通常包含了状态栏、标题栏和内容区域等
+- com.android.internal.policy.DecorView 类继承自 FrameLayout，用于实际承载视图的，它通常包含了状态栏、标题栏和内容区域等
 
 ## Activity
 ```java

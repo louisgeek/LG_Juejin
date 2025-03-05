@@ -2,8 +2,8 @@
 # Android View invalidate 和 requestLayout 的区别
 - 在 Android 中 View#invalidate 和 View#requestLayout 都可以用于请求系统去刷新视图显示的方法，invalidate 方法会触发 draw 过程，而 requestLayout 方法则会触发测量、布局和绘制（可能还要走绘制阶段，比如视图的位置发生改变） 
 - invalidate 和 requestLayout 方法最终都会调用到 ViewRootImpl#performTraversals 方法
-- 通常情况下修改了某些绘制相关的属性（如颜色、文本等）后，可以调用 invalidate 来通知系统，当前视图需要重新绘制反映其最新的状态
-- 而修改了某些位置大小相关的属性（如尺寸、位置等）后，就需要调用 requestLayout 来告知系统当前视图需要重新测量、布局以及绘制操作
+- 通常情况下修改了某些绘制相关的属性（比如颜色、文本等）后，可以调用 invalidate 来通知系统，当前视图需要重新绘制反映其最新的状态
+- 而修改了某些位置大小相关的属性（比如尺寸、位置等）后，就需要调用 requestLayout 来告知系统当前视图需要重新测量、布局以及绘制操作
 - 在某些情况下可能需要同时调用这两个方法，先调用 requestLayout 来更新布局，然后调用 invalidate 来触发重绘（比如视图的位置未发生改变，但是绘制的属性需要改变，那就需要重新绘制）
 
 ## invalidate
