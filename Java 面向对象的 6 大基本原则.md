@@ -25,6 +25,5 @@
 ## Law of Demeter Principle 迪米特法则
 - 又叫 Least Knowledge Principle 最少知识原则（LKP），一个对象应该对其他对象有尽可能少的了解，只和直接相关的对象进行交互，不和陌生对象交互
 
-
 ## Composite Reuse Principle 合成复用原则
 - 也叫组合 / 聚合复用原则，在复用软件组件时应该优先采用对象组合（has-a）或聚合（contains-a）的方式，而不是通过继承来实现

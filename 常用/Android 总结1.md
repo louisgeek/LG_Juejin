@@ -1,5 +1,135 @@
 # Android 知识点
 
+GC不是在Activity销毁时就立即进行的。GC是每隔一段时间就自发进行一次，而且这次回收不了、下次还有机会。这就是说，即便你的新线程里存在耗时的代码（之所以强调新线程，是因为阻塞主线程会直接报错），即便你那耗时的代码在其外部的Activity销毁之后仍然运行，只要这代码别整个几分钟都停不下来，那就算稍微晚几秒被回收也无所谓。为什么要强调这个呢？因为这样你就不用非得把一些有可能在Activity销毁后继续运行但耗时较短的内部类设为静态了
+ 
+
+ 
+协程 catch 原理
+
+为什么 try catch 在协程外面不行
+
+juc 集合
+
+vysnc 事件。重复绘制如何触发
+ 
+抓包 ban 网站
+profiler 内存分类
+滑动冲突
+饼图
+
+事件分发 cancel 
+invitations 
+
+lock 原理
+
+emit  try c
+
+在 Flow 中，背压的管理是隐式的，由协程的挂起（suspend）机制来实现，当 Flow 的生产者发射数据时，如果消费者还没有准备好接收下一条数据，生产者会挂起，直到消费者准备好
+
+supcaleable  回调结束在哪
+
+
+Flow Channel 
+
+
+
+## 你的职业规划？
+- 评估自己感兴趣的方向和技能
+- 规划阶段性职业目标
+- 技能提升：通过学习、实践和反馈
+- 总结目标达成情况并适当调整
+
+
+
+一般遇到困难的解决方案是什么
+
+
+
+
+app质量如何控制？
+
+
+
+技术选型是如何做的
+
+讲一下你的技术栈
+
+
+你最擅长的点
+
+
+你做过的最烂的一件事是什么？最好、最自豪的一件呢？最好或者最自豪的项目
+
+
+
+
+RecycleView每一级缓存的作用以及使用场景
+
+mChangedScrap:存放可见范围内item的更新，并且调用了notifyItemChanged、notifyItemRangeChanged这类方法通知更新
+mAttachedScrap:临时存放已添加或者已删除item,使用场景是列表滚动，或者删除item后调用notifyItemRemoved通知更新
+mCachedViews：滚动过程中，存放未被重新使用且状态无变化的item,一般用于列表滚动过程中将已经移出屏幕的item快速且无加载得滑动回来
+mViewCacheExtension：主要提供给开发人员自定义缓存层级
+mRecyclerPool：按照不同itemType分别存放超出mCachedViews限制并移出屏幕的item
+
+ 
+
+
+SSL/TLS 协议使用公钥和私钥对数据进行加密和解密，确保数据在传输过程中不被窃取或篡改。
+它使用公钥加密来确保通信双方的身份验证，然后使用对称加密来保护数据的隐私性和完整性
+SSL/TLS 协议使用消息认证码（MAC）来保证数据的完整性
+
+
+
+短连接
+长连接
+
+
+
+
+HTTP/2 引入了二进制格式来打包和传输客户端与服务器之间的数据，这有助于降低解析难度并提高协议的健壮性
+    这使得数据传输更快，解析更高效，减少了传输过程中的开销和延迟
+ 这提高了效率和安全性
+通过这种方式，服务器和客户端可以更高效地解析和处理数据，实现多路复用。
+
+
+
+px（pixel），可以理解为一个最小图像单元（只能涂一个颜色）的小方块，就是1px，是一小块面积，但是一般并不强调面积的大小，只是说这是一个最小单元。
+
+
+由于 HTTP 无状态的特点，每次 HTTP 请求都需要通过 TCP 进行三次握手保证双方具有接收和发送的能力，即在信道不可靠情况下, 要保证可靠的数据传输，就需要至少三次通信，即双方确认自己与对方的发送与接收是否正常
+
+
+
+
+
+#### Handler 发送延迟消息没有及时发完
+- Activity - 匿名 Handler - Message - MessageQueue - Looper 
+- 推断：主线程 Looper 一直在 loop ，Looper 持有 MessageQueue，MessageQueue 持有 Message，Message 持有 Handler，匿名 Handler 持有 Activity 引用
+ 
+
+
+
+### Heap Dump
+- Android Studio 自带的 Heap Dump 堆转储工具
+Profiler - Sessions 里选择指定进程 - Memory 
+有两个按钮，force garbage collection GC 按钮和 Dump Java heap 捕获堆转储文件按钮
+前者能触发一次手动 GC ，一般我们在我们捕获堆转储文件之前，推荐点一下 GC，能把一些弱引用给回收，防止给我们的分析带来干扰，后者可以生成 hprof 文件，这个文件会展示 Java 堆的使用情况，点击这个按钮后，Android Studio 会帮我们生成这个堆转储文件并且可以进行分析
+
+分析内存快照
+ 查找可疑对象
+ 特定类型的对象或者引用路径
+
+
+
+
+ 4.优化布局层次，重用，需要时加载 ViewStub，减少内存消耗；
+
+
+
+TTS 文本转成语言 Text To Speech
+
+libusb 可以通过 jni 获取 bus dev Manafacturer Product SerialNumber (libusb_context)
+
 
 
 ## Activity 启动流程
@@ -10,6 +140,7 @@ ActivityManagerService的startActvity方法，
 则调用Zygote孵化应用进程，
 进程创建后会调用应用的ActivityThread的main方法，
 main方法调用attach方法将应用进程绑定到
+
 ActivityManagerService（保存应用的ApplicationThread的代理对象）
 并开启loop循环接收消息。ActivityManagerService
 通过ApplicationThread的代理发送Message通知启动Activity，
@@ -51,12 +182,15 @@ public static void main(String[] args) {
         }
     }
 ```
+，而由于哈希值数组是有序的，且键值对数组按照哈希值数组的顺序存储，因此插入顺序得以保留  保持键值对的插入顺序！！！
+ Asset 资产
+使用JobScheduler和WorkManager：合理安排后台任务，减少唤醒次数
+通过 Android Profiler 分析内存与CPU占用
+TraceView用于分析应用的执行流程，找出耗时操作
+Systrace用于系统级的性能分析，帮助开发者优化系统启动过程
+使用AlarmManager的弹性机制：使用setInexactRepeating来减少唤醒的精确度
 
- 
-
-
-
-
+OkHttp中，可以通过 Interceptor 拦截器实现重试机制，使用GZIP压缩请求和响应数据，减少传输数据量
 
 ### ThreadLocal 是什么?
 
@@ -187,11 +321,6 @@ draw 负责将View绘制出来
 
 
 
-### View 初始化
-Activity#setContentView
-- PhoneWindow#setContentView
-- PhoneWindow#installDecor 
-- PhoneWindow#generateDecor 初始化 DecorView
 
 
 
@@ -371,15 +500,7 @@ System Window 系统窗口
 
 
 
-
-### PhoneWindow 初始化
-上文 【Activity 初始化流程】提到了
-ActivityThread#performLaunchActivity 实例化 Activity 后会调用
-Activity#attach 
-
-- 实例化 PhoneWindow
-- ps:并且通过 Window#setWindowManager 给 Window 设置了一个 WindowManager（WindowManager 是一个接口，其实是 WindowManagerImpl）
-
+ 
 
 
 #### DecorView
@@ -655,11 +776,7 @@ AMS 判断该应用程序的应用程序进程是否已经启动
 
 
 
-### AMS 的作用
-
-负责四大组件的启动、切换、调度
-
-应该程序进程的管理、调度
+ 
 
 
 
@@ -763,10 +880,7 @@ Adapter#notifyDataSetChanged -> 尽量选用局部刷新 Adapter#notifyItemXXX -
 
 ## Material
 
-
-
 ShapeableImageView
-
 - 自带，可实现圆角等效果
 
 
@@ -831,69 +945,7 @@ ViewSub 通过 android:layout 指定待加载布局文件，java code 利用 inf
 
 
 
-### 内存优化
-
-#### 内存泄漏
-
-内存不足时候，Android 运行时就会触发 GC ，GC 采用的垃圾标记算法是根搜索算法，GC Roots 根对象集合
-
-内存泄漏即：没有用的对象到 GC Roots 仍旧是可达的，意味着被引用，导致 GC 不能回收该无用的对象
-
-1 非静态内部类的静态实例
-
-非静态内部类会持有外部类的引用，如果该非静态内部类存在有静态实例的话，那么该静态实例生命周期比 Activity 长，那它持有的 Activity 引用导致 Activity 无法回收
-
-2 多线程相关的匿名内部类/非静态内部类
-
-匿名内部类也会持有外部类的引用，异步任务如果耗时，Activity 如果已经销毁了，那它持有 Activity 的引用就导致 Activity 无法及时回收
-
-3 Handler 内存泄漏
-
-Handler 的 MessageQueue 里的部分 Message 如果长时间存在，则会导致 Handler 无法及时回收
-
-非静态匿名内部类的 Handler 会隐性引用外部 Activity ,导致 Activity 等无法及时回收
-
--  改用静态内部类
-- 改成弱引用
-- 在 Activity 销毁的时候手动将 MessageQueue 清空
-
-4 未正确使用 Context
-
-如果将Activity 实例传入，单例类的方法，容易造成内存泄漏，因为单例类生命周期比它长
-
-5 静态 View
-
-静态 View 往往持有 Activity 的引用，在 Activity 销毁的时候记得置空
-
-6 WebView
-
-Android 系统自身的缺陷，最好是单独开一个进程操作 WebView
-
-7 资源对象未关闭
-
-File 等一般都使用缓冲，需要在用完后及时关闭，置空
-
-8 集合内对象未清理
-
-及时将集合中无用的引用移除，特别是静态集合
-
-9 Bitmap 对象
-
-较大的 Bitmap 用完及时释放，尽量避免静态变量持有较大的 Bitmap
-
-10 监听器未移除
-
-注册、反注册注意按需成对，Listener 注意移除
-
-11 ThreadLocal 内存泄漏
-
-ThreadLocalMap中的Entry中，ThreadLocal作为key，是作为弱引用进行存储的。当ThreadLocal不再被作为强引用持有时，会被GC回收，这时ThreadLocalMap对应的ThreadLocal就变成了null。而根据文档所叙述的，当key == null时，这时就可以默认该键不再被引用，该Entry就可以被直接清除，该清除行为会在Entry本身的set()/get()/remove()中被调用。
-
-一般情况下，线程在执行结束时，自然也会消除其对value的引用，使得Value能够被GC回收。但是在使用线程池或者其他特殊情况下的时候，会存在线程复用的情况，这时候Value的值依然能获取到，可能就存在内存泄漏的隐患了。所以我们推荐通过手动将value的值设置为null（即调用ThreadLocal.remove()方法）以规避内存泄漏的风险。
-
-
-
-
+ 
 
 ### 如何缩减APK包大小？
 
@@ -940,9 +992,14 @@ Object Query Language
 
 
 #### Fragment如果在Adapter中使用应该如何解耦？
+
 #### 设计一个音乐播放界面，你会如何实现，用到那些类，如何设计，如何定义接口，如何与后台交互，如何缓存与下载，如何优化？
+
 #### 从0设计一款App整体架构，如何去做？
+
 #### 项目框架里有没有Base类，BaseActivity和BaseFragment这种封装导致的问题，以及解决方法？
+
+
 #### 实现一个库，完成日志的实时上报和延迟上报两种功能，该从哪些方面考虑？
 
 
@@ -952,30 +1009,6 @@ Object Query Language
 安全问题
 Android与服务器交互的方式中的对称加密和非对称加密是什么?
 对于Android 的安全问题，你知道多少
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1049,12 +1082,11 @@ java 的 yield
 
 结构化并发
 
-需要注意的是，yield 并不能保证一定会立即让出 CPU 资源。它只是向调度器发出了一个信号，表示当前线程愿意暂时让出 CPU 资源。调度器可能会忽略这个信号，让当前线程继续执行。
+需要注意的是，yield 并不能保证一定会立即让出 CPU 资源。
+它只是向调度器发出了一个信号，表示当前线程愿意暂时让出 CPU 资源。调度器可能会忽略这个信号，让当前线程继续执行。
 当有多个相同优先级的线程在竞争 CPU 资源，并且希望每个线程都能有比较公平的执行机会时，可以使用yield。例如，在一个简单的多线程模拟程序中，多个线程执行相似的任务，为了避免某个线程长时间占用 CPU 而导致其他线程饥饿（得不到执行机会），可以适时地调用yield方法。不过，在实际的复杂应用中，由于线程调度的不确定性，yield的使用效果可能很难准确预估，所以需要谨慎使用
 
 
-- Nothing 类似 Java 的 Void 
-- Nothing 可被访问到，Nothing? 一直是 null
 
 
 
@@ -1086,12 +1118,10 @@ MediatorLiveData：这是一种特殊的 LiveData 类，它可以观察其他 Li
 
 
 1. 为什么Fragment中要使用viewLifecycleOwner代替this
-在Android开发中，Fragment与Fragment中的View的生命周期并不一致。我们在使用一些可观察的数据（比如LiveData）时，需要让观察者（observer）准确感知Fragment中的View的生命周期，而不是Fragment本身的生命周期。基于这样的需求，Android专门构造了与Fragment中的View相对应的LifecycleOwner，也就是viewLifecycleOwner。以下是相关代码示例说明其重要性：
-————————————————
+在Android开发中，Fragment与Fragment中的View的生命周期并不一致。
+我们在使用一些可观察的数据（比如LiveData）时，需要让观察者（observer）准确感知Fragment中的View的生命周期，而不是Fragment本身的生命周期。
+基于这样的需求，Android专门构造了与Fragment中的View相对应的LifecycleOwner，也就是viewLifecycleOwner。以下是相关代码示例说明其重要性：
 
-                            版权声明：本文为博主原创文章，遵循 CC 4.0 BY-SA 版权协议，转载请附上原文出处链接和本声明。
-                        
-原文链接：https://blog.csdn.net/weixin_35691921/article/details/136209456
 
 
 

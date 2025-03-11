@@ -52,7 +52,7 @@
 - FIFO 先进先出，应当要尽量避免把 null 添加到队列里
 - 通过 add / offer 方法将元素添加到队尾，通过 remove / poll 从队首获取元素并删除，通过 element  / peek 从队首获取元素但不删除，每对方法的前者都会在失败时抛出异常
 
-?LinkedList 是双向链表实现的 Deque 双端队列
+?LinkedList 是双向链表实现的 Deque 双端队列 
 ?Android MessageQueue 消息队列，它是一个单向链表实现的队列
 
 ## Stack 堆栈
@@ -64,14 +64,40 @@ Deque<Integer> stack = new ArrayDeque<Integer>();
 
 ## List
 - ArrayList、Vector、CopyOnWriteArrayList 和 Collections$SynchronizedList
-- ArrayList 非线程安全
-- Vector 线程安全
+- ArrayList 非线程安全，效率较高
+- Vector 线程安全，效率较低，不推荐使用
 - CopyOnWriteArrayList 写时复制一份新数组进行写操作，读操作在原数组上进行，因此读操作无需加锁，适用于读多写少的场景
 - Collections$SynchronizedList 可以将一个普通的 List 转换为线程安全的 List，性能略优于 Vector,适用于读写操作相对均衡的场景
 
-?LinkedList
+
+Vector 底层原理和 ArrayList 基本一致，底层数据结构都是采用数组（Object[] elementData 数组存储数据）实现的，两者均继承自 AbstractList，ArrayList 和 Vector 的方法基本都是一样的，只不过 Vector 的方法大多都添加了 synchronized 方法锁
+
+LinkedList 底层数据结构为双向循环链表，非线程安全的，相当于 ArrayList 来说插入和删除的操作效率较高，查找和修改的操作效率较低
+
 
 ## Map
 - HashMap、ConcurrentHashMap
+
+
+
+# ArrayList 和 Array 数组之间互转
+- java.util.ArrayList -> Array 数组
+```java
+List<String> list = new ArrayList<>();
+list.add("1");
+list.add("2");
+list.add("3");
+list.add("4");
+//List 直接转成数组
+String[] array = list.toArray(new String[list.size()]);
+```
+- Array 数组 -> java.util.ArrayList 
+```java
+String[] array = new String[] {"1", "2", "3","4"};
+//注意这里返回的是 java.util.Arrays.ArrayList 而不是 java.util.ArrayList
+//可以调 set、get 等方法，但不能调 add、remove 等方法，因为没有实现，调用会报 UnsupportedOperationException 异常
+List<String> listTemp = Arrays.asList(array);
+List<String> list = new ArrayList<>(listTemp);
+```
 
 

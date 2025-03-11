@@ -2,7 +2,7 @@
 - callbackFlow 可以将普通的 Callback 回调转换成 Flow 数据流，特别是文本搜索框监听、网络状态监听和传感器数据刷新等场景
 - ChannelFlow 是一种特殊的 Flow（实现了 Flow 接口），使用 Channel 来生成和发送数据，结合了 Flow 和 Channel 的特点（缓冲区、跨协程通信等），虽然 ChannelFlow 底层是基于 Channel 实现的（将 Channel 的生产者逻辑封装为 Flow），但在使用上表现为冷流（只有被收集时才开始工作）
 - awaitClose 方法是必须配合使用的，可以保证资源被及时释放，避免内存泄漏
-- 和 suspendCancelableCoroutine 应用场景有些相似，说直白点 callbackFlow 更适用于多次回调的场景，而 suspendCancelableCoroutine 更适用于单次回调
+- 和 suspendCancelableCoroutine 应用场景有些相似，总的来说 callbackFlow 更适用于多次回调的场景，而 suspendCancelableCoroutine 更适用于单次回调
 
 将回调转换成数据流
 ```kotlin

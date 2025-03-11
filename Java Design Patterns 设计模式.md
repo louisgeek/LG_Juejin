@@ -14,7 +14,7 @@
 - Adapter 适配器（比如 ListView 或 RecyclerView 的 Adapter）
 - Bridge 桥接
 - Proxy 代理（比如 AppCompatActivity 的 AppCompatDelegate）
-- Decorator 装饰器
+- Decorator 装饰器（比如 Context、ContextWrapper）
 - Composite 组合
 - Facade 外观
 - Flyweight 享元（比如 Message#obtain）

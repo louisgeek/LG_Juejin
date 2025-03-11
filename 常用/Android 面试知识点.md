@@ -8,6 +8,7 @@
 onCreate —— onStart 可见 —— onResume 有焦点 —— onPause 无焦点 —— onStop 不可见 —— onDestory
 ```
 
+
 ## Service 生命周期
 ```java
 //通过 startService 方法启动
@@ -21,6 +22,12 @@ onCreate —— onBind —— onUnbind —— onDestroy
 - 2 singleTop 栈顶复用模式（比如：通知栏推送点击消息界面）
 - 3 singleTask 栈内复用模式（比如：应用的首页）
 - 4 singleInstance 单例模式（单独位于一个任务栈中，比如：拨打电话界面、浏览器）
+
+## onNewIntent
+
+## Context
+
+
 
 ## Activity、Window 和 DecorView
 ```java
@@ -45,8 +52,13 @@ ActivityThread#performLaunchActivity
 //
 PhoneWindow#installDecor
 -PhoneWindow#generateDecor 进行 DecorView（FrameLayout）的初始化
--PhoneWindow#generateLayout 中跟据主题样式确定一个 xml 文件作为 DecorView 的子布局 ContentRoot，默认是 screen_simple.xml（对应是 LinearLayout），在 DecorView#onResourcesLoaded 里进行 xml 解析（用 LayoutInflater#inflate 通过 LoadXmlResourceParser 进行解析）
+-PhoneWindow#generateLayout 中跟据主题样式确定一个 xml 文件作为 DecorView 的子布局 ContentRoot，默认是 screen_simple.xml（对应是 LinearLayout）
+//LayoutInflater 把 xml 构建成 View 树
+在 DecorView#onResourcesLoaded 里进行 xml 解析（用 LayoutInflater#inflate 通过 LoadXmlResourceParser 进行解析）
 ```
+
+如果多次调用 setContentView 的话，新布局会替换之前的布局，会重复解析 xml 和构建 View 树
+
 
 ## Activity 初始化流程
 ```java
@@ -60,11 +72,25 @@ ActivityThread#handleLaunchActivity 处理 Activity 启动
 ActivityThread#performResumeActivity -> Activity#onResume
 ```
 
+Activity#startActivity(android.content.Intent, android.os.Bundle)
+Activity#startActivityForResult
+Instrumentation#execStartActivity
+ActivityTaskManager.getService().startActivity
 
+## ActivityManagerService 的作用
+- 负责四大组件的启动、切换、调度
+- 应用程序进程的管理、调度
 
 ## Fragment
 - Fragment 允许将界面分成为好几个区块，从而将模块化和可重用性能力引入 Activity 
 - 支持同一功能界面根据屏幕大小不同可以实现两个版本的页面显示样式
+
+## ContentProvider
+- ContentProvider 通常会在 Application#onCreate 方法之前初始化，多个 ContentProvider 的初始化顺序遵循 AndroidManifest.xml 文件中的声明顺序
+
+## App Startup
+- 很多三方库（比如 LeakCanary）都用 ContentProvider 的小技巧进行 Library 的初始化操作，初始化很多 ContentProvider 一定程度上会影响性能，官方就出了 App Startup 统一到一个 ContentProvider 里去初始化，提供了一个 ContentProvider 来运行所有依赖项的初始化
+- 利用 ContentProvider 实现初始化 Library 获取 Context
 
 ## Binder IPC 进程间通信机制
 - Binder 是 Android 提供的一种 IPC 进程间通信机制，Binder 是一种基于消息传递的 IPC 机制，基于 C/S 架构
@@ -153,9 +179,6 @@ Handler机制。MessageQueue中的Message是如何排列的？Msg的runnable对�
 - "后台"的概念主要是能够异步运行
 
 
-## App Startup
-- 很多三方库（比如 LeakCanary）都用 ContentProvider 的小技巧进行 Library 的初始化操作，初始化很多 ContentProvider 一定程度上会影响性能，官方就出了 App Startup 统一到一个 ContentProvider 里去初始化，提供了一个 ContentProvider 来运行所有依赖项的初始化
-- 利用 ContentProvider 实现初始化 Library 获取 Context
 
 ## Lifecycle
 - Lifecycle 基于观察者模式实现的
@@ -265,7 +288,7 @@ LruCache
     - 共享缓存池： RecycledViewPool，默认缓存数量是 5 个，本质上是一个 SparseArray，其缓存的 ViewHolder 是全新的，复用时需要重新绑定数据（重新调用 bindViewHolder）
 
 
-
+## DiffUtil
 
 
 ## Alibaba ARouter

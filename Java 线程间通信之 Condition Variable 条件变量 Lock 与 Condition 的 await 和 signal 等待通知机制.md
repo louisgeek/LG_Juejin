@@ -25,7 +25,7 @@ Condition 的 await、signal 和 signalAll 方法必须在持有锁的情况（l
 
 ```java
     private Lock lock = new ReentrantLock();
-    private Condition condition = lock.newCondition();//绑定了 Lock 实例的 Condition 对象
+    private Condition condition = lock.newCondition(); //绑定了 Lock 实例的 Condition 对象
     //
     private boolean flag = false;
 

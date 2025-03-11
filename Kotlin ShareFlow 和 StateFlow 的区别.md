@@ -95,8 +95,8 @@ val sharedFlow = _sharedFlow.distinctUntilChanged() //过滤相同的数据
 ## 总结
 - SharedFlow 比 StateFlow 更通用
 - SharedFlow 默认不会出现粘性事件而 StateFlow 会
-- StateFlow 默认空安全：强制 value 需要被赋值一个初始数据，而且 value 也是非空的，意味着 StateFlow 永远有值的 
-- StateFlow 默认防抖：因为 StateFlow 每次发送数据都会与上次缓存的数据作比较，只有不一样才会发送
+- StateFlow 默认空安全，强制 value 需要被赋值一个初始数据，而且 value 也是非空的，意味着 StateFlow 永远有值的 
+- StateFlow 默认防抖，因为 StateFlow 每次发送数据都会与上次缓存的数据作比较，只有不一样才会发送
 - SharedFlow 和 StateFlow 的使用场景侧重有所不同，前者更适用于 Event 事件相关，后者则更适用于 State 状态相关
 - 不要直接使用 launch 或 launchIn 扩展函数从界面去收集数据流，因为即使 View 不可见，这些函数也会处理事件，所以就可能会导致应用崩溃，为避免这种情况需要用 Lifecycle.repeatOnLifecycle 配合使用，或者是直接显式取消协程
 

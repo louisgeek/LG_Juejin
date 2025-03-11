@@ -44,6 +44,28 @@ Executor框架解读实战
 Java的双亲委派
 
 
+HashMap讲一下，数据结构、hash过程、扩容、加载因子为何是0.75等
+
+ 
+
+## ArrayList
+- 内部 Object[] elementData 数组加了 transient
+- 默认初始容量为 10，每次扩充容量扩充为原来的1.5倍
+## Vector（不推荐使用）
+- 内部 Object[] elementData 数组不加 transient
+- 当 capacityIncrement 扩容增量大于0时，扩充为原有容量加上capacityIncrement的容量值。否则采取在原有容量基础上扩充为原来的1.5倍
+
+ArrayList提供的writeObject和readObject方法来实现定制序列化，而Vector只是提供了writeObject方法，并没有完全实现定制序列化
+## ArrayList
+- 随机访问（get和set操作）允许直接按序号索引元素，所以效率高，但删除、插入（add和remove操作）涉及数组元素移动等操作，所以效率较低
+ 
+## LinkedList
+- 随机访问（get和set操作）需要按序号索引数据需要进行前向或后向遍历，所以效率低，但删除、插入（add和 remove 操作）只需要记录本项的前后项即可，所以效率较高
+- 查找操作需要从头开始查找元素，速度较慢
+
+
+
+
 
 
 
