@@ -2,6 +2,8 @@
 
 GC不是在Activity销毁时就立即进行的。GC是每隔一段时间就自发进行一次，而且这次回收不了、下次还有机会。这就是说，即便你的新线程里存在耗时的代码（之所以强调新线程，是因为阻塞主线程会直接报错），即便你那耗时的代码在其外部的Activity销毁之后仍然运行，只要这代码别整个几分钟都停不下来，那就算稍微晚几秒被回收也无所谓。为什么要强调这个呢？因为这样你就不用非得把一些有可能在Activity销毁后继续运行但耗时较短的内部类设为静态了
  
+Lottie 动画依托于 ValueAnimator 属性动画，动画更新的监听不断回调，执行 LottieDrawable#setProgress 的最终会触发了每个 layer 的 invalidateSelf，这都会让 LottieDrawable 重新绘制，然后重走一遍绘制流程，这样随着 animator 动画的进行，lottieDrawable 不断的绘制，就展现出了一个完整的动画
+
 
  
 协程 catch 原理
@@ -308,9 +310,8 @@ vm的运行时数据结构。栈帧中会有什么异常？方法区里面存放
  
 
 ### View 绘制入口
-ActivityThread#attach
-初始化 mWindow
-创建顶层布局容器 DecorView 添加到 Window
+
+
 创建 ViewRootImpl 建立 WindowManager 和 DecorView 之间的连接
 ViewRootImpl 的 performTraversals
 performMeasure、performLayout、performDraw
@@ -318,54 +319,31 @@ performMeasure、performLayout、performDraw
 measure用来对View进行测量
 layout 负责将子元素在父元素中的位置即真实宽高以及四个顶点位置
 draw 负责将View绘制出来
+ 
+View的绘制从ActivityThread类中Handler的处理RESUME_ACTIVITY事件开始，在执行performResumeActivity之后，
 
+创建Window以及DecorView并调用WindowManager的addView方法添加到屏幕上，
+addView又调用ViewRootImpl的setView方法，
+最终执行performTraversals方法，依次执行performMeasure，performLayout，performDraw。也就是view绘制的三大过程。
 
-
-
-
-
-### View 绘制流程
-View的绘制从ActivityThread类中Handler的处理RESUME_ACTIVITY事件开始，在执行performResumeActivity之后，创建Window以及DecorView并调用WindowManager的addView方法添加到屏幕上，addView又调用ViewRootImpl的setView方法，最终执行performTraversals方法，依次执行performMeasure，performLayout，performDraw。也就是view绘制的三大过程。
  measure过程测量view的视图大小，最终需要调用setMeasuredDimension方法设置测量的结果，如果是ViewGroup需要调用measureChildren或者measureChild方法进而计算自己的大小。
+
  layout过程是摆放view的过程，View不需要实现，通常由ViewGroup实现，在实现onLayout时可以通过getMeasuredWidth等方法获取measure过程测量的结果进行摆放。
+
  draw过程先是绘制背景，其次调用onDraw()方法绘制view的内容，再然后调用dispatchDraw()调用子view的draw方法，最后绘制滚动条。ViewGroup默认不会执行onDraw方法，如果复写了onDraw(Canvas)方法，需要调用 setWillNotDraw(false);清楚不需要绘制的标记。
 
 
 
-### ViewRootImpl
-建立 DecorView 和 Window 之间的联系
+ 
 
 
 
 
-
-### 触发 View（DecorView） 第一次绘制的流程
-ActivityThread#handleResumeActivity
-ActivityThread#performResumeActivity
-获取 ViewManager（getWindowManager 转化来的，ViewManager是一个接口，这里其实是 WindowManagerImpl ，就是上文【PhoneWindow 初始化】里创建的）
-ViewManager#addView 添加 decorView（getDecorView 来的），
-
-- WindowManagerImpl#addView 添加 DecorView 
-直接调用 WindowManagerGlobal#addView，内部初始化 ViewRootImpl 
-ViewRootImpl#setView 设置 decorView
-ViewRootImpl#requestLayout
-- DecorView.assignParent(ViewRootImpl);
--ViewRootImpl 是一个 ViewParent（不是 view，不要和 parent view概念混淆？）
-ViewRootImpl是WindowManager和DecorView之间的桥梁，measure测量，layout布局，draw绘制三大流程都是它完成的
 
 
 
 ### requestLayout 流程
-上文提到 requestLayout 那么说下它的流程
-View#requestLayout
-ViewParent#requestLayout
-DecorView 是整个 View 层级的最顶层，ViewRootImpl 又是 DecorView 的 parent，所以最终调用到 ViewRootImpl 的 requestLayout
-ViewRootImpl#requestLayout
-ViewRootImpl#scheduleTraversals
-Choreographer#postCallback 传入 mTraversalRunnable
-Runnable 执行 ViewRootImpl#doTraversal
-ViewRootImpl#performTraversals
-ViewRootImpl#performMeasure
+
 
 - View#measure
 ViewRootImpl#performLayout
@@ -374,6 +352,25 @@ ViewRootImpl#performLayout
 - 将还没有执行的 requestLayout 加到队列中，下一次 frame 中进行执行
 ViewRootImpl#performDraw
 - ViewRootImpl#draw
+#### Layout
+
+View 用 View#layout 确定自身位置
+
+View   View#layout
+
+ViewGroup 需要调 onLayout 确定子 View 的位置
+
+ViewGroup   View#layout ->  View#onLayout 
+
+### Draw
+
+画背景
+
+onDraw 进行绘制自己
+
+dispatchDraw 绘制子 View
+
+
 
 
 
@@ -399,25 +396,6 @@ View 的 MeasureSpec 由父容器的大小和自己的 LayoutParams 决定
 
 ViewGroup -> onMeasure(子 View ) -> setdis -> setdisraw
 
-
-
-#### Layout
-
-View 用 View#layout 确定自身位置
-
-View   View#layout
-
-ViewGroup 需要调 onLayout 确定子 View 的位置
-
-ViewGroup   View#layout ->  View#onLayout 
-
-### Draw
-
-画背景
-
-onDraw 进行绘制自己
-
-dispatchDraw 绘制子 View
 
 
 
@@ -449,24 +427,13 @@ LayoutInflater 内部采用了 org.xmlpull 解析器实现 xml 解析
 
 
 
-### Activity#setContentView 原理
-
  
-
-## fixme
-
-绘制则交给了 ViewRootImpl 来完成，通过 performTraversals() 触发绘制流程，performMeasure 方法获取 View 的尺寸，performLayout 方法获取 View 的位置 ，然后通过 performDraw 方法遍历 View 进行绘制
-
 
 
  
 
 
 
-### WindowManager
-- 是一个接口类，继承 ViewManager 接口，实现类是 WindowManagerImpl
-- 对 Window 进行管理，包括增加、更新、删除操作（定义在 ViewManager 里）
-- WindowManagerImpl 方法内部又是调用 WindowManagerGlobal 的方法的，涉及到桥接模式的知识
 
 
 
@@ -479,12 +446,7 @@ LayoutInflater 内部采用了 org.xmlpull 解析器实现 xml 解析
 - Surface 管理，关联 SurfaceFlinger
 
 
-
-### Window、WindowManager、WMS 之间的关系
-Window 包含并管理 View，WindowManager 管理 Window，WindowManager 的操作通过 WMS 实现的
-
-
-
+ 
 ### Window 的类型
 Application Window 应用程序窗口
 
@@ -501,15 +463,7 @@ System Window 系统窗口
 
 
  
-
-
-#### DecorView
-1 作为整个应用窗口(Activity界面)的顶层布局容器，可以说是所有 View 的 parent view 
-2 是 Android 最基本的窗口系统
  
-4 将要显示的具体内容呈现在 PhoneWindow 上
-
-
 
  
 
@@ -557,12 +511,7 @@ BootLoader 引导程序负责拉起操作系统，引导完后 Linux 内核启�
 启动 Launcher ，显示已安装 APP 列表
 ```
 
-
-
-
-
-
-
+ 
 #### init 进程启动流程
 
 init.rc 配置文件中， AIL 语句中 Import 语句引入  init.${ro.zygote}.rc 文件，如 init.zygote64.rc
@@ -757,13 +706,6 @@ ProcessRecord 不为空的话经过一系列调用会到 ActivityThread$Applicat
 回到 scheduleLaunchActivity 继续
 ActivityThread#sendMessage 通过 Handler 调用 H#sendMessage 方式发送通知启动对应 Activity
 通过 Handler 的回调 H#handleMessage 方法处理调用 ActivityThread#handleLaunchActiviy 接下来的逻辑就比较基础了，是不是很熟悉？
-
-- ActivityThread#performLaunchActivity 内部创建 Activity 的 Context ,利用类加载器通过 Instrumentation#newActivity 创建对应 Activity 的实例,也创建了 Application
--- Activity#attach 内部创建了 PhoneWindow 
--- Instrumentation#callActiviyOnCreate
---- Activity#preformCreate
----- Activity#onCreate
-- ActivityThread#handleResumeActivity
 ```
 
 启动流程涉及到 4 个进程：
@@ -771,18 +713,6 @@ Launcher 进程点图标请求 AMS 所在进程 SystemServer 进程请求启动�
 AMS 判断该应用程序的应用程序进程是否已经启动
 如果未启动则 AMS 通知请求 Zygote 进程先去创建并启动这个应用程序进程
 应用程序进程启动后的逻辑就是 AMS 通知应用程序进程里的 ActivityThread$ApplicationThread 启动根 Activity
-
-
-
-
-
- 
-
-
-
-### Instrumentation 的作用
-
-
 
 
 

@@ -1,13 +1,12 @@
 # Android 面试知识点
 
 ## 四大组件
-- App Component 应用组件包括 Activity、Service、ContentProvider 内容提供程序和 BroadcastReceiver 广播接收器，应用组件可以不按顺序地单独启动，并且系统或者用户可以随时销毁它们，因此不应该在应用组件中存储任何应用数据或状态，并且应用组件不应相互依赖
+- App Component 应用组件包括 Activity、Service、ContentProvider 内容提供者和 BroadcastReceiver 广播接收器，应用组件可以不按顺序地单独启动，并且系统或者用户可以随时销毁它们，因此不应该在应用组件中存储任何应用数据或状态，并且应用组件不应该相互依赖
 
 ## Activity 生命周期
 ```java
 onCreate —— onStart 可见 —— onResume 有焦点 —— onPause 无焦点 —— onStop 不可见 —— onDestory
 ```
-
 
 ## Service 生命周期
 ```java
@@ -23,63 +22,133 @@ onCreate —— onBind —— onUnbind —— onDestroy
 - 3 singleTask 栈内复用模式（比如：应用的首页）
 - 4 singleInstance 单例模式（单独位于一个任务栈中，比如：拨打电话界面、浏览器）
 
-## onNewIntent
-
-## Context
-
-
-
 ## Activity、Window 和 DecorView
+- Activity 的创建：ActivityThread#handleLaunchActivity -> ActivityThread#performLaunchActivity -> Instrumentation#newActivity
+- Window 的创建：ActivityThread#handleLaunchActivity -> ActivityThread#performLaunchActivity -> Activity#attach
+- DecorView 的创建：Activity#setContentView -> PhoneWindow#setContentView -> PhoneWindow#installDecor -> PhoneWindow#generateDecor
+
 ```java
 //Activity 和 Window 都是抽象概念的，是肉眼看不见的，而实际看得见其实就是 DecorView
 Activity 负责承载 UI 用户界面、处理用户事件交互和管理生命周期
 -Window（PhoneWindow）是一种抽象概念，用于描述一个窗口，负责确定窗口外观属性（比如窗口大小、位置、背景、标题、颜色、透明度、全屏和分屏等）、控制窗口行为策略
---DecorView（FrameLayout）就是对 FrameLayout 进行了功能的修饰，用于实际承载视图的，它通常包含了状态栏、标题栏和内容区域等
+--DecorView（FrameLayout）就是对 FrameLayout 进行了功能的修饰，是顶层布局容器，用于实际承载视图的，它通常包含了状态栏、标题栏和内容区域等
 ---ContentRoot（ViewGroup，跟据主题样式决定，比如 ActionBarOverlayLayout、LinearLayout 等）
 ----ActionBar（标题栏）
 ----ContentParent（FrameLayout，id 是 android:id/content）
 -----ContentView（setContentView 设置 layoutResID）
 ```
 
-## Activity#setContentView 原理
-```java
-//Activity 的 setContentView 就是 PhoneWindow 的
-Activity#setContentView 设置 layoutResID
--PhoneWindow#setContentView 方法
-//而
-ActivityThread#performLaunchActivity 
--Activity#attach 里面进行 Window（PhoneWindow）的初始化
-//
-PhoneWindow#installDecor
--PhoneWindow#generateDecor 进行 DecorView（FrameLayout）的初始化
--PhoneWindow#generateLayout 中跟据主题样式确定一个 xml 文件作为 DecorView 的子布局 ContentRoot，默认是 screen_simple.xml（对应是 LinearLayout）
-//LayoutInflater 把 xml 构建成 View 树
-在 DecorView#onResourcesLoaded 里进行 xml 解析（用 LayoutInflater#inflate 通过 LoadXmlResourceParser 进行解析）
-```
-
-如果多次调用 setContentView 的话，新布局会替换之前的布局，会重复解析 xml 和构建 View 树
-
-
 ## Activity 初始化流程
+- 关键方法 ActivityThread#performLaunchActivity 主要干了三件事：1 创建 Activity 实例，2 初始化 Context 和 Application， 3 执行 Activity 生命周期方法
+- Instrumentation 作用：1 负责 Activity 实例的创建，2 对 Activity 生命周期进行监控和控制-----------监控程序和系统之间的交互的Instrumentation 类主要用来监控应用程序与系统交互。
+
 ```java
-ActivityThread#startActivityNow
-ActivityThread#handleLaunchActivity 处理 Activity 启动
--ActivityThread#performLaunchActivity 执行完成 Activity 启动 -> Activity#onCreate
--Instrumentation#newActivity 实例化 Activity
--AppComponentFactory#instantiateActivity App 组件工厂实例化 Activity
--ClassLoader#loadClass 类加载器
-实例化后会调用 Activity#attach 继续进行初始化
-ActivityThread#performResumeActivity -> Activity#onResume
+Activity#startActivity //启动一个 Activity
+-Activity#startActivityForResult
+--Instrumentation#execStartActivity //与 ActivityManagerService 进行跨进程通信
+---ActivityTaskManager.getService().startActivity //最终由 ActivityManagerService 通过 Binder 调用触发 ActivityThread 进行处理
+----ActivityThread#handleLaunchActivity 
 ```
 
-Activity#startActivity(android.content.Intent, android.os.Bundle)
-Activity#startActivityForResult
-Instrumentation#execStartActivity
-ActivityTaskManager.getService().startActivity
+```java
+ActivityThread#handleLaunchActivity //处理 Activity 启动
+-ActivityThread#performLaunchActivity //执行完成 Activity 启动,内部进行 Activity 的 Context 的初始化，紧接着进行 Application 的初始化，
+--Instrumentation#newActivity //内部进行 Activity 的初始化，Instrumentation#newActivity 利用 ClassLoader 类加载器通过反射创建对应的 Activity 实例
+--Activity#attach //内部进行 Window（PhoneWindow）的初始化
+--Instrumentation#callActiviyOnCreate
+---Activity#performCreate
+----Activity#onCreate //最终会调用 Activity#onCreate 方法
+```
 
+```java
+ActivityThread#handleResumeActivity
+-ActivityThread#performResumeActivity
+--Activity#performResume
+---Instrumentation#callActivityOnResume
+----Activity#onResume //最终会调用 Activity#onResume 方法
+```
+
+## Window 初始化流程
+- PhoneWindow
+```java
+ActivityThread#handleLaunchActivity
+-ActivityThread#performLaunchActivity
+--Instrumentation#newActivity //内部进行 Activity 的初始化
+--Activity#attach //内部进行 Window（PhoneWindow）的初始化
+--Instrumentation#callActiviyOnCreate
+```
+
+## DecorView 初始化流程
+- 涉及 Activity#setContentView 的原理
+- 如果多次调用 Activity#setContentView 的话，新布局会替换之前的布局，会重复解析 xml 和构建 View 树
+```java
+Activity#setContentView //设置 layoutResID，内部就是调用了 PhoneWindow#setContentView 方法
+-PhoneWindow#setContentView
+--PhoneWindow#installDecor
+---PhoneWindow#generateDecor //进行 DecorView（FrameLayout）的初始化
+---DecorView#setWindow(phoneWindow)
+---PhoneWindow#generateLayout //根据主题样式确定一个 xml 文件作为 DecorView 的子布局 ContentRoot，默认是 screen_simple.xml（对应是 LinearLayout）
+----DecorView#onResourcesLoaded //把 xml 构建成 View 树（利用 LayoutInflater#inflate 通过 LoadXmlResourceParser 进行解析）
+```
 ## ActivityManagerService 的作用
 - 负责四大组件的启动、切换、调度
 - 应用程序进程的管理、调度
+
+## Window、WindowManager 和 WindowManagerService
+- Window 包含并管理 View，WindowManager 管理 Window，而 WindowManager 的操作是通过和 WindowManagerService 交互来实现的
+
+## WindowManager、WindowManagerImpl 和 WindowManagerGlobal
+- WindowManager 是一个接口，继承自 ViewManager 接口，WindowManagerImpl 是 WindowManager 的接口实现类
+- WindowManager 的作用是对 Window 进行管理，包括增加、更新和删除等操作（定义在 ViewManager 接口里）
+- WindowManagerImpl 方法内部又是调用 WindowManagerGlobal 的相关方法，涉及到桥接模式的知识
+
+## View 绘制流程
+```java
+ActivityThread#handleResumeActivity
+-ActivityThread#performResumeActivity
+-WindowManager.addView(decorView) //就是 ViewManager#addView，WindowManager 接口继承了 ViewManager 接口，作用就是添加 DecorView 到 Window
+--WindowManagerImpl#addView //WindowManagerImpl 实现了 WindowManager 接口
+```
+
+```java
+WindowManagerImpl#addView
+-WindowManagerGlobal#addView //内部进行 ViewRootImpl 的初始化
+--ViewRootImpl#setView //通过 setView 方法设置关联的 DecorView（保存了 DecorView 实例），然后再通过 DecorView.assignParent 把 ViewRootImpl 设置成 DecorView 的 ViewParent（ViewRootImpl 不是一个真正的 View）
+---ViewRootImpl#requestLayout //触发了第一次 View 的布局绘制
+----ViewRootImpl#scheduleTraversals //内部有 Handler 同步屏障逻辑 MessageQueue#postSyncBarrier
+-----Choreographer#postCallback //设置传入一个 mTraversalRunnable 对象，Runnable#run 方法里就是执行 ViewRootImpl#doTraversal 方法
+------ViewRootImpl#doTraversal
+-------ViewRootImpl#performTraversals //内部代码逻辑就是依次按照条件判断是否去执行 performMeasure、performLayout 和 performDraw 方法
+--------ViewRootImpl#performMeasure
+--------ViewRootImpl#performLayout
+--------ViewRootImpl#performDraw
+```
+
+
+## ViewRootImpl
+- ViewRootImpl 的创建：ActivityThread#handleResumeActivity -> WindowManagerImpl#addView -> WindowManagerGlobal#addView
+- ViewRootImpl 是 WindowManager 和 DecorView 之间的桥梁，用来管理 View 的各种事件，包括 invalidate、requestLayout、dispatchInputEvent 等
+- ViewRootImpl 是 DecorView 的 ViewParent，也正因为这样 View#requestLayout 层层调用最终能调到 ViewRootImpl#requestLayout
+
+## Choreographer
+- FPS 就是 Frames Per Second 每秒帧数 
+- Choreographer 主要作用是协调动画，输入和绘制的时间
+自定义FrameCallback可以在下一个frame被渲染的时候会被回调
+Choreographer 是 Android 4.1 google的黄油计划新增的机制，用于配合系统的 VSYNC 中断信号。其主要用途是接收系统的 VSYNC 信号，统一管理应用的输入、动画和绘制等任务的执行时机
+当我们进行invalidate或者requestLayout时，总会执行viewRootImp的scheduleTraversals方法
+在简单分析完了Choreographer机制以后，来具体说下卡顿优化的两种方案的原理
+1、 利用UI线程的Looper打印的日志匹配；  是blockcanary的原理，就是利用looper.loop分发事件的时间间隔作为卡顿的依据
+
+2、 使用Choreographer.FrameCallback
+也就是对logging进行深入的研究，一般超过了1000ms就认为卡顿了，但我们有没有想过，我们通常说的卡顿不是说超过了16.66ms么，为何这里要超过500ms,甚至1000ms才算是卡顿？
+我们要知道，android系统所有的执行都是基于looper机制的，也就是所有的消息执行的时间超过1000ms就认定卡顿了，举个例子，我们可能在主线程操作数据库，可能在主线程解析json，可能在主线程写文件，可能在主线程做一些例如高斯模糊的耗时操作
+这种情况下我们利用blockcanary是可以检测出来的，但是如果是卡顿呢？当然我们也可以把时间设定为50ms，但是检测出来的太多了，所以就需要第二个机制了Choreographer.FrameCallback,通常这样写
+可以看到这里是CALLBACK_ANIMATION的callback，也就说只要监听了此方法他就会不断的调用doFrame，在doframe里调用postFrameCallback，从而来达到完美的监听ui卡顿的效果
+也就是onMeasure,onLayout,onDraw的耗时时间
+
+## onNewIntent
+
+## Context
 
 ## Fragment
 - Fragment 允许将界面分成为好几个区块，从而将模块化和可重用性能力引入 Activity 
@@ -158,27 +227,15 @@ Handler机制。MessageQueue中的Message是如何排列的？Msg的runnable对�
 - 如果不是就看是不是需要在一个固定的时间执行这个任务，如果是的话就使用 AlarmManager
 - 如果不是的话就还是使用 WorkManager
 
-## Android 后台 Service 和子线程的区别
-> 运行在后台的“后台 Service”和运行在后台的“子线程”有什么区别？
-
-
-
+## 后台 Service 和子线程的区别
 后台 Service
-
-- Android 四大组件之一，自身不提供 UI 元素
-- 默认是运行在主线程的，耗时操作需要开子线程，可以选用 IntentService
-- 可以不依赖 Activity 存在与否，能做到程序关闭后仍旧能继续执行，能够长时间运行
-- "后台"的概念主要是它不和 UI 打交道，是运行在后台的服务，最多通知前台 UI 更新
-
-
-
+- Service 是四大组件之一，自身不提供 UI 元素
+- 默认是运行在主线程的，耗时操作需要开子线程进行操作（可以选用 IntentService）
+- 可以不依赖 Activity 而存在，能做到程序关闭后仍旧能继续执行，能够长时间运行
+- 后台的概念主要是它不和 UI 打交道，是运行在后台的服务，最多通知前台 UI 更新
 子线程
-
 - 对应主线程的说法
-
-- "后台"的概念主要是能够异步运行
-
-
+- 后台的概念主要是能够异步运行
 
 ## Lifecycle
 - Lifecycle 基于观察者模式实现的
@@ -272,10 +329,7 @@ Android 缓存机制
 - LRU
 
 
-
-
-
-LruCache
+## LruCache
 
 
 
