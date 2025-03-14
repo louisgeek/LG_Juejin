@@ -40,7 +40,7 @@ Activity 负责承载 UI 用户界面、处理用户事件交互和管理生命�
 
 ## Activity 初始化流程
 - 关键方法 ActivityThread#performLaunchActivity 主要干了三件事：1 创建 Activity 实例，2 初始化 Context 和 Application， 3 执行 Activity 生命周期方法
-- Instrumentation 作用：1 负责 Activity 实例的创建，2 对 Activity 生命周期进行监控和控制-----------监控程序和系统之间的交互的Instrumentation 类主要用来监控应用程序与系统交互。
+- Instrumentation 仪表的作用：1 负责 Activity 实例的创建，2 对 Activity 生命周期进行监控和控制-----------监控程序和系统之间的交互的Instrumentation 类主要用来监控应用程序与系统交互
 
 ```java
 Activity#startActivity //启动一个 Activity
@@ -116,7 +116,7 @@ WindowManagerImpl#addView
 --ViewRootImpl#setView //通过 setView 方法设置关联的 DecorView（保存了 DecorView 实例），然后再通过 DecorView.assignParent 把 ViewRootImpl 设置成 DecorView 的 ViewParent（ViewRootImpl 不是一个真正的 View）
 ---ViewRootImpl#requestLayout //触发了第一次 View 的布局绘制
 ----ViewRootImpl#scheduleTraversals //内部有 Handler 同步屏障逻辑 MessageQueue#postSyncBarrier
------Choreographer#postCallback //设置传入一个 mTraversalRunnable 对象，Runnable#run 方法里就是执行 ViewRootImpl#doTraversal 方法
+-----Choreographer#postCallback //设置传入一个 Choreographer.CALLBACK_TRAVERSAL 类型和一个 mTraversalRunnable 对象，Runnable#run 方法里就是执行 ViewRootImpl#doTraversal 方法
 ------ViewRootImpl#doTraversal
 -------ViewRootImpl#performTraversals //内部代码逻辑就是依次按照条件判断是否去执行 performMeasure、performLayout 和 performDraw 方法
 --------ViewRootImpl#performMeasure
@@ -130,21 +130,18 @@ WindowManagerImpl#addView
 - ViewRootImpl 是 WindowManager 和 DecorView 之间的桥梁，用来管理 View 的各种事件，包括 invalidate、requestLayout、dispatchInputEvent 等
 - ViewRootImpl 是 DecorView 的 ViewParent，也正因为这样 View#requestLayout 层层调用最终能调到 ViewRootImpl#requestLayout
 
-## Choreographer
-- FPS 就是 Frames Per Second 每秒帧数 
-- Choreographer 主要作用是协调动画，输入和绘制的时间
-自定义FrameCallback可以在下一个frame被渲染的时候会被回调
-Choreographer 是 Android 4.1 google的黄油计划新增的机制，用于配合系统的 VSYNC 中断信号。其主要用途是接收系统的 VSYNC 信号，统一管理应用的输入、动画和绘制等任务的执行时机
-当我们进行invalidate或者requestLayout时，总会执行viewRootImp的scheduleTraversals方法
-在简单分析完了Choreographer机制以后，来具体说下卡顿优化的两种方案的原理
+## 卡顿优化
 1、 利用UI线程的Looper打印的日志匹配；  是blockcanary的原理，就是利用looper.loop分发事件的时间间隔作为卡顿的依据
+当我们进行invalidate或者requestLayout时，总会执行viewRootImp的scheduleTraversals方法
 
 2、 使用Choreographer.FrameCallback
 也就是对logging进行深入的研究，一般超过了1000ms就认为卡顿了，但我们有没有想过，我们通常说的卡顿不是说超过了16.66ms么，为何这里要超过500ms,甚至1000ms才算是卡顿？
 我们要知道，android系统所有的执行都是基于looper机制的，也就是所有的消息执行的时间超过1000ms就认定卡顿了，举个例子，我们可能在主线程操作数据库，可能在主线程解析json，可能在主线程写文件，可能在主线程做一些例如高斯模糊的耗时操作
 这种情况下我们利用blockcanary是可以检测出来的，但是如果是卡顿呢？当然我们也可以把时间设定为50ms，但是检测出来的太多了，所以就需要第二个机制了Choreographer.FrameCallback,通常这样写
-可以看到这里是CALLBACK_ANIMATION的callback，也就说只要监听了此方法他就会不断的调用doFrame，在doframe里调用postFrameCallback，从而来达到完美的监听ui卡顿的效果
+可以看到这里是CALLBACK_ANIMATION的callback，也就说只要监听了此方法他就会不断的调用doFrame，
+在doframe里调用postFrameCallback，从而来达到完美的监听ui卡顿的效果
 也就是onMeasure,onLayout,onDraw的耗时时间
+
 
 ## onNewIntent
 
@@ -189,7 +186,7 @@ Choreographer 是 Android 4.1 google的黄油计划新增的机制，用于配�
 在创建Handler时有一个async参数，传true表示此handler发送的时异步消息。ViewRootImpl.scheduleTraversals方法就使用了同步屏障，保证UI绘制优先执行
 
 ### 消息机制的原理
-- ActivityThread#main 方法中通过 Looper#prepareMainLooper 调用 Looper#prepare 创建一个 Looper , 涉及 ThreadLocal 存取 Looper ，而 Looper  的构造方法里创建了一个 MessageQueue
+- ActivityThread#main 方法中通过 Looper#prepareMainLooper 调用 Looper#prepare 创建一个 Looper , 涉及 ThreadLocal 存取 Looper 对象，而 Looper  的构造方法里创建了一个 MessageQueue
 - ActivityThread#main 方法继续执行，里面有个 Looper.loop 方法，内部利用 while 循环在主线程中开启了一个死循环，用它不断得从 MessageQueue 消息队列里取 Message（如果没有消息就利用 Linux epoll 机制进行阻塞等待），然后分发消息给 target（Handler）处理
 
 
@@ -297,8 +294,14 @@ Handler机制。MessageQueue中的Message是如何排列的？Msg的runnable对�
 OnTouchListener -> OnTouchEvent -> OnClick
 
 ## MediaCodec
+- MediaCodec 类可以访问底层的编解码器，用于编解码音视频。它提供了一种直接处理压缩数据（例如AAC, MP3, H.264等）的方法。
 - MediaCodec 编码摄像头画面 MediaMuxer 合并生成 MP4 文件
 - MediaCodec 解码播放 MediaExtractor 提取 MP4 文件的内容
+- AudioTrack 播放音轨
+
+
+使用 MediaCodec，你可以进行诸如视频播放、视频编辑、实时通信等操作。要使用 MediaCodec 进行解码，通常需要先配置媒体格式，然后调用 configure() 方法，接着是 start()，之后可以通过 dequeueInputBuffer() 和 queueInputBuffer() 来输入数据，并通过 dequeueOutputBuffer() 获取输出的数据
+
 
 ## 编码格式和容器格式
 - 编码格式： H.264/AVC H.265/HEVC MP3 AAC

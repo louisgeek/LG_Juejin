@@ -7,12 +7,12 @@
 
 ## 同步方式
 ```java
-public static void decoder_VideoToSurface_Sync(String videoPath, Surface surface) throws Exception {
+public static void decoder_VideoToSurface_Sync(String filePath, Surface surface) throws Exception {
     boolean inputBufferEnd = false;
     boolean outputBufferEnd = false;
     //媒体提取器，用于从数据源（如媒体文件或网络流）中提取音频和视频等轨道数据（解封装操作）供 MediaCodec 进行后续的解码和播放等操作
     MediaExtractor mediaExtractor = new MediaExtractor();
-    mediaExtractor.setDataSource(videoPath);
+    mediaExtractor.setDataSource(filePath);
     //
     int trackIndex = -1;
     MediaFormat mediaFormat = null;
@@ -104,12 +104,12 @@ public static void decoder_VideoToSurface_Sync(String videoPath, Surface surface
 
 ## 异步方式
 ```java
-public static void decoder_VideoToSurface_Async(Surface surface, String videoPath) throws Exception {
+public static void decoder_VideoToSurface_Async(Surface surface, String filePath) throws Exception {
     AtomicBoolean inputBufferEnd = new AtomicBoolean(false);
     AtomicBoolean outputBufferEnd = new AtomicBoolean(false);
     //媒体提取器，用于从数据源（如媒体文件或网络流）中提取音频和视频等轨道数据（解封装操作）供 MediaCodec 进行后续的解码和播放等操作
     MediaExtractor mediaExtractor = new MediaExtractor();
-    mediaExtractor.setDataSource(videoPath);
+    mediaExtractor.setDataSource(filePath);
     //
     int trackIndex = -1;
     MediaFormat mediaFormat = null;
