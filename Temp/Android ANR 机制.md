@@ -1,7 +1,36 @@
 # Android ANR 机制
-- Application Not Responding 应用程序无响应
-- 如果 Android 应用的 UI 线程处于阻塞状态的时间过长，如果应用位于前台，系统会向用户显示一个 ANR 对话框，对话框为用户提供强行退出应用的按钮选项
-- 相当于应用的主线程无法及时处理用户输入事件或绘制操作
+- Application Not Responding 应用程序无响应，如果 Android 应用的 UI 主线程处于阻塞状态的时间过长（进行耗时的 I/O 的操作或者长时间的计算），如果应用位于前台，系统会向用户显示一个 ANR 对话框，提示用户应用无响应，为用户提供强行退出应用的按钮选项，相当于当系统检测到应用应用的 UI 主线程在一定时间内无法及时响应处理用户输入事件或绘制操作，就会触发 ANR
+
+## 触发 ANR 的场景
+- Activity：在 5 秒内未完成 onResume 或者在 5 秒内未响应输入事件（如按键或屏幕触摸）
+- BroadcastReceiver： 前台广播的 onReceive 方法耗时超过大概 10 秒，后台广播超过大概 60 秒
+- Service：前台服务的 onCreate、onStartCommand、onBind 等方法 20 秒内没有执行完成，后台服务则在 200 秒内
+- ContentProvider：query、insert、publish 等方法在 10 秒内没有执行完成
+
+## BROADCAST_TIMEOUT_MSG
+- 发送广播时根据广播发送中的 intent 是否带有 FLAG_RECEIVER_FOREGROUND 标记可以分为前台广播和后台广播
+
+```java
+前台广播超时时间
+- Android 13 及以下版本 10 秒
+- Android 14 及以上版本，10-20 秒，具体取决于进程是否已耗尽 CPU
+后台广播超时时间
+- Android 13 及以下版本 60 秒
+- Android 14 及以上版本，60-120 秒，具体取决于进程是否已耗尽 CPU
+```
+
+ 
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -11,38 +40,9 @@ Service.startForeground() not called
 Broadcast of intent
 JobScheduler interactions
 
-
-- 在主线程进行耗时的 I/O 的操作或者长时间的计算
-
-
 - 主线程在对另一个进程进行同步 binder 调用，而后者需要很长时间才能返回。
-
 - 主线程处于阻塞状态，为发生在另一个线程上的长操作等待同步的块。
-
 - 主线程在进程中或通过 binder 调用与另一个线程之间发生死锁。主线程不只是在等待长操作执行完毕，而且处于死锁状态。
-
-
-
-
-
-
-## 触发 ANR 的场景
-- 应用在 5 秒内未响应屏幕触摸事件或按钮、键盘输入事件
-- BroadcastReceiver 广播的 onReceive 方法耗时超过 10 秒
-- 前台服务 20 秒内，后台服务 200 秒内没有执行完成
-- ContentProvider的 publish 在 10 秒内没有执行完
-
-### BROADCAST_TIMEOUT_MSG
-发送广播时根据广播发送中的 intent 是否带有 FLAG_RECEIVER_FOREGROUND 标记可以将广播分为前台广播和后台广播
-前台广播超时时间
-- Android 13 及以下版本 10 秒
-- Android 14 及以上版本，10-20 秒，具体取决于进程是否已耗尽 CPU
-后台广播超时时间
-- Android 13 及以下版本 60 秒
-- Android 14 及以上版本，60-120 秒，具体取决于进程是否已耗尽 CPU
-
- 
-
 
 
 StrictMode 严格模式
@@ -79,14 +79,6 @@ Android Device Monitor
 
 
  BroadcastReceiver 中 onReceive 代码要尽量减少耗时，耗时建议使用 IntentService 处理
-
-
-
-
-
-
-
-
 
 
 
