@@ -1,7 +1,7 @@
 # Android Choreographer 编舞者
 - 又称为舞蹈指导（舞蹈是有节奏的，节奏使舞蹈的每个动作更加协调和连贯，视图刷新亦是如此）
 - VSync 就是 Vertical Synchronization 垂直同步
-- Choreographer 主要负责统一协调管理 CALLBACK_INPUT 输入、CALLBACK_ANIMATION 动画和 CALLBACK_TRAVERSAL 绘制（界面遍历，整体包括测量、布局和绘制）三大操作（新版还有一个 CALLBACK_COMMIT）的时机，当接收到来自系统的 VSync 垂直同步信号后，顺序执行输入、动画和绘制这三个操作，然后等待下一个 VSync 信号到来后再次顺序执行这三个操作，实现控制这三个操作的同步处理，确保 UI 渲染能够在合适的时机进行，以实现流畅的动画和界面视图刷新
+- Choreographer 主要负责统一协调管理 CALLBACK_INPUT 外部输入、CALLBACK_ANIMATION 动画和 CALLBACK_TRAVERSAL 遍历视图树（包括测量、布局和绘制）三大操作（新版还有一个 CALLBACK_COMMIT）的时机，当接收到来自系统的 VSync 垂直同步信号后，顺序执行输入、动画和遍历视图树这三个操作，然后等待下一个 VSync 信号到来后再次顺序执行这三个操作，实现控制这三个操作的同步处理，确保 UI 渲染能够在合适的时机进行，以实现流畅的动画和界面视图刷新
 - 通过 Choreographer#postFrameCallback 设置一个 Choreographer.FrameCallback 回调，在每次屏幕刷新周期（即下一帧渲染）开始时（VSync 信号触发）调用 doFrame 方法，可以在回调里执行一些自定义代码（比如可以用来记录每一帧的时间、监测帧率或实现特定的自定义动画效果等）
 - 监控 UI 渲染性能、卡顿检测排查：通过计算帧渲染的时间，分析帧间隔，定位卡顿原因，找出性能瓶颈
 - 自定义动画效果：可以通过计算帧渲染的时间，按需进行动画速度、逻辑等的控制，因为 doFrame 方法回调节奏与屏幕刷新频率（VSync 信号）一致，如果在回调中更新动画的数值，就可以确保动画与屏幕刷新保持对齐，避免了过度渲染和无效计算，从而节省资源

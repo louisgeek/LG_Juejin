@@ -2,7 +2,6 @@
 - Kotlin Standard 标准库中提供了一系列函数, 用来在某个指定的对象上下文中执行一段代码，可以对一个对象调用这些函数, 并提供一个 Lambda 表达式, 函数会创建一个临时的 Scope 作用域，在这个作用域内, 你可以访问这个对象, 而不需要指定名称. 这样的函数叫作 Scope Functions 作用域函数
 - 两大区别：它们的返回值和访问上下文对象的方式
 
-
 ## kotlin.run
 - kotlin 包下的顶层函数 run
 - 参数 block 这个 lambda 表达式的返回值就是 run 函数的返回值
@@ -26,8 +25,6 @@ val result = kotlin.run {
     true //lambda 表达式的返回值
 }
 ```
-
-
 
 ## T.run 或 run
 - T 的扩展函数 run
