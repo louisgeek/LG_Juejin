@@ -48,6 +48,7 @@
     - 使用依赖注入框架（比如 Spring 框架）
 - 自动依赖注入：基于 Java 反射技术实现或者在编译时自动生成连接依赖项的代码（Dagger）
 
+
 ## Queue 队列
 - FIFO 先进先出，应当要尽量避免把 null 添加到队列里
 - 通过 add / offer 方法将元素添加到队尾，通过 remove / poll 从队首获取元素并删除，通过 element  / peek 从队首获取元素但不删除，每对方法的前者都会在失败时抛出异常
@@ -55,11 +56,24 @@
 ?LinkedList 是双向链表实现的 Deque 双端队列 
 ?Android MessageQueue 消息队列，它是一个单向链表实现的队列
 
-## Stack 堆栈
-- LIFO 后进先出，不推荐直接使用 Stack 类（继承自 Vector，性能较低），而是改用 Deque 接口
-- 通过 push 把元素压入栈，通过 pop 把栈顶的元素弹出，通过 peek 把栈顶的元素取出但不弹出
+## Stack 栈
+- 又称堆栈（其实就是栈，比较容易误导），栈是 LIFO（Last In First Out）后进先出的线性数据结构，不推荐直接使用 java.util.Stack 类（继承自 Vector，性能较低），而是使用 java.util.Deque 接口
+- 只允许在栈顶进行插入和删除操，通过 push 把元素压入栈，通过 pop 把栈顶的元素弹出，通过 peek 把栈顶的元素取出但不弹出
+- 应用：函数调用栈（保存函数上下文、局部变量、函数参数、返回地址）、浏览器后退功能等  存储函数调用时的参数、局部变量和返回地址等
+保存函数参数、局部变量及返回地址，确保调用顺序正确
 ```java
 Deque<Integer> stack = new ArrayDeque<Integer>();
+```
+
+## Heap 堆
+- 一种特殊的完全二叉树，通常用数组存储实现
+- 最大堆（大根堆、大顶堆）：父节点的值大于等于所有子节点的值，根节点是最大值
+- 最小堆（小根堆、小顶堆）：父节点的值小于等于所有子节点的值，根节点是最小值
+- 通过 offer 插入元素（up 上浮操作），通过 poll 删除根元素（down 下沉操作），通过 heapify 堆化
+```java
+//PriorityQueue 优先队列
+PriorityQueue<Integer> minHeap = new PriorityQueue<>(); //默认是最小堆
+PriorityQueue<Integer> maxHeap = new PriorityQueue<>((a, b) -> b - a); //通过自定义比较器实现最大堆
 ```
 
 ## List
