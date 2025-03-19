@@ -16,11 +16,11 @@ onCreate —— onStartCommand —— onDestroy
 onCreate —— onBind —— onUnbind —— onDestroy
 ```
 
-## Activity 启动模式
-- 1 standard 标准模式
-- 2 singleTop 栈顶复用模式（比如：通知栏推送点击消息界面）
-- 3 singleTask 栈内复用模式（比如：应用的首页）
-- 4 singleInstance 单例模式（单独位于一个任务栈中，比如：拨打电话界面、浏览器）
+## Activity launchMode 启动模式
+- 1 standard 标准模式（默认）
+- 2 singleTop 栈顶复用模式（比如：通知栏推送点击消息界面），如果复用就走 onNewIntent 回调
+- 3 singleTask 栈内复用模式（比如：应用的首页），如果复用就走 onNewIntent 回调，同时清除其之上的所有 Activity 实例
+- 4 singleInstance 单例模式（单独位于一个任务栈中，比如：拨打电话界面、呼叫来电界面、浏览器）
 
 ## Activity、Window 和 DecorView
 - Activity 的创建：ActivityThread#handleLaunchActivity -> ActivityThread#performLaunchActivity -> Instrumentation#newActivity
@@ -46,7 +46,7 @@ Activity 负责承载 UI 用户界面、处理用户事件交互和管理生命�
 Activity#startActivity //启动一个 Activity
 -Activity#startActivityForResult
 --Instrumentation#execStartActivity //与 ActivityManagerService 进行跨进程通信
----ActivityTaskManager.getService().startActivity //最终由 ActivityManagerService 通过 Binder 调用触发 ActivityThread 进行处理
+---ActivityTaskManager.getService().startActivity //通过 Binder 跨进程通信请求 AMS，然后经过一系列操作后，再由 AMS 通过 Binder 跨进程通信调用触发 ActivityThread 进行处理启动目标 Activity，最终会调用到 ActivityThread#handleLaunchActivity 方法
 ----ActivityThread#handleLaunchActivity 
 ```
 
@@ -54,7 +54,7 @@ Activity#startActivity //启动一个 Activity
 ActivityThread#handleLaunchActivity //处理 Activity 启动
 -ActivityThread#performLaunchActivity //执行完成 Activity 启动,内部进行 Activity 的 Context 的初始化，紧接着进行 Application 的初始化，
 --Instrumentation#newActivity //内部进行 Activity 的初始化，Instrumentation#newActivity 利用 ClassLoader 类加载器通过反射创建对应的 Activity 实例
---Activity#attach //内部进行 Window（PhoneWindow）的初始化
+--Activity#attach //内部进行 Window（PhoneWindow）的初始化，Window#setWindowManager
 --Instrumentation#callActiviyOnCreate
 ---Activity#performCreate
 ----Activity#onCreate //最终会调用 Activity#onCreate 方法
@@ -102,7 +102,58 @@ Activity#setContentView //设置 layoutResID，内部就是调用了 PhoneWindow
 - WindowManager 的作用是对 Window 进行管理，包括增加、更新和删除等操作（定义在 ViewManager 接口里）
 - WindowManagerImpl 方法内部又是调用 WindowManagerGlobal 的相关方法，涉及到桥接模式的知识
 
+## App 启动流程
+- Launcher App -- Binder --> ActivityManagerService（AMS 在 SystemServer 进程中）
+```java
+Launcher#startActivitySafely //带上 FLAG_ACTIVITY_NEW_TASK 标记让 Activity 启动在新的任务栈中
+-Activity#startActivity
+--Activity#startActivityForResult
+---Instrumentation#execStartActivity
+----ActivityManager.getService().startActivity //通过 Binder 跨进程通信请求 AMS，然后会调用到 ActivityManagerService#startActivity 方法
+```
+
+```java
+ActivityManagerService#startActivity
+-ActivityManagerService#startActivityAsUser
+--ActivityStarter#startActivityUnchecked
+---ActivityStarter#startActivityInner
+----ActivityTaskSupervisor#startSpecificActivity //判断 App 的应用程序进程是否已经启动
+```
+
+应用程序进程已启动
+- ActivityManagerService -- Binder --> ActivityThread（主线程管理类）
+```java
+ActivityTaskSupervisor#startSpecificActivity
+ActivityTaskSupervisor#realStartActivityLocked //ActivityThread 启动目标 Activity
+-ActivityThread$H#sendMessage //通过 Handler 调用 H#sendMessage 方式发送通知
+--ActivityThread#handleLaunchActivity //处理根 Activity 启动
+---ActivityThread#performLaunchActivity
+----Instrumentation#newActivity //Activity 的初始化
+----Activity#attach
+----Instrumentation#callActivityOnCreate
+-----Activity#performCreate
+------Activity#onCreate
+```
+
+应用程序进程未启动
+- ActivityManagerService -- Socket --> Zygote
+```java
+//startSpecificActivity 和 realStartActivityLocked 中增加额外逻辑
+ActivityTaskSupervisor#startSpecificActivity
+-ActivityTaskManagerService#startProcessAsync
+--ActivityManagerService#startProcessLocked //通过 Socket 通知 Zygote 进程孵化创建（Zygote 会启动 Socket 服务来监听等待，利用 fork 自身方式创建）应用程序进程
+---ZygoteInit#main
+---ActivityThread#main //进程孵化创建后会调用 ActivityThread#main 方法
+---ActivityThread#attach
+----ActivityThread.H#handleMessage
+-----Instrumentation#newApplication
+-----Instrumentation#callApplicationOnCreate
+----ActivityTaskSupervisor#realStartActivityLocked
+```
+
+
 ## View 绘制流程
+- 关键方法 ViewRootImpl#scheduleTraversals 会触发 ViewRootImpl#performTraversals 去执行测量、布局和绘制三大方法
 ```java
 ActivityThread#handleResumeActivity
 -ActivityThread#performResumeActivity
@@ -144,6 +195,8 @@ WindowManagerImpl#addView
 
 
 ## onNewIntent
+setIntent(intent); 更新 intent
+
 
 ## Context
 
@@ -284,6 +337,9 @@ Handler机制。MessageQueue中的Message是如何排列的？Msg的runnable对�
 - 根本原因：短生命周期的对象被长生命周期的对象持有引用，导致短生命周期对象的内存在其生命周期结束后无法被 GC 回收，从而导致了内存泄露
 - 非静态内部类或匿名内部类都会隐式地持有外部类的引用，都可以访问外部类的变量
 - 减少单例、静态对象、非静态内部类或匿名内部类的使用
+
+## LeakCanary
+- LeakCanary 使用 弱引用 来跟踪 Activity，并结合 GC 机制判断 Activity 是否被回收，从而识别潜在的内存泄漏问题
 
 ## 事件分发机制
 - MotionEvent 事件产生后，按照 Activity ->  Window -> DectorView -> View 顺序传递的过程就叫事件分发

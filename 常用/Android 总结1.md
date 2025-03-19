@@ -134,21 +134,7 @@ libusb 可以通过 jni 获取 bus dev Manafacturer Product SerialNumber (libusb
 
 
 
-## Activity 启动流程
-startActivity最终都会调用startActivityForResult，
-通过ActivityManagerProxy调用system_server进程中
-ActivityManagerService的startActvity方法，
-如果需要启动的Activity所在进程未启动，
-则调用Zygote孵化应用进程，
-进程创建后会调用应用的ActivityThread的main方法，
-main方法调用attach方法将应用进程绑定到
 
-ActivityManagerService（保存应用的ApplicationThread的代理对象）
-并开启loop循环接收消息。ActivityManagerService
-通过ApplicationThread的代理发送Message通知启动Activity，
-ActivityThread内部Handler处理handleLaunchActivity，
-依次调用performLaunchActivity，
-handleResumeActivity（即activity的onCreate，onStart，onResume）
 
 
 ## Handler
@@ -679,40 +665,43 @@ Zygote 进程在 ZygoteServer#runSelectLoop 方法下等待 AMS 的请求
 
 
 
-### App 启动流程(根 Activity 启动流程)
+ 
 
-```
-在 Launcher 中点击 App 图标启动应用
-- Launcher#startActivitySafely 
--- Activity#startActivity 带上 FLAG_ACTIVITY_NEW_TASK 标记，基础知识
---- Activity#startActivityForResult
----- Instrumentation#execStartActivity
------ ActivityManager.getService().startActivity 利用 AIDL 进程间通信方式与 AMS 通信，最终就是调用到 ActivityManagerService#startActivity
-然后后面经过一系列调用会到 ActivityStarter#startActivityLocked 是不是和 Launcher 中间一段类似？
-- ActivityStarter#startActivity 
-- ActivityManagerService#getRecordForAppLocked 得到 Launcher 的 ProcessRecord
-- new ActivityRecord
-- 这个 ProcessRecord 就是需要传入的要启动 Activity 所在的应用程序进程
-走到后面如果这个 ProcessRecord 为 null，表示应用程序进程未启动，那么走 ActivityManagerService#startProcessLocked 通知 Zygote 去启动该应用程序进程，上文【应用程序进程启动流程】提到的知识得到印证了
-ProcessRecord 不为空的话经过一系列调用会到 ActivityThread$ApplicationThread.thread.scheduleLaunchActivity
+### AMS 发送启动应用程序进程的请求
 
-小结一下：
-1 Launcher 点击， 通过 AIDL ，Binder 通信方式到 AMS
-2 而 AMS 是在 SystemServer 进程中的
-3 AMS 想调用 ActivityThread$ApplicationThread 的方法
-4 如果 ActivityThread$ApplicationThread 所在进程（应用程序进程）未启动，AMS 通过 socket 方式通知 Zygote 进程去完成对应进程的创建
-5 如果已经创建了，则 AMS 通过 Binder 方式和 ActivityThread$ApplicationThread 所在进程进行通信，请求启动根 Activity
 
-回到 scheduleLaunchActivity 继续
-ActivityThread#sendMessage 通过 Handler 调用 H#sendMessage 方式发送通知启动对应 Activity
-通过 Handler 的回调 H#handleMessage 方法处理调用 ActivityThread#handleLaunchActiviy 接下来的逻辑就比较基础了，是不是很熟悉？
-```
 
-启动流程涉及到 4 个进程：
-Launcher 进程点图标请求 AMS 所在进程 SystemServer 进程请求启动应用程序根 Activity
-AMS 判断该应用程序的应用程序进程是否已经启动
-如果未启动则 AMS 通知请求 Zygote 进程先去创建并启动这个应用程序进程
-应用程序进程启动后的逻辑就是 AMS 通知应用程序进程里的 ActivityThread$ApplicationThread 启动根 Activity
+定义了一个 entryPoint="android.app.ActivityThread" 传入方法
+
+Process#start
+
+直接调用了
+
+ZygoteProcess#start
+
+也是直接调用了
+
+ZygoteProcess#startViaZygote 
+
+准备一些应用进程启动参数 argsForZygote 传入下面这个方法，同时也传入了一个 openZygoteSocketIfNeeded 方法返回的值的参数
+
+- ZygoteProcess$ZygoteState#connect 
+- 处理 mSocket 和 mSecondarySocket ,返回 primaryZygoteState 和 secondaryZygoteState
+
+ZygoteProcess#zygoteSendArgsAndGetResult
+
+将 argsForZygote 通过字节流写入到 ZygoteProcess$ZygoteState，并且构造 Process$ProcessStartResult 后返回
+
+
+
+
+
+
+
+### Zygote 接收请求后创建应用程序进程
+
+见【Android Zygote 进程启动流程】
+
 
 
 
@@ -722,8 +711,8 @@ AMS 判断该应用程序的应用程序进程是否已经启动
 
 
 
-
-
+ 
+ 
 
 
 
@@ -1160,20 +1149,11 @@ java 8 后，匿名内部类、Lambda 表达式访问的局部变量不需要再
 
 - 有价值的，有效的
 
-
-### Activity 启动流程
-
-startActivity最终都会调用startActivityForResult，通过ActivityManagerProxy调用system_server进程中ActivityManagerService的startActvity方法，如果需要启动的Activity所在进程未启动，则调用Zygote孵化应用进程，进程创建后会调用应用的ActivityThread的main方法，main方法调用attach方法将应用进程绑定到ActivityManagerService（保存应用的ApplicationThread的代理对象）并开启loop循环接收消息。ActivityManagerService通过ApplicationThread的代理发送Message通知启动Activity，ActivityThread内部Handler处理handleLaunchActivity，依次调用performLaunchActivity，handleResumeActivity（即activity的onCreate，onStart，onResume）
-
  
-
 ### Android 操作系统启动流程
 
  
-### App 启动流程
-
  
-  
 
 ## 浏览器中输入一个 URL  然后回车访问，这个过程中间发生了什么？
 
