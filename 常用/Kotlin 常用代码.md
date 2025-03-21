@@ -1,4 +1,8 @@
-# Kotlin 知识点
+# Kotlin 常用代码
+
+## @JvmOverloads
+- 在有默认参数值的方法中使用 @JvmOverloads 注解，就可以很方便地实现多个重载方法。最常使用的地方就是自定义 View
+
 
 ## measureTimeMillis 和 measureNanoTime
 ```kotlin
