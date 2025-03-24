@@ -6,7 +6,7 @@
 - View#dispatchTouchEvent(MotionEvent event) 分发事件，ViewGroup 重写了该方法
 - ViewGroup#onInterceptTouchEvent(MotionEvent event) 是 ViewGroup 特有的方法，代表 ViewGroup 是否拦截事件，默认返回 false，可按需重写
 - View#onTouchEvent(MotionEvent event) 处理事件，ViewGroup 复用了该方法
-- 通常情况下 MotionEvent.ACTION_DOWN 标志着一个事件序列的开始，而 MotionEvent.ACTION_UP 则标志着一个事件序列的结束，只有当一个视图处理了 ACTION_DOWN 事件，它才会收到后续的 ACTION_MOVE 和 ACTION_UP 事件
+- 事件序列：通常情况下 MotionEvent.ACTION_DOWN 标志着一个事件序列的开始，而 MotionEvent.ACTION_UP 则标志着一个事件序列的结束，只有当一个视图处理了 ACTION_DOWN 事件，它才会收到后续的 ACTION_MOVE 和 ACTION_UP 事件
 - ViewGroup#requestDisallowInterceptTouchEvent(boolean disallowIntercept) 请求不允许拦截
 
 
@@ -27,11 +27,8 @@ public boolean dispatchTouchEvent(MotionEvent event) {
 }
 ```
 
- 
 ## 事件流
 - 事件分发传递的顺序：Activity -> Window（PhoneWindow） -> DecorView（FrameLayout） -> ViewGroup -> View
-
-
 
 ## Activity 事件分发
 ```java
@@ -266,6 +263,10 @@ public boolean onTouchEvent(View v, MotionEvent event) {
 } 
 ```
 
+## 事件冲突
+- 外部拦截法：是在父 View 的 onInterceptTouchEvent 方法中进行事件拦截判断
+- 内部拦截法：是在子 View 的 dispatchTouchEvent 方法中，通过调用父视图的 ViewGroup#requestDisallowInterceptTouchEvent 方法来控制父 View 是否拦截事件
+
 ## 实例分析
 ### 点击一个按钮
 - 事件分发到 ViewGroup 默认不拦截
@@ -278,3 +279,4 @@ public boolean onTouchEvent(View v, MotionEvent event) {
 - 满足条件走 for 循环遍历子 View，未找到子 View
 - 然后 ViewGroup 自己执行 super#dispatchTouchEvent 
 - 也就是此时走父视图自己的 View#dispatchTouchEvent -> View#onTouchEvent -> View#performClick -> View#onClick，也就是执行了 ViewGroup 自己的点击事件
+
