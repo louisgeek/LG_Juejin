@@ -257,7 +257,7 @@ synchronized (list) {
 
 ## 总结
 - 并发性能：由于 CopyOnWriteArrayList 读操作上没有加锁，所以 CopyOnWriteArrayList 读操作性能更好，而 SynchronizedList 由于读写操作都加了锁，所以读写都会受到一定影响
-- 内存占用：由于 CopyOnWriteArrayList 写操作会进行数组复制，所以 CopyOnWriteArrayList 在写操作上内存占用开销比 SynchronizedList 要大，所以不适合非常频繁写操作
+- 内存占用：由于 CopyOnWriteArrayList 写操作会进行数组复制（读写分离），所以 CopyOnWriteArrayList 在写操作上内存占用开销比 SynchronizedList 要大，所以不适合非常频繁写操作
 - 适用场景：CopyOnWriteArrayList 适用于读多写少的场景，而 SynchronizedList 则适用于读写操作相对均衡或者写操作相对较频繁的场景
 
  

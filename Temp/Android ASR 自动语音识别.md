@@ -1,8 +1,6 @@
 # Android ASR 自动语音识别
 - Automatic Speech Recognition 自动语音识别将声音转化为文字
 
-
-
 ## Kaldi
 - Kaldi 是一个广泛使用的开源语音识别引擎，支持深度学习，基于 C++
 - 通常需要训练模型
@@ -20,6 +18,5 @@
 org.kaldi.SpeechRecognizer#addListener 添加 RecognitionListener 监听
 RecognitionListener#onPartialResult	语音输入过程中实时触发，实时返回部分、可能不准确的数据，比如用于实时显示字幕、动态更新识别结果  用户说“今天天气”，可能依次返回“今”→“今天”→“今天天”→“今天天气”
 RecognitionListener#onResult	语音输入结束后触发，返回完整、准确、最终结果，比如用于语音转文字、命令识别 作为后续逻辑处理的依据  最终修正后的完整文本
-
 
 ## Pocketsphinx

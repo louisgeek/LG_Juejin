@@ -27,10 +27,10 @@ object ChoreographerHelper {
     private const val SKIPPED_FRAME_WARNING_LIMIT = 30
     
     fun start() {
-        //系统每 16.67ms （60Hz 每秒刷新 60 次,1000/60）发出一个 VSYNC 信号来通知刷新一次屏幕
+        //系统每 16.67ms （60Hz 每秒刷新 60 次，1000/60）发出一个 VSYNC 信号来通知刷新一次屏幕
         //假设在界面不卡顿的情况下，界面应该至少间隔 16.67ms 刷新一次，因此理论上至少每 16.67ms 应该会触发一次回调
-        //如果发生界面卡顿了 ，那么回调的触发时间间隔就会超过 16.67 ms
-        Choreographer.getInstance().postFrameCallback(object : FrameCallback {
+        //如果发生界面卡顿了，那么回调的触发时间间隔就会超过 16.67 ms
+        Choreographer.getInstance().postFrameCallback(object : Choreographer.FrameCallback {
             private var lastFrameTimeNanos = 0L
             private val frameIntervalNanos = (1.0F * 1000000000 / 60).toLong() //60Hz
 
@@ -43,8 +43,8 @@ object ChoreographerHelper {
                     //计算掉帧数，就是延迟了多少帧
                     val skippedFrames = jitterNanos / frameIntervalNanos
                     if (skippedFrames > SKIPPED_FRAME_WARNING_LIMIT) {
-                        //掉帧30以上的，可以上报日志
-                        Log.e(TAG, "doFrame: 掉帧30以上的 skippedFrames=$skippedFrames")
+                        //掉帧 30 以上的，可以上报日志
+                        Log.e(TAG, "doFrame: 掉帧 30 以上的 skippedFrames=$skippedFrames")
                     }
                 }
                 lastFrameTimeNanos = frameTimeNanos

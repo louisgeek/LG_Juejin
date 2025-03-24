@@ -159,7 +159,7 @@ class MyAidlService : Service() {
 - android.os.Binder 是 Java 层的 Binder 类（实现了 IBinder 接口），代表的就是 Binder 本地对象
 - android.os.BinderProxy 是 Binder 类的一个内部类（实现了 IBinder 接口），代表远程进程的 Binder 对象的本地代理
 - Xxx.Stub 是编译工具自动生成的 aidl 文件同名接口里的静态内部类，它是一个继承了 Binder 的抽象类（同时也实现了编译工具自动生成的 aidl 文件同名接口），具有远程 Server 承诺给 Client 的能力，当然这个能力的具体内容需要我们自己实现
-- Xxx.Stub.Proxy 是编译工具自动生成的 aidl 文件同名接口里的静态内部类，也实现了编译工具自动生成的 aidl 文件同名接口，同时组合了一个 IBinder 对象（是 IBinder 代理对象，也就 Binder 代理对象）,代表远程进程的 Binder 对象的本地代理，对应BinderProxy？
+- Xxx.Stub.Proxy 是编译工具自动生成的 aidl 文件同名接口里的静态内部类，也实现了编译工具自动生成的 aidl 文件同名接口，同时组合了一个 IBinder 对象（是 IBinder 代理对象，也就 Binder 代理对象），代表远程进程的 Binder 对象的本地代理，对应 BinderProxy？
 
 固定套路：
 - 一个需要跨进程传输的对象一定实现了 IBinder 这个接口，如果是 Binder 本地对象，那么一定继承了 Binder（实现 IBinder）然后实现 IInterface 子接口，如果是代理对象，那么就实现了 IInterface 子接口并持有了 IBinder 引用（代理）

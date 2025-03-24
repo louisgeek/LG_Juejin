@@ -4,6 +4,9 @@
 - App Component 应用组件包括 Activity、Service、ContentProvider 内容提供者和 BroadcastReceiver 广播接收器，应用组件可以不按顺序地单独启动，并且系统或者用户可以随时销毁它们，因此不应该在应用组件中存储任何应用数据或状态，并且应用组件不应该相互依赖
 
 ## Activity 生命周期
+- 锁屏不走 onStop
+- 下拉状态栏不走生命周期
+
 ```java
 onCreate —— onStart 可见 —— onResume 有焦点 —— onPause 无焦点 —— onStop 不可见 —— onDestory
 ```
@@ -40,7 +43,10 @@ Activity 负责承载 UI 用户界面、处理用户事件交互和管理生命�
 
 ## Activity 初始化流程
 - 关键方法 ActivityThread#performLaunchActivity 主要干了三件事：1 创建 Activity 实例，2 初始化 Context 和 Application， 3 执行 Activity 生命周期方法
-- Instrumentation 仪表的作用：1 负责 Activity 实例的创建，2 对 Activity 生命周期进行监控和控制-----------监控程序和系统之间的交互的Instrumentation 类主要用来监控应用程序与系统交互
+- Instrumentation 仪表工具的作用：1 负责 Activity 实例的创建，2 对 Activity 生命周期进行监控和控制-----------监控程序和系统之间的交互的Instrumentation 类主要用来监控应用程序与系统交互
+Instrumentation 用来管理applicaiton及Activity的生命周期。
+Instrumentation 实现类的动态加载、修改、替换和监控的工具
+
 
 ```java
 Activity#startActivity //启动一个 Activity
@@ -102,6 +108,8 @@ Activity#setContentView //设置 layoutResID，内部就是调用了 PhoneWindow
 - WindowManager 的作用是对 Window 进行管理，包括增加、更新和删除等操作（定义在 ViewManager 接口里）
 - WindowManagerImpl 方法内部又是调用 WindowManagerGlobal 的相关方法，涉及到桥接模式的知识
 
+
+
 ## App 启动流程
 - Launcher App -- Binder --> ActivityManagerService（AMS 在 SystemServer 进程中）
 ```java
@@ -122,13 +130,14 @@ ActivityManagerService#startActivity
 
 应用程序进程已启动
 - ActivityManagerService -- Binder --> ActivityThread（主线程管理类）
+- AMS 通过 Binder 方式请求 ActivityThread 所在进程启动根 Activity
 ```java
 ActivityTaskSupervisor#startSpecificActivity
 ActivityTaskSupervisor#realStartActivityLocked //ActivityThread 启动目标 Activity
 -ActivityThread$H#sendMessage //通过 Handler 调用 H#sendMessage 方式发送通知
 --ActivityThread#handleLaunchActivity //处理根 Activity 启动
 ---ActivityThread#performLaunchActivity
-----Instrumentation#newActivity //Activity 的初始化
+----Instrumentation#newActivity //利用类加载器完成 Activity 的初始化
 ----Activity#attach
 ----Instrumentation#callActivityOnCreate
 -----Activity#performCreate
@@ -136,7 +145,8 @@ ActivityTaskSupervisor#realStartActivityLocked //ActivityThread 启动目标 Act
 ```
 
 应用程序进程未启动
-- ActivityManagerService -- Socket --> Zygote
+- ActivityManagerService -- Socket --> Zygote 
+- AMS 通过 Socket 方式通知 Zygote 进程去完成应用程序进程的创建
 ```java
 //startSpecificActivity 和 realStartActivityLocked 中增加额外逻辑
 ActivityTaskSupervisor#startSpecificActivity
@@ -224,9 +234,11 @@ setIntent(intent); 更新 intent
  
 ### Looper
 - 一个 Handler 对应一个 Looper，每个线程只能有一个 Looper
+- loop for循环  queue.next 取 message 它的target就是handler   然后分发到  callback  handleMessage
+- queue.next 可能会阻塞，方法里里有 nativePollOnce 方法用于“等待”, 直到下一条消息可用为止，Looper 也就进入了休眠
 
 ### MessageQueue
-- 用于存储 Message，内部维护了 Message 的链表，每次拿取 Message 时，若该 Message 离真正执行还需要一段时间，会通过 nativePollOnce 进入阻塞状态，避免资源的浪费，若存在消息屏障，则会忽略同步消息优先拿取异步消息，从而实现异步消息的优先消费
+- 用于存储 Message，内部维护了 Message 的链表（单向链表实现的队列），每次拿取 Message 时，若该 Message 离真正执行还需要一段时间，会通过 nativePollOnce 进入阻塞状态，避免资源的浪费，若存在消息屏障，则会忽略同步消息优先拿取异步消息，从而实现异步消息的优先消费
 
 ### 异步消息
 - 在创建 Handler 时，Handler 构造函数有一个 async 参数，默认传 false，若 async 传 true 则表示这个 Handler 发出的消息均为异步消息，异步消息会被优先处理
@@ -265,8 +277,11 @@ Handler机制。MessageQueue中的Message是如何排列的？Msg的runnable对�
 - SystemServer 负责启动各种系统核心服务
 
 ## IntentService
+- IntentService是一个抽象类，继承自Service,内部存在一个ServiceHandler（Handler）和HandlerThread（Thread）,yong来处理耗时操作
 - 单线程执行：Service 默认在主线程中运行，而 IntentService 是运行在一个子线程中，不会阻塞主线程，默认无需去手动管理线程
-- 自动停止：IntentService 不需要手动停止
+- 自动停止：当执行完任务之后 IntentService 会自动停止
+- 多次启动IntentService，每一个耗时操作都会以工作队列的形式在IntentService的onHandleIntent回调中执行，并且每次执行一个工作线程
+本质是封装了一个 HandlerThread 和 Handler 的 Service
 
 ## JobScheduler
 
@@ -298,6 +313,18 @@ Handler机制。MessageQueue中的Message是如何排列的？Msg的runnable对�
 - SafeIterableMap 是一个基于双向链表的数据结构
 - 粘性事件：LiveData 默认被设计为 Sticky Events 粘性事件（事件发送后，观察者才订阅，能收到订阅之前的事件）的
 - 数据倒灌：可以理解成在粘性事件前提条件的基础上，当第二次调用 observe 时候，如果还能收到第一次调用 observe 旧的观察者已经处理过的数据的情形
+
+lifecycle.repeatOnLifecycle 和 Flow 协力能够打造出高效的类似 LiveData 的通信机制
+```kotlin
+lifecycleScope.launch {
+        //当 Fragment 处于 STARTED 状态时会开始收集数据，并且在 RESUMED 状态时保持收集，最终在 Fragment 进入 STOPPED 状态时结束收集过程
+        lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            uiStateFlow.collect { uiState ->
+                //updateUi(uiState)
+            }
+        }
+    }
+```
 
 ## ViewModel
 - ViewModel 实现在 Activity 和 Fragment 之间共享数据，可以在配置更改（比如屏幕旋转）后仍旧能保持数据，从而避免了数据丢失和重复初始化
@@ -337,9 +364,14 @@ Handler机制。MessageQueue中的Message是如何排列的？Msg的runnable对�
 - 根本原因：短生命周期的对象被长生命周期的对象持有引用，导致短生命周期对象的内存在其生命周期结束后无法被 GC 回收，从而导致了内存泄露
 - 非静态内部类或匿名内部类都会隐式地持有外部类的引用，都可以访问外部类的变量
 - 减少单例、静态对象、非静态内部类或匿名内部类的使用
+长生命周期的对象持有了短生命周期对象的引用，尽管短生命周期的对象已不再使用，但是因为长生命周期对象持有它的引用而导致不能被回收
 
 ## LeakCanary
 - LeakCanary 使用 弱引用 来跟踪 Activity，并结合 GC 机制判断 Activity 是否被回收，从而识别潜在的内存泄漏问题
+
+
+## BlockCanary
+- 也是利用 MainLooper#setMessageLogging 接管系统的 logging Printer 计算时间差
 
 ## 事件分发机制
 - MotionEvent 事件产生后，按照 Activity ->  Window -> DectorView -> View 顺序传递的过程就叫事件分发
@@ -409,3 +441,20 @@ Android 缓存机制
 - 可以使 Android 应用的架构更加清晰、可维护性更高
 - 支持降级处理，如果目标页面或服务不可用，可以进行降级处理，提高应用的稳定性
 - 拥有控制拦截能力，可以配置拦截器来控制页面跳转
+
+
+## 架构
+
+- 使用 ViewModel 而非 AndroidViewModel：不建议使用 AndroidViewModel，不应该在 ViewModel 中使用 Application 类，应该将依赖项移至界面层或数据层
+- 如果是要共享数据的话，应该在业务层或者repo层就做了，不应该在vm这层来做。
+- UseCase 应该是 Main-safe 的，即可以在主线程安全的调用，其中的耗时处理应该自动切换到后台线程
+
+
+## 命名规范
+
+- Repository 接口
+NewsRepository（以往是 INewsRepository、NewsRepositoryInterface）
+
+- Repository 实现 
+DefaultNewsRepository（默认）、OfflineFirstNewsRepository、FakeNewsRepository（以往是 NewsRepository、NewsRepositoryImpl）
+

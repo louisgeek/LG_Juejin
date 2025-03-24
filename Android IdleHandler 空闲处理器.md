@@ -47,4 +47,4 @@
 ## 总结
 - IdleHandler 的执行时机是不可控的，如果 MessageQueue 一直有待处理的消息，那么 IdleHander 的执行时机会很靠后
 - IdleHandler 的目的是在消息队列空闲时执行一些轻量级的、不紧急的任务，不推荐进行较耗时的操作
-- Android 系统的 GC 回收场景就使用了这个机制，当空闲的时候会去执行 GC 操作
+- Android 系统的 GC 回收场景（GcIdler）就使用了这个机制，当空闲的时候会去执行 GC 操作
