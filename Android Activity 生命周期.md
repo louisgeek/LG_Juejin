@@ -15,7 +15,7 @@ onCreate —— onStart 可见 —— onResume 有焦点 —— onPause 无焦�
 - 图中显示系统在某些情况下回收内存导致 onStop 和 onDestory 可能不被调用，因此可以根据实际情况在 onPause 中保存一些非常重要的数据，耗时操作需要开子线程处理
 
 ## 经典场景
-- 1 第一次启动 Activity  A
+- 1 第一次启动 Activity A
 ```java
 //Activity A
 onCreate -> onStart -> onResume
@@ -42,9 +42,9 @@ onCreate（重新创建） -> onStart -> onResume
 - 4 点击 HOME 键、来电
 ```java
 //点击 Home 键、来电
-onPause　->　onStop 
+onPause -> onStop 
 //回到 App
-onRestart ->  onStart　->　onResume  
+onRestart -> onStart -> onResume  
 //如果被系统回收了，则这么走
 onCreate（重新创建） -> onStart -> onResume
 ```
@@ -52,10 +52,13 @@ onCreate（重新创建） -> onStart -> onResume
 - 5 锁屏与解锁
 ```java
 //锁屏
-onPause（不会继续走 onStop）
+onPause -> onStop
 //解锁
-onResume
+onRestart -> onStart -> onResume
+//如果被系统回收了，则这么走
+onCreate（重新创建） -> onStart -> onResume
 ```
+
 ## 生命周期推荐做的事
 ### onCreate
 - 应该尽量减少 onCreate 的工作量，避免程序启动太久而看不见界面，这里可以通过 savedInstanceState 参数恢复一些状态，如果 Activity 是第一次创建的话此时 savedInstanceState 为 null ，所以需要做判空处理
