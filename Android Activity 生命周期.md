@@ -145,6 +145,8 @@ onResume：onCreate -> onStart -> onResume -> onPause -> onStop -> onDestroy
 
 2 什么时候只会走 onPause 方法，而不会走 onStop 方法？
 - 打开一个完全透明或是对话框主题的 Activity 的情况
+- 打开系统对话框（比如音量调节、亮度调节和通知权限弹窗等）
+- 多窗口模式（分屏模式、画中画模式）
 
 3 Activity 在什么时候可能会出现不执行 onDestory 方法的情况？
 - 系统资源不足的情况下
