@@ -77,11 +77,11 @@ onCreate（重新创建） -> onStart -> onResume
 - 意味着此时 Activity 位于 Activity 堆栈的顶部，获取了焦点
 - 把 onPause 中暂停的操作恢复回来，如 Camera 预览
 - 开始动画、视频的播放
-- 可能需要注册传感器（如 GPS）监听
+- 可能需要注册传感器（比如 GPS）监听
 
 ### onPause
 - 不推荐在这里保存应用或用户数据、进行网络请求调用或执行数据库事务（可根据实际情况在 onPause 中保存一些非常重要的数据），即不适合做耗时较长的工作，应最大程度减少 onPause 的工作量避免 Activity 切换缓慢卡顿
-- 释放系统资源，传感器（如 GPS）句柄、Camera 预览等，通常是耗电的
+- 释放系统资源，传感器（比如 GPS）句柄、Camera 预览等，通常是耗电的
 - 停止动画、视频的播放
 - 地图导航页面一般不在这里释放，因为希望它仍然能够继续工作
 
@@ -94,7 +94,7 @@ onCreate（重新创建） -> onStart -> onResume
 - 取消注册 BroadcastReceiver 广播接收器
 
 ### onDestoty
-- 应释放先前的回调（如 onStop）中尚未释放的所有资源
+- 应释放先前的回调（比如 onStop）中尚未释放的所有资源
 - 解除与 Service 服务的绑定
 - 其实不推荐在 onDestroy 里执行销毁资源的工作，因为 onDestroy 执行的时机可能较晚，可根据实际需求在
 onPause 或 onStop 中结合 isFinishing 判断来执行

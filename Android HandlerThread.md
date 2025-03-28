@@ -1,5 +1,5 @@
 # Android HandlerThread
-- HandlerThread 继承自 Thread，组合了一个 Looper 和 Handler（目前是隐藏的），本质上是一种可以直接使用 Handler 机制（主要是 Looper）的线程
+- HandlerThread 继承自 Thread，组合了一个 Looper 和 Handler（目前是隐藏的），本质上是一个可以直接使用 Handler 机制（主要是 Looper）的线程
 - HandlerThread 就是给开发者提供了一个比较简单方便的方式，去让我们在执行异步任务或长时间运行的耗时操作时，不阻塞 UI 主线程
 - HandlerThread 简化了 Looper 的创建和管理，支持在一个单独的线程中处理消息队列，而自带的消息队列同时也确保了消息处理的顺序性，同时每个线程关联的独立的 Handler 进行顺序执行任务的特性以保证了线程安全，避免了在多个线程中同时操作同一个 Handler 的实例而引发的线程安全问题
 
@@ -12,7 +12,7 @@ HandlerThread handlerThread = new HandlerThread("name");
 
 ## 启动线程
 ```java
-handlerThread.start() 
+handlerThread.start();
 ```
 
 ## 创建 Handler
@@ -53,7 +53,7 @@ workHandler.post(new Runnable() {
 
 
 ## 退出
-- 不再需要 HandlerThread 时记得在合适的地方停止它，比如 Activity 的 onDestroy 里
+- 不再需要 HandlerThread 时记得在合适的地方结束线程以避免可能出现内存泄露（比如 Activity 的 onDestroy 里）
 ```java
 //quit 是立即尝试退出，可能留下未处理的消息
 HandlerThread.quit();

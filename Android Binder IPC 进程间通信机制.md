@@ -3,26 +3,23 @@
 - 进程隔离：进程与进程间内存是不共享的，一个进程无法直接访问另一个进程的数据，所以要引入进程间通信
 - IPC：Inter-Process Communication 进程间通信，是指在不同进程之间进行数据交换、共享资源和信息传递的机制
 - Binder 是 Android 提供的一种 IPC 进程间通信机制，是一种高效、安全、易用的跨进程通信方式
-- Binder 是一种基于消息传递的 IPC 机制，其核心就是一个内核驱动程序，它负责在不同进程之间传递消息，使用 C/S 架构（服务端/客户端架构），易用性高
+- Binder 是一种基于消息传递的 IPC 机制，其核心就是一个内核驱动程序，它负责在不同进程之间传递消息，使用 C/S 架构（服务端/客户端架构），易用性较高
 - 常用的系统服务 ActivityManagerService、PackageManagerService 等服务都是通过 Binder 方式和应用程序之间进行通信的
-- 音乐播放器应用场景：可以把播放服务放在一个独立的进程中，通过 Binder 实现主进程与播放服务进程之间的通信，主进程可以发送播放、暂停、切换歌曲等指令给播放服务进程，播放服务进程可以将当前播放的状态回传给主进程进行显示，充分利用多核处理器的优势，总体来说多进程能带来更好的性能和用户体验
+- 应用场景：音乐播放器，可以把播放服务放在一个独立的进程中，通过 Binder 实现主进程与播放服务进程之间的通信，主进程可以发送播放、暂停、切换歌曲等指令给播放服务进程，播放服务进程可以将当前播放的状态回传给主进程进行显示，充分利用多核处理器的优势，总体来说多进程能带来更好的性能和用户体验
 
-
-## 常见的 IPC 机制
+## 常见的 IPC 通信机制
 - Shared Memory 共享内存
 - Pipe 管道
 - Message Queue 消息队列
-- Socket 套接字：在同一主机上的不同进程之间通信，也可以支持在不同主机上的进程之间进行通信
-
+- Socket 套接字：不仅支持在同一主机上的不同进程之间通信，也可以支持在不同主机上进行进程间通信
 
 ## Binder IPC 通信机制
-- 进程空间划分为 User Space 用户空间 和 Kernel Space 内核空间两种，简单来说内核空间就是系统内核运行的空间，用户空间就是用户程序运行的空间
-- Client、Server 和 ServiceManager 三者之间交互都是基于 Binder 驱动进行通信的，三者进程都属于进程空间的用户空间，不可进行进程间交互，而 Binder 驱动属于进程空间的内核空间，可进行进程间交互，三者都是通过 Binder 驱动在内核空间进行拷贝数据
-- Server 进程先注册一些 Service 到 ServiceManager 中，某个 Client 进程要使用某个 Service，必须先到 ServiceManager 中获取该 Service 的相关信息，Client 根据得到的 Service 信息建立与 Service 所在的 Server 进程通信的通路，然后就可以与 Server 进行交互了
+- 进程空间划分为 User Space 用户空间 和 Kernel Space 内核空间两种，简单来说内核空间就是系统内核运行的空间，用户空间就是用户应用程序运行的空间
+- C/S 架构体系中，Client、Server 和 ServiceManager 三者进程之间都是基于 Binder 驱动来进行通信的，三者进程都属于进程空间中的用户空间，不可直接进行进程间交互，而 Binder 驱动属于进程空间的内核空间，可进行进程间交互，三者都是通过 Binder 驱动在内核空间进行数据拷贝
+- Server 进程先注册一些 Service 到 ServiceManager 中，某个 Client 进程要使用某个 Service，必须先到 ServiceManager 中获取该 Service 的相关信息，Client 根据得到的 Service 信息，与 Service 所在的 Server 进程建立通信的通路，然后就可以直接与 Server 进行交互了
 - Client 进程只不过是持有了 Server 端的 Proxy 代理，代理对象协助 Binder 驱动完成了跨进程通信
 - ServiceManager 管理 Service 的注册和查询
-- Binder 驱动，Binder IPC 机制中涉及到的内存映射，它是通过 mmap() 来实现的
-
+- Binder 驱动，Binder IPC 机制中涉及到的内存映射，它是通过 mmap 函数来实现的
 
 ## AIDL Android 接口定义语言
 - 用来抽象化 Binder IPC 的工具（就是接口的定义，说白了就是借助编译器生成 Binder 相关代码去实现，可以少些一些模板代码），可以理解为进程之间通信传输数据的桥梁
@@ -101,7 +98,6 @@ class MyAidlService : Service() {
  </service>
 ```
 
-
 客户端：
 - 1 Android Studio 创建 aidl 文件（和服务端一样，也可以直接复制过来，然后 build 一下）
 - 2 调用 bindService 绑定远程 Service，传入自定义 ServiceConnection 实例
@@ -166,17 +162,17 @@ class MyAidlService : Service() {
 - 服务端：Service#onBind 返回 IBinder 对象，Server 端实现了 Xxx.Stub（继承 Binder）抽象类
 - 客户端：bind 一个 Service 之后，在 onServiceConnected 的回调里通过 asInterface 这个方法返回 Xxx.Stub.Proxy 就是拿到了一个远程的 Service
 
-
- ## Android 基于 Linux 内核，为啥不直接采用 Linux 中现有实现的 IPC 机制
-- 性能：Binder 数据拷贝只需要一次，有开销低、速度快、耗电少等优势（管道、消息队列和 Socket 都需要两次，但共享内存方式一次内存拷贝都不需要，从性能角度看，Binder 性能仅次于共享内存），Binder 相对出传统的 Socket 方式显得更加高效
+ ## 安卓基于 Linux 内核，为啥不直接采用 Linux 中现有实现的 IPC 通信机制
+- 性能：Binder 数据拷贝只需要一次，有开销低、速度快和耗电少等优势（管道、消息队列和 Socket 方式都需要两次，但共享内存方式一次内存拷贝都不需要，从性能角度看，Binder 性能仅次于共享内存），Binder 相对与传统的 Socket 等方式显得更加高效
 - 安全鉴权：传统的跨进程通信方式对于通信双方的身份并没有做出严格的验证，而 Binder 机制从协议本身就支持对通信双方做身份校检，也是 Android 权限模型的基础，它为每个进程都分配了自己的 UID/PID 作为标识，它是鉴别进程身份的重要标志，有效提高了安全性
 - 简单易用：Binder 使用面向对象的方式设计，使用 C/S 架构，相互独立、职责明确、架构清晰和易于使用
-- 其他因素：Binder 是安卓架构师基于自己的开源项目 OpenBinder 重新实现的 Android IPC 机制，优先采用现成的方案       
+- 其他因素：Binder 是安卓架构师基于自己的开源项目 OpenBinder 重新实现的 Android IPC 通信机制，优先采用了现成的方案       
 
 两次拷贝：指的是需要先将数据从发送方进程拷贝到内核缓存区（内核空间内），然后再将数据从内核缓存区拷贝到接收方进程
-内存映射：指的是将用户空间的一块内存区域映射到内核空间，当映射关系建立后，用户对这块内存区域的修改可以直接反应到内核空间，反之内核空间对这段区域的修改也能直接反应到用户空间，内存映射能够减少数据拷贝的次数，实现用户空间和内核空间的高效互动，发送方进程将数据拷贝到内核缓存区（内核空间内），由于内核缓存区和接收进程的用户空间存在内存映射，因此也就相当于把数据发送到了接收进程的用户空间内，这样便完成了一次进程间的通信，只进行了一次拷贝
 
- ## 为啥 Zygote 进程中的 IPC 采用的是 Socket 机制
-- 初始化时机：首先 Socket 机制是基于跨平台网络协议的，不依赖于 Android 特有的 Binder 机制，因此可以在 Binder 驱动初始化之前进行通信，很难保证 Zygote 进程去注册 Binder 的时候 ServiceManager 已经初始化好了，如果去做额外的同步工作就加大了复杂度了
+内存映射：指的是将用户空间的一块内存区域映射到内核空间，当映射关系建立后，用户对这块内存区域的修改可以直接反应到内核空间，反之内核空间对这段区域的修改也能直接反应到用户空间，内存映射能够减少数据拷贝的次数，实现用户空间和内核空间的高效互动，而发送方进程将数据拷贝到内核缓存区（内核空间内），由于内核缓存区和接收进程的用户空间存在内存映射，因此也就是相当于已经把数据发送到了接收进程的用户空间内，这样便完成了一次进程间的通信，只进行了一次拷贝
+
+ ## 为啥 Zygote 进程中的 IPC 通信机制采用的是 Socket 方式
+- 初始化时机：首先 Socket 机制是基于跨平台网络协议的，不依赖于 Android 特有的 Binder 机制，因此可以在 Binder 驱动初始化之前进行通信，而且也很难保证 Zygote 进程去注册 Binder 的时候 ServiceManager 已经初始化好了，如果去做额外的同步工作就加大了复杂度了
 - Zygote 的 fork 行为：Linux 中 fork 进程是不推荐去 fork 一个多线程的进程的，而 Binder 通常是多线程的，所以该场景下不推荐引入 Binder 机制，而且如果使用 Binder 的话，从 Zygote 中 fork 出子进程时就也会拷贝一份 Zygote 中的 Binder 对象，会造成额外的内存占用
  

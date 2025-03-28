@@ -1,6 +1,6 @@
 # Android Choreographer 编舞者
-- 又称为舞蹈指导（舞蹈是有节奏的，节奏使舞蹈的每个动作更加协调和连贯，视图刷新亦是如此）
-- VSync 就是 Vertical Synchronization 垂直同步
+- 又称为舞蹈编导、舞蹈指导（舞蹈是有节奏的，节奏使舞蹈的每个动作更加协调和连贯，视图刷新亦是如此）
+- VSync 就是 Vertical Synchronization 垂直同步，提供一个信号触发对 UI 进行渲染（主要是用来确保内容更新和屏幕刷新同步，让 App UI 和 SurfaceFlinger 可以按硬件产生的 VSync 信号节奏进行工作），防止屏幕被撕裂（割裂）的情况发生，使得画面显示更加顺滑
 - Choreographer 主要负责统一协调管理 CALLBACK_INPUT 外部输入、CALLBACK_ANIMATION 动画和 CALLBACK_TRAVERSAL 遍历视图树（包括测量、布局和绘制）三大操作（新版还有一个 CALLBACK_COMMIT）的时机，当接收到来自系统的 VSync 垂直同步信号后，顺序执行输入、动画和遍历视图树这三个操作，然后等待下一个 VSync 信号到来后再次顺序执行这三个操作，实现控制这三个操作的同步处理，确保 UI 渲染能够在合适的时机进行，以实现流畅的动画和界面视图刷新
 - 通过 Choreographer#postFrameCallback 设置一个 Choreographer.FrameCallback 回调，在每次屏幕刷新周期（即下一帧渲染）开始时（VSync 信号触发）调用 doFrame 方法，可以在回调里执行一些自定义代码（比如可以用来记录每一帧的时间、监测帧率或实现特定的自定义动画效果等）
 - 监控 UI 渲染性能、卡顿检测排查：通过计算帧渲染的时间，分析帧间隔，定位卡顿原因，找出性能瓶颈
@@ -25,3 +25,8 @@ Choreographer.getInstance().postFrameCallback(new Choreographer.FrameCallback() 
 //需要在合适的时机移除回调，以防内存泄漏
 Choreographer.getInstance().removeFrameCallback
 ```
+
+
+## 总结
+- Choreographer 负责接收和处理各种回调消息（INPUT、ANIMATION 和 TRAVERSAL 等等），然后等到 Vsync 信号到来的时候进行统一处理
+- Choreographer 同时也负责请求和接收 Vsync 信号

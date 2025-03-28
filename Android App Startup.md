@@ -171,7 +171,7 @@ class ExampleLoggerInitializer:Initializer<ExampleLogger> {
 
 
 ## 手动初始化组件
-- 这里会自动启动 WorkManagerInitializer，WorkManagerInitializer 是 ExampleLoggerInitializer 的依赖项，可以省略
+- 这里会自动启动 WorkManagerInitializer，因为 WorkManagerInitializer 是 ExampleLoggerInitializer 的依赖项，可以省略
 
 ```kotlin
  val appInitializer = AppInitializer.getInstance(context)
