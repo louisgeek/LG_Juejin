@@ -19,7 +19,7 @@
 - Server 进程先注册一些 Service 到 ServiceManager 中，某个 Client 进程要使用某个 Service，必须先到 ServiceManager 中获取该 Service 的相关信息，Client 根据得到的 Service 信息，与 Service 所在的 Server 进程建立通信的通路，然后就可以直接与 Server 进行交互了
 - Client 进程只不过是持有了 Server 端的 Proxy 代理，代理对象协助 Binder 驱动完成了跨进程通信
 - ServiceManager 管理 Service 的注册和查询
-- Binder 驱动，Binder IPC 机制中涉及到的内存映射，它是通过 mmap 函数来实现的
+- Binder 驱动，Binder IPC 机制中涉及到的内存映射，它是通过 mmap 函数来实现的（分配一块内存区域作为事务缓冲区，这个事务缓冲区的大小通常为 1MB 左右，且所有 Binder 传输共享该缓冲区，所以实际可用大小约为 500K ~ 800K 以下）
 
 ## AIDL Android 接口定义语言
 - 用来抽象化 Binder IPC 的工具（就是接口的定义，说白了就是借助编译器生成 Binder 相关代码去实现，可以少些一些模板代码），可以理解为进程之间通信传输数据的桥梁

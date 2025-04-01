@@ -70,7 +70,6 @@ System.out.println(matcher3.replaceFirst("*")); //用星号替换第一个匹配
 收费*0元5角
 ```
 
-
 ## IP、Email 等正则表达式
 ```java
 //androidx.core.util.PatternsCompat

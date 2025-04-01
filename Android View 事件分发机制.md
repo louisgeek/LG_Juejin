@@ -1,11 +1,11 @@
 
-# Android 事件分发机制
+# Android View 事件分发机制
 - 事件分发机制遵循了一种类似于责任链模式的设计，是一套在不同的视图层级中进行传递和处理事件的机制
 - 事件从 Activity 开始，先传到 Window，然后通过 ViewGroup 按照视图树的层次结构依次向下传递到子视图，寻找一个可以处理事件的视图，如果该视图没有消费该事件，则事件会逐级向上回传，直到找到一个能够处理事件的视图，或者最终没有被任何视图处理就到达 Activity 的 onTouchEvent 方法进行处理
 - 如果 onTouchEvent 方法返回 true 表示要消费处理这个事件，返回 false 则表示不处理事件，事件会按照分发流程向上返回传递
 - View#dispatchTouchEvent(MotionEvent event) 分发事件，ViewGroup 重写了该方法
 - ViewGroup#onInterceptTouchEvent(MotionEvent event) 是 ViewGroup 特有的方法，代表 ViewGroup 是否拦截事件，默认返回 false，可按需重写
-- View#onTouchEvent(MotionEvent event) 处理事件，ViewGroup 复用了该方法
+- View#onTouchEvent(MotionEvent event) 处理事件，ViewGroup 复用了该方法，onTouchEvent 返回 true 代表消费事件
 - 事件序列：通常情况下 MotionEvent.ACTION_DOWN 标志着一个事件序列的开始，而 MotionEvent.ACTION_UP 则标志着一个事件序列的结束，只有当一个视图处理了 ACTION_DOWN 事件，它才会收到后续的 ACTION_MOVE 和 ACTION_UP 事件
 - ViewGroup#requestDisallowInterceptTouchEvent(boolean disallowIntercept) 请求不允许拦截
 
@@ -29,6 +29,13 @@ public boolean dispatchTouchEvent(MotionEvent event) {
 
 ## 事件流
 - 事件分发传递的顺序：Activity -> Window（PhoneWindow） -> DecorView（FrameLayout） -> ViewGroup -> View
+
+## dispatchTouchEvent 返回值
+- dispatchTouchEvent 返回 true 表示事件被消费（即当前视图或其子视图已经处理了该 ACTION_DOWN 事件，后续的 ACTION_MOVE、ACTION_UP 等事件将不再分发传递给其他视图或父视图），事件分发流程会在此终止
+- 重写 dispatchTouchEvent 方法直接 return true 这种形式要谨慎使用，建议仍旧保留 super.dispatchTouchEvent(event) 来保持默认的分发逻辑（只有返回 super.dispatchTouchEvent(event) 才向下传递事件）
+- ViewGroup#dispatchTouchEvent 的返回值通常由 ViewGroup 自身的 onTouchEvent 方法或子视图的 dispatchTouchEvent 方法决定的
+- View#dispatchTouchEvent 的返回值通常由 OnTouchListener 的 onTouch 方法或自身的 onTouchEvent 方法决定的
+- PS：通常大多数情况以 onTouchEvent 的返回值作为 dispatchTouchEvent 的返回值，若 onTouchEvent 返回 false， 但 dispatchTouchEvent 最终逻辑返回 true，可能会导致事件处理逻辑混乱，应该按需确保两者逻辑一致
 
 ## Activity 事件分发
 ```java
@@ -223,6 +230,7 @@ public boolean dispatchTouchEvent(MotionEvent event) {
 ## ViewGroup#requestDisallowInterceptTouchEvent(boolean disallowIntercept)
 - 请求不拦截，disallowIntercept 默认 false
 - 默认情况下，父视图优先处理触摸事件，就有机会去进行拦截事件，而存在某些情况下可能希望子视图能够优先处理触摸事件，这时就可以使用这个方法，通常写在 View 的 onTouchEvent 方法中
+- requestDisallowInterceptTouchEvent 主要用于控制 ACTION_DOWN 事件之后（比如 ACTION_MOVE、ACTION_UP 等）的事件拦截，而 ACTION_DOWN 事件仍应由父 ViewGroup 的 onInterceptTouchEvent 控制决定是否拦截事件
 
 ```java
 //ViewGroup#requestDisallowInterceptTouchEvent
@@ -266,6 +274,11 @@ public boolean onTouchEvent(View v, MotionEvent event) {
 ## 事件冲突
 - 外部拦截法：是在父 View 的 onInterceptTouchEvent 方法中进行事件拦截判断
 - 内部拦截法：是在子 View 的 dispatchTouchEvent 方法中，通过调用父视图的 ViewGroup#requestDisallowInterceptTouchEvent 方法来控制父 View 是否拦截事件
+
+## ACTION_CANCEL 事件
+- 1 父视图拦截事件：父视图在 onInterceptTouchEvent 方法中没有拦截 ACTION_DOWN 事件，子视图收到 ACTION_DOWN，开始处理事件，此时父视图在后续事件（比如 ACTION_MOVE、ACTION_UP 等）中调用 onInterceptTouchEvent 返回 true 进行拦截事件，父视图的 dispatchTouchEvent 方法会向子视图发送 ACTION_CANCEL 事件，然后自己处理这些后续事件（比如 ACTION_MOVE 等）
+- 2 触摸事件超出子视图范围：触摸按下子视图后，当手指移动到子视图区域外，那么子视图会收到 ACTION_CANCEL
+- 3 子视图被移除或窗口关闭：子视图正在处理事件的过程中，子视图从父视图中被移除或者窗口关闭，那么子视图会收到 ACTION_CANCEL
 
 ## 实例分析
 ### 点击一个按钮
