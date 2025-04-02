@@ -2,9 +2,9 @@
 
 GC不是在Activity销毁时就立即进行的。GC是每隔一段时间就自发进行一次，而且这次回收不了、下次还有机会。这就是说，即便你的新线程里存在耗时的代码（之所以强调新线程，是因为阻塞主线程会直接报错），即便你那耗时的代码在其外部的Activity销毁之后仍然运行，只要这代码别整个几分钟都停不下来，那就算稍微晚几秒被回收也无所谓。为什么要强调这个呢？因为这样你就不用非得把一些有可能在Activity销毁后继续运行但耗时较短的内部类设为静态了
  
-Lottie 动画依托于 ValueAnimator 属性动画，动画更新的监听不断回调，执行 LottieDrawable#setProgress 的最终会触发了每个 layer 的 invalidateSelf，这都会让 LottieDrawable 重新绘制，然后重走一遍绘制流程，这样随着 animator 动画的进行，lottieDrawable 不断的绘制，就展现出了一个完整的动画
 
 
+当多个键通过哈希函数映射到同一个数组索引时，这些键会被存储在同一个链表中
  
 协程 catch 原理
 
@@ -19,10 +19,10 @@ profiler 内存分类
 滑动冲突
 饼图
 
-事件分发 cancel 
+
 invitations 
 
-lock 原理
+
 
 emit  try c
 
@@ -34,6 +34,15 @@ supcaleable  回调结束在哪
 Flow Channel 
 
 
+CPU核心数，线程数，时间片轮转机制解读
+synchronized、Lock、volatile、ThreadLocal如何实现线程共享
+Wait,Notify/NotifyAll，Join方法如何实现线程间协作
+
+Callbale、Future和FutureTask源码解读
+线程池底层实现分析
+
+手写线程池实战
+Executor框架解读实战
 
 ## 你的职业规划？
 - 评估自己感兴趣的方向和技能
@@ -44,6 +53,56 @@ Flow Channel
 
 
 一般遇到困难的解决方案是什么
+
+
+
+
+
+
+
+按编程范式分类
+- Functional 函数式编程、Imperative 命令式编程、Declarative 声明式编程
+
+## 函数式编程：函数是一等公民，函数能像参数那样被传递到另一个函数，有强调使用纯函数、无副作用的、支持函数的组合等特性，
+## 命令式编程：以指令的形式描述计算机执行的步骤，输入什么指令，就执行什么指令；灵活直观
+## 声明式编程：以数据结构的形式来表达程序执行的逻辑，比如SQL，一般不需要创建变量用来存储数据，且不包含循环控制的代码逻辑如 for， while等
+
+
+Object-Oriented 面向对象编程
+Aspect-Oriented 面向切面编程：用于解决横切关注点的模块化问题，通过将横切关注点从主要业务逻辑中分离出来
+
+
+Reactive 响应式编程：当数据变化时，主动触发视图层的变化，通过使用观察者模式、函数式编程和流式操作等技术
+
+
+
+
+
+
+
+LayoutInflater#Factory2 相当于给了我们机会能够介入从 xml 中解析并创建一个个 View 元素的过程
+
+场景
+- 1 在 XML 布局中自定义标签名称
+- 2 全局替换系统控件为自定义 View
+- 3 替换 app 中的字体
+- 4 全局换肤
+
+
+
+## Factory 与 Factory2 的区别
+Factory2 继承自 Factory 接口
+如果 AppCompatActivity 并没有设置 Factory，就会调用 Delegate 实例的 createView 方法创建 view
+如果没有采用 Material 主题而是 AppCompat 主题的话，就自动映射成 AppCompat 开头的控件
+
+
+
+兜底  降级
+
+
+## GC
+引用计数法：为每个对象添加一个引用计数器，每当有一个引用指向它时，计数器就加1，当引用失效时，计数器就减1，当计数器为0时，则认为该对象可以被回收（目前在Java中已经弃用这种方式了）。
+可达性分析算法：从一个被称为 GC Roots 的对象开始向下搜索，如果一个对象到GC Roots没有任何引用链相连时，则说明此对象不可用。
 
 
 
@@ -76,9 +135,7 @@ mRecyclerPool：按照不同itemType分别存放超出mCachedViews限制并移�
  
 
 
-SSL/TLS 协议使用公钥和私钥对数据进行加密和解密，确保数据在传输过程中不被窃取或篡改。
-它使用公钥加密来确保通信双方的身份验证，然后使用对称加密来保护数据的隐私性和完整性
-SSL/TLS 协议使用消息认证码（MAC）来保证数据的完整性
+
 
 
 
@@ -88,10 +145,7 @@ SSL/TLS 协议使用消息认证码（MAC）来保证数据的完整性
 
 
 
-HTTP/2 引入了二进制格式来打包和传输客户端与服务器之间的数据，这有助于降低解析难度并提高协议的健壮性
-    这使得数据传输更快，解析更高效，减少了传输过程中的开销和延迟
- 这提高了效率和安全性
-通过这种方式，服务器和客户端可以更高效地解析和处理数据，实现多路复用。
+
 
 
 
@@ -134,7 +188,30 @@ libusb 可以通过 jni 获取 bus dev Manafacturer Product SerialNumber (libusb
 
 
 
+个人优势：日常工作比较积极，耐得住性子，坐得住，愿意学习提升自我技能，领悟力较好，能不断总结和提高，有较强的问题解决能力，能够完成复杂且较高难度的技术开发工作
 
+
+
+
+
+
+launchWhenStarted 只是在 STARTED 状态时挂起和恢复协程，协程本身不会被取消和重新启动，适合仅需在特定状态执行一次的任务，容易资源浪费，已废弃
+repeatOnLifecycle 在离开指定状态时会取消协程，再次进入指定状态时会重新启动协程，适合需要持续响应生命周期变化的任务，如数据刷新、定时任务等
+Flow#flowWithLifecycle(lifecycle, Lifecycle.State.STARTED)
+addRepeatingJob
+
+```kotlin
+    //感知 activity 或 fragment 的生命周期
+   viewLifecycleOwner.lifecycleScope.launch {
+           //确保只有当 Lifecycle 处于 STARTED 状态时才收集流中的数据，同时两者组合就能感知协程的生命周期了
+       viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+           //
+           viewModel.someDataFlow.collect {
+               // Process item
+           }
+       }
+   }
+```
 
 
 ## Handler
@@ -172,13 +249,19 @@ public static void main(String[] args) {
 ```
 ，而由于哈希值数组是有序的，且键值对数组按照哈希值数组的顺序存储，因此插入顺序得以保留  保持键值对的插入顺序！！！
  Asset 资产
+
+
 使用JobScheduler和WorkManager：合理安排后台任务，减少唤醒次数
+
 通过 Android Profiler 分析内存与CPU占用
+
 TraceView用于分析应用的执行流程，找出耗时操作
+
 Systrace用于系统级的性能分析，帮助开发者优化系统启动过程
+
 使用AlarmManager的弹性机制：使用setInexactRepeating来减少唤醒的精确度
 
-OkHttp中，可以通过 Interceptor 拦截器实现重试机制，使用GZIP压缩请求和响应数据，减少传输数据量
+
 
 ### ThreadLocal 是什么?
 

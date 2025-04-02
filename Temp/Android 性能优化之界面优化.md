@@ -1,16 +1,21 @@
 # Android 性能优化之界面优化
+在onDraw方法中避免创建新对象，减少内存分配和垃圾回收
+
+层级嵌套
+使用ConstraintLayout减少布局嵌套。
+使用<include>标签复用布局，减少布局层级。
+使用<include>、<merge>和<ViewStub>标签优化布局。
 
 
 ## UI 画面流畅度
 ## UI 过度绘制
-
+使用工具如Hierarchy Viewer和Layout Inspector检测和减少过度绘制
 
 ## 界面优化
 
 ### 过度绘制
 打开开发者选项 -> 调试 GPU 过度绘制
 
-层级嵌套
 
 
 ### 界面卡顿检测

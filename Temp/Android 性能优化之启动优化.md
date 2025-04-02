@@ -2,7 +2,7 @@
 
 ## APP 启动速度
 
-
+App Startup
 androidx.startup 优化初始化代码的执行顺序
 
 减少主线程工作量
