@@ -16,9 +16,9 @@
 - 执行类的初始化代码，包括静态初始化块和静态变量的赋值操作
 
 ## ClassLoader 类加载器
-- Bootstrap ClassLoader 启动（引导）类加载器：负责加载 /jre/lib 路径下的核心类库（比如 java.lang、java.util 等），使用 C++ 实现，不继承 java.lang.ClassLoader，在 Java 中无法直接获取，不可直接访问
+- Bootstrap ClassLoader 启动（引导）类加载器：负责加载 /jre/lib 路径下的核心类库（比如 java.lang、java.util 等），使用 C++ 实现的，不继承 java.lang.ClassLoader，在 Java 中无法直接获取，不可直接访问
 - Extension ClassLoader 扩展类加载器：负责加载 jre/lib/ext 路径下的扩展类库
-- Application ClassLoader 应用程序（系统）类加载器：负责加载用户 classpath 类路径下的类
+- Application ClassLoader 应用程序类加载器（System ClassLoader 系统类加载器）：负责加载用户 classpath 类路径下的类
 - Custom ClassLoader 自定义类加载器：可以继承 java.lang.ClassLoader 并重写 findClass 方法实现，通常用于加载非标准路径中的类（比如动态代理、加密文件中加载和网络下载后加载等）
 
 ## 双亲委派模型
