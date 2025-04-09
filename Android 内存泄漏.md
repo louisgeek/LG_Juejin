@@ -99,7 +99,7 @@ public class MainActivity extends AppCompatActivity {
 - 5 尽可能的改用 Application 的 Context
 - 6 避免使用非静态内部类或匿名内部类
 - 7 注意 Handler 导致的内存泄漏，及时在 onStop 或 onDestroy 时候用 removeCallbacksAndMessages 移除消息
-- 8 针对线程相关及时做好取消、终止等工作
-- 9 针对资源性对象（比如数据库、File 等）、WebView 和动画等需要及时做好回收关闭工作，做好 BroadcastReceiver 广播、监听器和观察者等的移除反注册工作
+- 8 针对线程相关及时做好取消、终止等工作（比如子线程耗时操作运行仍未结束）
+- 9 针对资源性对象（比如数据库、File 文件和 Cursor 等）、WebView 和动画等需要及时做好回收关闭工作，做好 BroadcastReceiver 广播、监听器和观察者等的移除反注册工作，Service 服务执行完成后记得关闭
 - 10 多使用 try–catch-finally、try-with-resources 特性或者 Kotlin 的 T.use 函数
  

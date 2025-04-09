@@ -1,7 +1,7 @@
 # Android Binder IPC 进程间通信机制
 - Binder 粘合剂：顾名思义就是粘合不同的进程，使他们之间能够实现通信
 - 进程隔离：进程与进程间内存是不共享的，一个进程无法直接访问另一个进程的数据，所以要引入进程间通信
-- IPC：Inter-Process Communication 进程间通信，是指在不同进程之间进行数据交换、共享资源和信息传递的机制
+- IPC：Inter-Process Communication 进程间通信（跨进程通信），是指在不同进程之间进行数据交换、共享资源和信息传递的机制
 - Binder 是 Android 提供的一种 IPC 进程间通信机制，是一种高效、安全、易用的跨进程通信方式
 - Binder 是一种基于消息传递的 IPC 机制，其核心就是一个内核驱动程序，它负责在不同进程之间传递消息，使用 C/S 架构（服务端/客户端架构），易用性较高
 - 常用的系统服务 ActivityManagerService、PackageManagerService 等服务都是通过 Binder 方式和应用程序之间进行通信的
@@ -16,9 +16,9 @@
 ## Binder IPC 通信机制
 - 进程空间划分为 User Space 用户空间 和 Kernel Space 内核空间两种，简单来说内核空间就是系统内核运行的空间，用户空间就是用户应用程序运行的空间
 - C/S 架构体系中，Client、Server 和 ServiceManager 三者进程之间都是基于 Binder 驱动来进行通信的，三者进程都属于进程空间中的用户空间，不可直接进行进程间交互，而 Binder 驱动属于进程空间的内核空间，可进行进程间交互，三者都是通过 Binder 驱动在内核空间进行数据拷贝
+- ServiceManager 管理 Service 的注册和查询，Binder 是 ServiceManager 连接各种 Manager（比如 ActivityManager）和对应 ManagerService（比如 ActivityManagerService）的桥梁
 - Server 进程先注册一些 Service 到 ServiceManager 中，某个 Client 进程要使用某个 Service，必须先到 ServiceManager 中获取该 Service 的相关信息，Client 根据得到的 Service 信息，与 Service 所在的 Server 进程建立通信的通路，然后就可以直接与 Server 进行交互了
 - Client 进程只不过是持有了 Server 端的 Proxy 代理，代理对象协助 Binder 驱动完成了跨进程通信
-- ServiceManager 管理 Service 的注册和查询
 - Binder 驱动，Binder IPC 机制中涉及到的内存映射，它是通过 mmap 函数来实现的（分配一块内存区域作为事务缓冲区，这个事务缓冲区的大小通常为 1MB 左右，且所有 Binder 传输共享该缓冲区，所以实际可用大小约为 500K ~ 800K 以下）
 
 ## AIDL Android 接口定义语言
@@ -162,7 +162,11 @@ class MyAidlService : Service() {
 - 服务端：Service#onBind 返回 IBinder 对象，Server 端实现了 Xxx.Stub（继承 Binder）抽象类
 - 客户端：bind 一个 Service 之后，在 onServiceConnected 的回调里通过 asInterface 这个方法返回 Xxx.Stub.Proxy 就是拿到了一个远程的 Service
 
- ## 安卓基于 Linux 内核，为啥不直接采用 Linux 中现有实现的 IPC 通信机制
+## Messenger
+- Messenger 是一种轻量级的 IPC 方案，底层是对 AIDL 进行了封装，基于 Handler 和 Message，通过 Message 对象传递简单数据（支持基本数据类型和 Parcelable 类型），服务端通过 Handler 处理消息（消息按队列串行顺序处理，服务端一次只处理一个请求，客户端与服务端单线程交互）
+- 适合简单轻量级、一对一通信的消息传递场景（比如状态更新、进度反馈等）
+
+## 安卓基于 Linux 内核，为啥不直接采用 Linux 中现有实现的 IPC 通信机制
 - 性能：Binder 数据拷贝只需要一次，有开销低、速度快和耗电少等优势（管道、消息队列和 Socket 方式都需要两次，但共享内存方式一次内存拷贝都不需要，从性能角度看，Binder 性能仅次于共享内存），Binder 相对与传统的 Socket 等方式显得更加高效
 - 安全鉴权：传统的跨进程通信方式对于通信双方的身份并没有做出严格的验证，而 Binder 机制从协议本身就支持对通信双方做身份校检，也是 Android 权限模型的基础，它为每个进程都分配了自己的 UID/PID 作为标识，它是鉴别进程身份的重要标志，有效提高了安全性
 - 简单易用：Binder 使用面向对象的方式设计，使用 C/S 架构，相互独立、职责明确、架构清晰和易于使用
