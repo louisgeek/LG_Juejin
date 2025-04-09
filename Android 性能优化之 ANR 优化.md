@@ -5,7 +5,7 @@
 - Activity：在 5 秒内未完成 onResume 或者在 5 秒内未响应输入事件（如按键或屏幕触摸）
 - BroadcastReceiver： 前台广播的 onReceive 方法耗时超过大概 10 秒，后台广播超过大概 60 秒
 - Service：前台服务的 onCreate、onStartCommand、onBind 等方法 20 秒内没有执行完成，后台服务则在 200 秒内
-- ContentProvider：query、insert、publish 等方法在 10 秒内没有执行完成
+- ContentProvider：query、insert、publish 等方法在 10 秒（高版本 20 秒）内没有执行完成
 - ​​JobScheduler 超时​​：JobService 未在指定时间内（几秒内）完成操作（比如未调用 JobService#setNotification）
 - 主线程处理耗时操作（比如文件 IO 操作或数据库操作等）
 - 布局过于复杂（嵌套层级深、过度绘制）、频繁执行重绘刷新
@@ -29,7 +29,7 @@
 - 使用异步机制或优化同步逻辑，避免死锁和等待同步锁（尝试尽量减少在主线程和子线程之间发生的锁竞争）
 - 根据设备性能加载不同资源（区分设备性能，动态调整资源加载策略），及时避免内存泄漏（包括及时释放大内存对象），通过线程避免频繁创建和销毁线程
 
-## 排查检测
+## 检测分析
 - Google Play 收集到的用户感知 ANR 率​​
 - 当 ANR 发生时，系统会在 Logcat 中生成日志，包含关键信息（如阻塞的线程、调用栈），搜索关键字来定位 ANR 问题
 - 导出 /data/anr/traces.txt（低版本）排查或使用 adb bugreport 获取 bug 报告（内部包含 ANR 日志），通过分析主线程堆栈来定位原因

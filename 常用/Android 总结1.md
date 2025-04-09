@@ -9,7 +9,7 @@ GC不是在Activity销毁时就立即进行的。GC是每隔一段时间就自�
 协程 catch 原理
 
 为什么 try catch 在协程外面不行
-
+WatchDog
 juc 集合
 
 vysnc 事件。重复绘制如何触发
@@ -19,10 +19,18 @@ profiler 内存分类
 滑动冲突
 饼图
 
+## GC 垃圾回收机制
+- Gabage Collection 垃圾收集
+- 垃圾回收是一种自动的存储管理机制。 当一些被占用的内存不再需要时，就应该予以释放，以让出空间
+- 在 JVM 中，对于对象的回收 GC 是基于**可达性分析**。简单来说，就是从 GC Root 出发，被引用的对象均被标记为存活，而没有被引用的对象，则被标记为垃圾，即可以被 GC 回收。
+
+
 
 invitations 
 
-
+ANR
+https://developer.android.google.cn/topic/performance/vitals/anr?hl=zh_cn
+https://developer.android.google.cn/topic/performance/anrs/keep-your-app-responsive?hl=zh-cn
 
 emit  try c
 
@@ -32,6 +40,13 @@ supcaleable  回调结束在哪
 
 
 Flow Channel 
+
+## Square LeakCanary
+- Square 提供的内存泄漏检测框架库
+- 老版本通常通过自定义 Application ，在 onCreate 方法中通过 LeakCanary.install 进行初始化
+- 新版本不需要手动初始化，库里的 xml 注册的 ContentProvier（leakcanary.internal.AppWatcherInstaller 在 onCreate 方法中调 leakcanary.AppWatcher.manualInstall） 会自动初始化 LeakCanary
+- 通过 application.registerActivityLifecycleCallbacks 来绑定 Activity 的生命周期监听，从而监控所有 Activity
+- 根据要回收对象创建 KeyedWeakReference 并关联 ReferenceQueue，在弱引用关联的对象被回收后，会将引用添加到 ReferenceQueue 中，可以根据有没有该引用来判定是否被回收了，如果有这个对象则说明被回收了，否则说明没有被回收
 
 
 CPU核心数，线程数，时间片轮转机制解读
