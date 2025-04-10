@@ -4,11 +4,17 @@
 - App Component 应用组件包括 Activity、Service、ContentProvider 内容提供者和 BroadcastReceiver 广播接收器，应用组件可以不按顺序地单独启动，并且系统或者用户可以随时销毁它们，因此不应该在应用组件中存储任何应用数据或状态，并且应用组件不应该相互依赖
 
 ## Activity 生命周期
+- 6 个
 - 锁屏不走 onStop
 - 下拉状态栏不走生命周期
-
 ```java
 onCreate —— onStart 可见 —— onResume 有焦点 —— onPause 无焦点 —— onStop 不可见 —— onDestory
+```
+
+## Fragment 生命周期
+- 11 个
+```java
+onAttach —— onCreate —— onCreateView —— onViewCreated —— onStart 可见 —— onResume 有焦点 —— onPause 无焦点 —— onStop 不可见 —— onDestroyView —— onDestroy —— onDetach
 ```
 
 ## Service 生命周期
@@ -20,10 +26,10 @@ onCreate —— onBind —— onUnbind —— onDestroy
 ```
 
 ## Activity launchMode 启动模式
-- 1 standard 标准模式（默认）
-- 2 singleTop 栈顶复用模式（比如：通知栏推送点击消息界面），如果复用就走 onNewIntent 回调
-- 3 singleTask 栈内复用模式（比如：应用的首页），如果复用就走 onNewIntent 回调，同时清除其之上的所有 Activity 实例
-- 4 singleInstance 单例模式（单独位于一个任务栈中，比如：拨打电话界面、呼叫来电界面、浏览器）
+- standard 标准模式（默认）
+- singleTop 栈顶复用模式（比如：通知栏推送点击消息界面），如果复用就走 onNewIntent 回调
+- singleTask 栈内复用模式（比如：应用的首页），如果复用就走 onNewIntent 回调，同时清除其之上的所有 Activity 实例
+- singleInstance 单例模式（单独位于一个任务栈中，比如：拨打电话界面、呼叫来电界面、浏览器）
 
 ## Activity、Window 和 DecorView
 - Activity 的创建：ActivityThread#handleLaunchActivity -> ActivityThread#performLaunchActivity -> Instrumentation#newActivity
@@ -42,12 +48,7 @@ Activity 负责承载 UI 用户界面、处理用户事件交互和管理生命�
 ```
 
 ## Activity 初始化流程
-- 关键方法 ActivityThread#performLaunchActivity 主要干了三件事：1 创建 Activity 实例，2 初始化 Context 和 Application， 3 执行 Activity 生命周期方法
-- Instrumentation 仪表工具的作用：1 负责 Activity 实例的创建，2 对 Activity 生命周期进行监控和控制-----------监控程序和系统之间的交互的Instrumentation 类主要用来监控应用程序与系统交互
-Instrumentation 用来管理applicaiton及Activity的生命周期。
-Instrumentation 实现类的动态加载、修改、替换和监控的工具
-
-
+- 关键方法 ActivityThread#performLaunchActivity 主要干了三件事：1 初始化 Activity 的 Context 和 Application，2 创建 Activity 实例，3 执行 Activity 生命周期方法
 ```java
 Activity#startActivity //启动一个 Activity
 -Activity#startActivityForResult
@@ -58,12 +59,12 @@ Activity#startActivity //启动一个 Activity
 
 ```java
 ActivityThread#handleLaunchActivity //处理 Activity 启动
--ActivityThread#performLaunchActivity //执行完成 Activity 启动,内部进行 Activity 的 Context 的初始化，紧接着进行 Application 的初始化，
+-ActivityThread#performLaunchActivity //执行完成 Activity 启动，内部进行 Activity 的 Context 的初始化，紧接着进行 Application 的初始化
 --Instrumentation#newActivity //内部进行 Activity 的初始化，Instrumentation#newActivity 利用 ClassLoader 类加载器通过反射创建对应的 Activity 实例
 --Activity#attach //内部进行 Window（PhoneWindow）的初始化，Window#setWindowManager
 --Instrumentation#callActiviyOnCreate
 ---Activity#performCreate
-----Activity#onCreate //最终会调用 Activity#onCreate 方法
+----Activity#onCreate //最终就调用到了 Activity#onCreate 方法
 ```
 
 ```java
@@ -71,7 +72,7 @@ ActivityThread#handleResumeActivity
 -ActivityThread#performResumeActivity
 --Activity#performResume
 ---Instrumentation#callActivityOnResume
-----Activity#onResume //最终会调用 Activity#onResume 方法
+----Activity#onResume //最终就调用到了 Activity#onResume 方法
 ```
 
 ## Window 初始化流程
@@ -79,8 +80,8 @@ ActivityThread#handleResumeActivity
 ```java
 ActivityThread#handleLaunchActivity
 -ActivityThread#performLaunchActivity
---Instrumentation#newActivity //内部进行 Activity 的初始化
---Activity#attach //内部进行 Window（PhoneWindow）的初始化
+--Instrumentation#newActivity //内部进行 Activity 的初始化，Instrumentation#newActivity 利用 ClassLoader 类加载器通过反射创建对应的 Activity 实例
+--Activity#attach //内部进行 Window（PhoneWindow）的初始化，Window#setWindowManager
 --Instrumentation#callActiviyOnCreate
 ```
 
@@ -97,18 +98,16 @@ Activity#setContentView //设置 layoutResID，内部就是调用了 PhoneWindow
 ----DecorView#onResourcesLoaded //把 xml 构建成 View 树（利用 LayoutInflater#inflate 通过 LoadXmlResourceParser 进行解析）
 ```
 ## ActivityManagerService 的作用
-- 负责四大组件的启动、切换、调度
-- 应用程序进程的管理、调度
+- 负责协调四大组件的生命周期管理、管理 Activity 的任务栈
+- 负责应用程序进程的管理和资源调度（AMS 请求 Zygote 进程创建应用程序进程）
 
 ## Window、WindowManager 和 WindowManagerService
-- Window 包含并管理 View，WindowManager 管理 Window，而 WindowManager 的操作是通过和 WindowManagerService 交互来实现的
+- Window 包含并管理 View，WindowManager 管理 Window，而 WindowManager 的操作又是通过和 WindowManagerService 交互来实现的
 
 ## WindowManager、WindowManagerImpl 和 WindowManagerGlobal
 - WindowManager 是一个接口，继承自 ViewManager 接口，WindowManagerImpl 是 WindowManager 的接口实现类
 - WindowManager 的作用是对 Window 进行管理，包括增加、更新和删除等操作（定义在 ViewManager 接口里）
-- WindowManagerImpl 方法内部又是调用 WindowManagerGlobal 的相关方法，涉及到桥接模式的知识
-
-
+- WindowManagerImpl 方法内部又是调用 WindowManagerGlobal 的相关方法（涉及到桥接模式的知识）
 
 ## App 启动流程
 - Launcher App -- Binder --> ActivityManagerService（AMS 在 SystemServer 进程中）
@@ -128,7 +127,7 @@ ActivityManagerService#startActivity
 ----ActivityTaskSupervisor#startSpecificActivity //判断 App 的应用程序进程是否已经启动
 ```
 
-应用程序进程已启动
+应用程序进程已启动的情况
 - ActivityManagerService -- Binder --> ActivityThread（主线程管理类）
 - AMS 通过 Binder 方式请求 ActivityThread 所在进程启动根 Activity
 ```java
@@ -144,7 +143,7 @@ ActivityTaskSupervisor#realStartActivityLocked //ActivityThread 启动目标 Act
 ------Activity#onCreate
 ```
 
-应用程序进程未启动
+应用程序进程未启动的情况
 - ActivityManagerService -- Socket --> Zygote 
 - AMS 通过 Socket 方式通知 Zygote 进程去完成应用程序进程的创建
 ```java
@@ -162,17 +161,16 @@ ActivityTaskSupervisor#startSpecificActivity
 ```
 
 ## ViewRootImpl
-- ViewRootImpl 的创建：ActivityThread#handleResumeActivity -> WindowManagerImpl#addView -> WindowManagerGlobal#addView
-- ViewRootImpl 是 WindowManager 和 DecorView 之间的桥梁，用来管理 View 的各种事件，包括 invalidate、requestLayout、dispatchInputEvent 等
+- ViewRootImpl 的创建：ActivityThread#handleResumeActivity -> ActivityThread#performResumeActivity -> WindowManager.addView -> WindowManagerImpl#addView -> WindowManagerGlobal#addView
+- ViewRootImpl 是 WindowManager 和 DecorView 之间的桥梁，用来管理 View 的各种事件，包括 invalidate、requestLayout 和 dispatchInputEvent 等
 - ViewRootImpl 是 DecorView 的 ViewParent，也正因为这样 View#requestLayout 层层调用最终能调到 ViewRootImpl#requestLayout
 
 ## View 绘制机制
 - 由 ViewRootImpl 来统一协调管理整个视图树的绘制流程，处理来自系统的输入事件分发和生命周期变化
 - 每个 Activity 的 Window 都对应一个 ViewRootImpl 实例（将 ViewRootImpl 和 DecorView 建立关联）
 
-
 ## View 绘制流程
-- 关键方法 ViewRootImpl#scheduleTraversals 会触发 ViewRootImpl#performTraversals 去执行测量、布局和绘制三大方法
+- 关键方法 ViewRootImpl#scheduleTraversals 会触发 ViewRootImpl#performTraversals 去执行 Measure 测量、Layout 布局和 Draw 绘制三大方法
 ```java
 ActivityThread#handleResumeActivity
 -ActivityThread#performResumeActivity
@@ -195,46 +193,33 @@ WindowManagerImpl#addView
 ```
 
 ## 自定义 View 的基本流程
-- 1 重写构造方法，通常是 4 个构成方法，至少重写一个，初始化和获取自定义属性
+- 1 重写构造方法，通常是 4 个构成方法，至少重写一个，初始化和获取自定义属性（TypedArray）
 - 2 重写 onMeasure，测量 View 大小
 - 3 重写 onSizeChanged，确定 View 大小
 - 4 重写 onLayout，确定子 View 的布局（ViewGroup）
 - 5 重写 onDraw，绘制内容
 
 ## 事件分发机制
-- MotionEvent 事件产生后，按照 Activity ->  Window -> DectorView -> View 顺序传递的过程就叫事件分发
+- MotionEvent 事件产生后，按照 Activity ->  Window -> DectorView -> View 顺序传递的过程就叫事件分发，遵循了一种类似于责任链模式的设计
+- 事件序列：通常情况下 MotionEvent.ACTION_DOWN 标志着一个事件序列的开始，而 MotionEvent.ACTION_UP 则标志着一个事件序列的结束，只有当一个视图处理了 ACTION_DOWN 事件，它才会收到后续的 ACTION_MOVE 和 ACTION_UP 事件（一旦对 ACTION_DOWN 事件返回 true，那么后续的 ACTION_MOVE 和 ACTION_UP 事件都会直接传递给它）
 - View#dispatchTouchEvent 分发事件
 - ViewGroup#onInterceptTouchEvent 拦截事件（只有 ViewGroup 有）
 - View#onTouchEvent 处理事件（事件消费）
-
-OnTouchListener -> OnTouchEvent -> OnClick
-一旦对 ACTION_DOWN 事件返回了 true，那么后续的 ACTION_MOVE 和 ACTION_UP 事件都会被直接传递给你
-ACTION_DOWN 事件不受 requestDisallowInterceptTouchEvent 方法影响
+- OnTouchListener -> OnTouchEvent -> OnClickListener
 
 ## 处理 View 的事件冲突
-- 外部拦截法
-- 内部拦截法
+- 外部拦截法：是在父 View 的 onInterceptTouchEvent 方法中进行事件拦截判断
+- 内部拦截法：是在子 View 的 dispatchTouchEvent 或 onTouchEvent 方法中，通过调用父视图的 ViewGroup#requestDisallowInterceptTouchEvent 方法来控制父 View 是否拦截事件（父View 是否会跳过 onInterceptTouchEvent）
 
 ## View 生命周期
 - 在 Activity 的 onResume 方法里是无法获取 View 正确的宽高的
 - 官方推荐采用 onWindowFocusChanged(true) 回调来确定当前 View 所在的 Activity 是对用户可见的并且可交互的，所以这里可以获取到 View 正确的宽高
-- onAttachedToWindow 进行资源准备初始化，onDetachedFromWindow 进行资源释放取消等
-
-## 卡顿优化
-1、 利用UI线程的Looper打印的日志匹配；  是blockcanary的原理，就是利用looper.loop分发事件的时间间隔作为卡顿的依据
-当我们进行invalidate或者requestLayout时，总会执行viewRootImp的scheduleTraversals方法
-
-2、 使用Choreographer.FrameCallback
-也就是对logging进行深入的研究，一般超过了1000ms就认为卡顿了，但我们有没有想过，我们通常说的卡顿不是说超过了16.66ms么，为何这里要超过500ms,甚至1000ms才算是卡顿？
-我们要知道，android系统所有的执行都是基于looper机制的，也就是所有的消息执行的时间超过1000ms就认定卡顿了，举个例子，我们可能在主线程操作数据库，可能在主线程解析json，可能在主线程写文件，可能在主线程做一些例如高斯模糊的耗时操作
-这种情况下我们利用blockcanary是可以检测出来的，但是如果是卡顿呢？当然我们也可以把时间设定为50ms，但是检测出来的太多了，所以就需要第二个机制了Choreographer.FrameCallback,通常这样写
-可以看到这里是CALLBACK_ANIMATION的callback，也就说只要监听了此方法他就会不断的调用doFrame，
-在doframe里调用postFrameCallback，从而来达到完美的监听ui卡顿的效果
-也就是onMeasure,onLayout,onDraw的耗时时间
+- onAttachedToWindow 进行资源准备初始化，onDetachedFromWindow 进行资源释放取消
 
 ## Binder IPC 进程间通信机制
 - Binder 是 Android 提供的一种 IPC 进程间通信机制，Binder 是一种基于消息传递的 IPC 机制，基于 C/S 架构
 - AIDL 是用来抽象化 Binder IPC 的工具（接口的定义）
+- Messenger 是一种轻量级的 IPC 方案，底层是对 AIDL 进行了封装，基于 Handler 和 Message
 - 不需要两次拷贝，利用内存映射，只进行了一次拷贝
 - 通过 Binder 驱动实现进程间的数据拷贝和通信：当一个进程想要与另一个进程通信时，它会通过 Binder 驱动获取目标进程的 Binder 对象引用（每个 Binder 对象都有一个唯一的 Binder ID），然后通过这个引用发送请求，Binder 驱动会将请求传递给目标进程，目标进程在处理请求后再通过 Binder 驱动返回结果
 
@@ -242,8 +227,7 @@ ACTION_DOWN 事件不受 requestDisallowInterceptTouchEvent 方法影响
 - 当使用 Intent 启动跨进程组件（比如通过 startActivity、startService 或 sendBroadcast 等）时，数据需要通过 Binder 机制传输，传输的数据会被封装为 Parcelable 对象并存储在 Binder 的事务缓冲区中（大小通常为 1MB 左右，且所有 Binder 传输共享该缓冲区，所以实际可用大小约为 500K ~ 800K 以下，建议限制在 100K ~ 200K 以下），所以此时 Intent 传输数据的大小就受 Binder 机制的制约限制
 
 ## onNewIntent
-setIntent(intent); 更新 intent
-
+可以利用 `setIntent(intent);` 更新 intent
 
 ## Context
 - 提供资源访问，比如通过 getResources 方法获取资源
@@ -262,48 +246,36 @@ setIntent(intent); 更新 intent
 - 很多三方库（比如 LeakCanary）都用 ContentProvider 的小技巧进行 Library 的初始化操作，初始化很多 ContentProvider 一定程度上会影响性能，官方就出了 App Startup 统一到一个 ContentProvider 里去初始化，提供了一个 ContentProvider 来运行所有依赖项的初始化
 - 利用 ContentProvider 实现初始化 Library 获取 Context
 
-
-
 ## Handler 消息机制
 - Handler 消息机制是一套设计用来进行线程间通信的机制，主要是用于实现线程切换，能够让子线程间接的去访问 UI 控件，在 Java 层及 Native 层均是由 Handler、Looper、MessageQueue 三者构成
+- Handler.postDelayed 修改手机系统时间对延迟消息不会有影响
 
-### Handler
+## Handler
 - 消息处理器，负责收发消息，Handler 发 Message 消息到 MessageQueue 消息队列里，而消息队列中的 Message 中存放着的 Handler 引用，在 dispatchMessage 分发消息的时会将消息发到该 Handler 里进行处理
- 
-### Looper
-- 一个 Handler 对应一个 Looper，每个线程只能有一个 Looper
-- loop for循环  queue.next 取 message 它的target就是handler   然后分发到  callback  handleMessage
-- queue.next 可能会阻塞，方法里里有 nativePollOnce 方法用于“等待”, 直到下一条消息可用为止，Looper 也就进入了休眠
+- ActivityThread#main 方法中通过 Looper#prepareMainLooper 调用 Looper#prepare 创建一个 Looper，涉及 ThreadLocal 存取 Looper 对象，而 Looper  的构造方法里创建了一个 MessageQueue
+- ActivityThread#main 方法继续执行，里面有个 Looper.loop 方法，内部利用 for 循环在主线程中开启了一个死循环，用它不断得从 MessageQueue 消息队列里取 Message，然后分发消息给 target（Handler）处理
 
-### MessageQueue
+## Looper
+- 一个 Handler 对应一个 Looper，每个线程只能有一个 Looper
+- loop 方法里的 for 循环  queue.next 取 message  的 target（Handler），然后分发到 callback 或 handleMessage 方法
+- queue.next 可能会阻塞（Looper 也就进入了休眠），next 方法里有 nativePollOnce 本地方法，它会调用 Linux 系统的 epoll_wait 实现阻塞等待，直到下一条消息可用为止
+
+## MessageQueue
 - 用于存储 Message，内部维护了 Message 的链表（单向链表实现的队列），每次拿取 Message 时，若该 Message 离真正执行还需要一段时间，会通过 nativePollOnce 进入阻塞状态，避免资源的浪费，若存在消息屏障，则会忽略同步消息优先拿取异步消息，从而实现异步消息的优先消费
 
-### 异步消息
-- 在创建 Handler 时，Handler 构造函数有一个 async 参数，默认传 false，若 async 传 true 则表示这个 Handler 发出的消息均为异步消息，异步消息会被优先处理
+## 异步消息
+- 在创建 Handler 时，Handler 构造函数有一个 async 参数，默认传 false，若 async 传 true 则表示这个 Handler 发出的消息都是异步消息，异步消息会被优先处理
 
-### 同步屏障
-- 同步屏障的作用就是为了保证异步消息可以优先执行
-- 可以通过 MessageQueue#postSyncBarrier 方法来设置同步屏障，该方法发送了一个没有 target（Handler）的 Message，在 MessageQueue#next 方法中获取消息时，如果发现没有 target 的 Message，则在一定的时间内跳过同步消息，优先执行异步消息。再换句话说，同步屏障为 Handler 消息机制增加了一种简单的优先级机制，异步消息的优先级要高于同步消息
-- 子线程中创建 Handler
+## 同步屏障
+- 同步屏障的作用就是为了保证异步消息可以优先执行，ViewRootImpl#scheduleTraversals 方法里就使用了同步屏障，保证 UI 绘制优先执行
+- 可以通过 MessageQueue#postSyncBarrier 方法来设置同步屏障，该方法发送了一个没有 target（Handler）的 Message，在 MessageQueue#next 方法中获取消息时，如果发现没有 target 的 Message，则在一定的时间内跳过同步消息，优先执行异步消息，再换句话说，同步屏障为 Handler 消息机制增加了一种简单的优先级机制，异步消息的优先级要高于同步消息
 
-在创建Handler时有一个async参数，传true表示此handler发送的时异步消息。ViewRootImpl.scheduleTraversals方法就使用了同步屏障，保证UI绘制优先执行
-
-### 消息机制的原理
-- ActivityThread#main 方法中通过 Looper#prepareMainLooper 调用 Looper#prepare 创建一个 Looper , 涉及 ThreadLocal 存取 Looper 对象，而 Looper  的构造方法里创建了一个 MessageQueue
-- ActivityThread#main 方法继续执行，里面有个 Looper.loop 方法，内部利用 while 循环在主线程中开启了一个死循环，用它不断得从 MessageQueue 消息队列里取 Message（如果没有消息就利用 Linux epoll 机制进行阻塞等待），然后分发消息给 target（Handler）处理
-
-
-- Handler post 方法原理
-- Handler.postDelayed ：修改手机系统时间对延迟消息不会有影响
- 
 ## HandlerThread
 - 是一个自带 Looper 的线程，一种具有消息循环的线程，其内部可使用 Handler
 
 ## IdleHandler 空闲处理器
 - 通常用于在消息队列空闲的时候去执行一些低优先级、轻量级的任务，可以实现一些延迟初始化的应用
 - IdleHandler 是一个回调接口，可以通过MessageQueue的addIdleHandler添加实现类。当MessageQueue中的任务暂时处理完了（没有新任务或者下一个任务延时在之后），这个时候会回调这个接口，返回false，那么就会移除它，返回true就会在下次message处理完了的时候继续回调
-
-Handler机制。MessageQueue中的Message是如何排列的？Msg的runnable对象可以外部设置么，比如说不用Handler#post系列方法（反射可以实现）；
 
 ## SyncBarrier 同步屏障
 - 同步屏障的特点是 msg.target = null，就是没有关联 Handler 的消息，相当于一个标志位，通过 MessageQueue#postSyncBarrier 发送，通过 MessageQueue#removeSyncBarrier 进行移除
@@ -315,7 +287,7 @@ Handler机制。MessageQueue中的Message是如何排列的？Msg的runnable对�
 - SystemServer 负责启动各种系统核心服务
 
 ## IntentService
-- IntentService是一个抽象类，继承自Service,内部存在一个 ServiceHandler（Handler）和HandlerThread（Thread）,用来来处理耗时操作
+- IntentService是一个抽象类，继承自Service，内部存在一个 ServiceHandler（Handler）和HandlerThread（Thread），用来来处理耗时操作
 - 单线程执行：Service 默认在主线程中运行，而 IntentService 是运行在一个子线程中，不会阻塞主线程，默认无需去手动管理线程
 - 自动停止：当执行完任务之后 IntentService 会自动停止
 - 多次启动IntentService，每一个耗时操作都会以工作队列的形式在IntentService的onHandleIntent回调中执行，并且每次执行一个工作线程
@@ -387,14 +359,13 @@ lifecycleScope.launch {
 - 只修改尺寸、位置等用 requestLayout
 - 可以先调用 requestLayout 来更新布局，然后调用 invalidate 来触发重绘
 
-
 ## 动画
 - Frame 逐帧动画是通过按顺序快速播放一系列图像（通常称为帧）来形成动画效果的技术
 - Tween 补间动画不会改变视图的实际属性，只是改变了视图在视觉上呈现动画效果，所以不适合用在有事件交互的场景
 - Property 属性动画能对对象的任意属性（比如位置、大小、颜色、透明度等）进行动画处理，如果需要对自定义属性实现动画效果需要保证自定义属性对应的 getter 和 setter 方法是可被访问的
 
 ## Lottie 动画
-Lottie 动画依托于 ValueAnimator 属性动画，动画更新的监听不断回调，执行 LottieDrawable#setProgress 的最终会触发了每个 layer 的 invalidateSelf，这都会让 LottieDrawable 重新绘制，然后重走一遍绘制流程，这样随着 animator 动画的进行，lottieDrawable 不断的绘制，就展现出了一个完整的动画
+Lottie 动画依托于 ValueAnimator 属性动画，动画更新的监听不断回调，执行 LottieDrawable#setProgress 的最终会触发了每个 layer 的 invalidateSelf，这都会让 LottieDrawable 重新绘制，然后重走一遍绘制流程，这样随着 animator 动画的进行，LottieDrawable 不断的绘制，就展现出了一个完整的动画
 
 ## 扩大 View 点击区域
 - 增加 padding
@@ -402,41 +373,64 @@ Lottie 动画依托于 ValueAnimator 属性动画，动画更新的监听不断�
 - getLocationOnScreen + onTouchEvent
 
 ## 命令式编程和响应式编程的区别
-- 命令式编程强调步骤和过程，侧重于 “怎么做”
+- 命令式编程强调步骤和过程，侧重于“怎么做”
 - 响应式编程强调以声明式的方式处理异步数据流，关注于定义数据流及其变换规则，而不是控制执行流程，更侧重于“做什么”
-
-## 内存溢出
-- OOM 内存溢出（Out of Memory）是指应用程序尝试分配的内存超过了系统当前可用的内存而抛出异常
-- 使用对象池来重用对象，减少频繁的创建和销毁（减少短时间内大量对象的创建和销毁，避免频繁的垃圾回收--内存抖动）
---  避免在循环中创建对象
 
 ## 内存泄漏
 - 内存泄漏：本该被 GC 回收的内存实际没有被回收
 - 根本原因：短生命周期的对象被长生命周期的对象持有引用，导致短生命周期对象的内存在其生命周期结束后无法被 GC 回收，从而导致了内存泄露
 - 非静态内部类或匿名内部类都会隐式地持有外部类的引用，都可以访问外部类的变量
-- 减少单例、静态对象、非静态内部类或匿名内部类的使用
-- 使用 WeakReference 弱引用来避免强引用导致的内存泄漏
-- 确保在不需要对象时释放资源（比如及时关闭 Cursor 和取消注册 BroadcastReceiver 等）
-长生命周期的对象持有了短生命周期对象的引用，尽管短生命周期的对象已不再使用，但是因为长生命周期对象持有它的引用而导致不能被回收
+- 1 减少单例、静态对象、非静态内部类或匿名内部类的使用
+- 2 使用 WeakReference 弱引用来避免强引用导致的内存泄漏
+- 3 注意 Handler 导致的内存泄漏，及时在 onStop 或 onDestroy 时候用 removeCallbacksAndMessages 移除消息
+- 4 针对线程相关及时做好取消、终止等工作（比如子线程耗时操作运行仍未结束）
+- 5 针对资源性对象（比如数据库、File 文件和 Cursor 等）、WebView 和动画等需要及时做好回收关闭工作，做好 BroadcastReceiver 广播、监听器和观察者等的移除反注册工作，Service 服务执行完成后记得关闭
+
+## 内存抖动
+- 内存抖动：主要是内存波动图类似锯齿状，代表存在频繁地内存开辟和回收（在短时间内有大量的对象被创建和销毁，比如在循环或高频回调中大量创建对象），触发频繁的 GC，容易导致内存碎片，也容易引发卡顿
+- 1 避免在循环或高频回调中创建大量对象（比如在 onDraw、onTouchEvent 中创建对象）
+- 2 使用对象缓存池（比如 Message#obtain、Recyclerview#RecycledViewPool），减少对象的频繁创建和销毁
+- 3 使用 StringBuilder、StringBuffer 代替 String 字符串拼接 
+- 4 使用合理的数据结构，同时在能够预知对象大概数量的情况下，显式去设置初始化容量，减少触发数据结构内部的扩容操作（比如 HashMap 和 ArrayList 预分配的集合容量）
+
+## 内存溢出
+- Out Of Memory 内存溢出（内存不足）：指程序在申请内存时，当下应用内存没有足够的内存空间供分配使用，则会导致程序崩溃或异常终止的现象，长期的内存泄露积压会导致 OOM，同时如果一次性开辟太大的数组或者加载过大的图片也很容易导致 OOM
+- 1 内存中存在大量的强引用对象（集合类未清理、静态变量滥用），推荐选择合适的引用方式创建对象（对于不经常访问的对象，可以使用 WeakReference 弱引用或 SoftReference 软引用代替强引用，以便在内存不足时能够被回收）
+- 2 优化数据结构：使用 ArrayMap 代替 HashMap，使用 SparseArray 代替 `HashMap<Integer, Object>`，避免自动装箱拆箱，减少 Entry 对象开销
+- 3 使用懒加载：延迟加载不必要的资源，可以提高应用的启动速度和内存使用效率
+- 4 避免使用 Enum
+- 5 使用线程池处理异步任务
+- 6 使用 DiffUtil 进行增量更新，避免全局刷新
+- 7 Bitmap 内存优化
+  - 图片压缩：在加载图片前进行压缩，尽量避免加载原图，减少内存占用，如果加载长图，按需解码部分区域，避免一次性加载全图
+  - 图片缓存：使用 LruCache 等缓存机制，尽量避免重复加载图片
+  - 选择合适的图片格式（比如 WebP 格式）
+  - 对于复杂的图像处理任务，使用 RenderScript 来加速计算
 
 ## LeakCanary
 - LeakCanary 原理是使用 WeakReference 弱引用来跟踪 Activity，并结合 GC 机制判断 Activity 是否被回收，从而识别潜在的内存泄漏问题
 
-
 ## BlockCanary
-- 也是利用 MainLooper#setMessageLogging 接管系统的 logging Printer 计算时间差
+- 也是利用 MainLooper#setMessageLogging 接管系统的 logging Printer 计算时间差来检测卡顿
 
+## Choreographer 编舞者
+- 进行掉帧检测，在每一帧回调时计算帧间隔时间，若间隔时间超过 16 毫秒，就认为可能存在掉帧的情况
 
+## FrameMetrics
+- Android 高版本直接获取帧率相关数据信息
+
+## 腾讯 Matrix
+- 结合了 Choreographer 和 Looper 监控方案，分析 UI 线程的 Message 执行耗时
+
+## JankStats 卡顿统计（Metrics 指标库）
+- Android 高版本采用 FrameMetrics，Android 低版本采用 Choreographer
 
 ## MediaCodec
-- MediaCodec 类可以访问底层的编解码器，用于编解码音视频。它提供了一种直接处理压缩数据（例如AAC, MP3, H.264等）的方法。
+- MediaCodec 类可以访问底层的编解码器，用于编解码音视频。它提供了一种直接处理压缩数据（例如 AAC、MP3 和 H.264 等）的方法。
 - MediaCodec 编码摄像头画面 MediaMuxer 合并生成 MP4 文件
 - MediaCodec 解码播放 MediaExtractor 提取 MP4 文件的内容
 - AudioTrack 播放音轨
-
-
-使用 MediaCodec，你可以进行诸如视频播放、视频编辑、实时通信等操作。要使用 MediaCodec 进行解码，通常需要先配置媒体格式，然后调用 configure() 方法，接着是 start()，之后可以通过 dequeueInputBuffer() 和 queueInputBuffer() 来输入数据，并通过 dequeueOutputBuffer() 获取输出的数据
-
+- 使用 MediaCodec，你可以进行诸如视频播放、视频编辑、实时通信等操作。要使用 MediaCodec 进行解码，通常需要先配置媒体格式，然后调用 configure() 方法，接着是 start()，之后可以通过 dequeueInputBuffer() 和 queueInputBuffer() 来输入数据，并通过 dequeueOutputBuffer() 获取输出的数据
 
 ## 编码格式和容器格式
 - 编码格式： H.264/AVC H.265/HEVC MP3 AAC
@@ -467,13 +461,12 @@ Lottie 动画依托于 ValueAnimator 属性动画，动画更新的监听不断�
 - 四层网络模型：应用层、传输层、网络层（互联网层）和网络接口层
 - 五层网络模型：应用层、传输层、网络层（互联网层）、数据链路层和物理层
 
-## 
+## UDP 协议
 UDP 协议，和 TCP 的区别
 前后台传输数据需要用密钥对数据加密，那加密过程应该放在哪个位置
 
 ## OkHttp
 OkHttp 中可以通过 Interceptor 拦截器实现重试机制，使用 GZIP 压缩请求和响应数据，减少传输数据量
-
 
 ## 缓存机制
 三级缓存：内存、硬盘、网络
@@ -481,23 +474,15 @@ LRU：Least Recently Used 最近最少使用，常用于页面置换算法、常
 
 Android 缓存机制
 > 狭义上是指针对网络的缓存
->
 > 广义上指的是对数据的复用
-
- 
  LRU如何实现  如何自己实现一个LRUCache？Android里面的LRUCache是如何实现的
 
-
 ## 缓存策略
-
 - FIFO
 - LFU Least Frequently Used 最不经常使用
-- LRU
-
+- LRU 最近最少使用
 
 ## LruCache
-
-
 
 ## RecyclerView 缓存机制
 - ViewHolder 主要解决了 ItemView 复用的问题，减少重复 findViewById 的消耗
@@ -505,11 +490,10 @@ Android 缓存机制
     - 屏幕内缓存：mAttachedScrap（数据未改变）和 mChangedScrap（数据已改变）临时保存屏幕内的 ViewHolder
     - 屏幕外缓存：mCachedViews 最近被移出屏幕的缓存，默认缓存数量是 2 个，本质上是一个 ArrayList，当 mCachedViews 满了之后，新移除的 ViewHolder 会被放入 RecycledViewPool 中
     - 自定义缓存：ViewCacheExtension
-    - 共享缓存池： RecycledViewPool，默认缓存数量是 5 个，本质上是一个 SparseArray，其缓存的 ViewHolder 是全新的，复用时需要重新绑定数据（重新调用 bindViewHolder）
-
+    - 共享缓存池：RecycledViewPool，默认缓存数量是 5 个，本质上是一个 SparseArray，其缓存的 ViewHolder 是全新的，复用时需要重新绑定数据（重新调用 bindViewHolder）
 
 ## DiffUtil
-
+- 使用 DiffUtil 进行增量更新，避免全局刷新
 
 ## Alibaba ARouter
 - 用于实现 Android 组件化开发的路由框架，它通过实现不同模块之间的页面跳转和参数传递等功能，使得不同的业务模块之间进行解耦，可以更加独立地开发和维护各个模块
@@ -519,13 +503,13 @@ Android 缓存机制
 - ARouter 路由跳转实际上还是调用了 startActivity 的跳转（基于注解处理、动态生成代码、使用反射加载）
 
 ## MVVM 和 MVI
-- MVVM 侧重双向数据绑定（View <-> ViewModel），通常可选为了保证数据流的单向流动性，会向外暴露不可变的 LiveData，所以 ViewModel 里一个 State 状态会存在两个 LiveData，一个可变的一个不可变的，如果状态很多，LiveData 数量就会大大地增多
+- MVVM 侧重双向数据绑定（View <-> ViewModel），双向绑定一般由 DataBinding 实现，但是大部分开发者都会使用 LiveData、Flow 来观察数据变化，通常为了保证数据流的单向流动性（非必须），会向外暴露不可变的 LiveData，所以 ViewModel 里一个 State 状态会存在两个 LiveData，一个可变的一个不可变的，如果状态很多，LiveData 数量就会大大地增多
 - MVI 是 MVVM 的升级方案，侧重单向数据流（View -> UIIntent -> ViewModel -> UIState -> View）约束，强调不可变状态（State 实例是不可变的，每次状态更新时都会创建新的 State 对象）和单一（唯一可信）数据源，MVI 里的 Model 侧重指 UIState 状态，UIState 用于封装页面状态和数据（比如页面加载状态、控件位置等），对 State 进行了集中状态管理（这样一来 LiveData 就只需要一份了，一个可变的一个不可变的），UIIntent 用于包装用户的操作意向（意图）发送给 ViewModel 进行数据请求，另外可以额外引入 UIEvent 来处理一次性的事件
 - UIState、UIIntent 通常都可以采用密闭类（密封类）
 - Activity/Fragment 里观察 UiState 状态，然后通过 when 判断处理对应逻辑
 - ViewModel 里可以提供集中统一处理 UIIntent 的入口方法
-- MVI 中 所有状态都通过一个 LiveData 来管理，也随之而来引出一个新问题，就是页面不支持局部刷新
-
+- MVI 中所有 UIState 状态都可以通过一个 LiveData 来管理，也随之而来引出新的问题，就是页面不支持局部刷新
+- 由于 UIState 状态是不变的，因此每当 UIState 需要更新时都要创建新对象替代老对象，这会带来一定内存开销
 ```kotlin
 //ViewModel 里的模板代码
 private val _loading: MutableLiveData<String> = MutableLiveData()
@@ -544,7 +528,6 @@ NewsRepository（以往是 INewsRepository、NewsRepositoryInterface）
 - Repository 实现 
 DefaultNewsRepository（默认）、OfflineFirstNewsRepository、FakeNewsRepository（以往是 NewsRepository、NewsRepositoryImpl）
 
-
 data
 - local
 -- entitity
@@ -556,15 +539,12 @@ data
 - repository
 - model
 
-
-
 ## Acoustic Echo Cancellation 回声消除
 - 麦克风采集到的音频通过扬声器（喇叭）播放出来后又被采集进去，从而产生了回声或啸叫声
 - 理想上：假设 A，B 两端，A 端把听到的声音（混合信号）中删去 A 之前的回声（参考传出的信号），就只剩下了 B 的语音
 - 实际上：但 A 端是无法直接参考使用之前传出的信号的（差异较大），而 A 之前的回声又不可能凭空臆想出来
 - 所以采用数学算法模拟出这个 A 之前的回声，从混合信号中减去这个模拟回声信号，从而达到回声消除的效果
 - 硬件回声消除算法和开源软件回声消除算法（Opus、WebRTC-AEC 模块）
-
 
 ## Hook 技术
 - 利用 Java 反射实现，动态代理，ClassLoader 
@@ -575,12 +555,9 @@ data
 ## AOP 面向切面编程
 - Eclipse AspectJ
 
-
 ## Glide
 - 生命周期绑定（采用没有 UI 的 Fragment 来管理）
-- 缓存设计（弱引用的缓存、LruCache 的内存缓存、DiskLruCache 磁盘缓存）
-- 不同大小尺寸
-
-
+- 缓存设计（弱引用的缓存、LruCache 的内存缓存、DiskLruCache 磁盘缓存），支持缓存不同大小尺寸
+- Glide 内部的 KeyPool 是基于 Queue 队列实现的，Glide 内部的 BitmapPool 是基于带了 LRU 算法的 Map 实现的
 
 
