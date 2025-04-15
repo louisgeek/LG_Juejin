@@ -103,7 +103,7 @@ public static void loop() {
 }
 private static boolean loopOnce(final Looper me, final long ident, final int thresholdOverride) {
     //从队列里取消息
-    Message msg = me.mQueue.next(); // might block
+    Message msg = me.mQueue.next(); //可能会阻塞，next 方法里有 nativePollOnce 本地方法，它会调用 Linux 系统的 epoll_wait 实现阻塞等待，直到下一条消息可用为止
     //...
     //target 就是消息关联的 Handler
     msg.target.dispatchMessage(msg);

@@ -64,7 +64,6 @@ ViewRootImpl#performLayout(WindowManager.LayoutParams lp, int desiredWindowWidth
 --View#onLayout(boolean changed, int left, int top, int right, int bottom)
 ```
 
-
 ## Draw 绘制
 - 这个阶段的目的就是在布局阶段流程完成后，根据位置、大小和自身属性等将 View 的内容绘制到屏幕上，绘制过程包括绘制背景、绘制内容、绘制子 View 和绘制装饰（如指示器和滚动条等）
 - 同样从根视图开始，ViewGroup 会遍历子 View，去调用 View 的 draw 方法来将 View 的内容绘制到屏幕上，而 draw 方法会调用 onDraw 方法，通常需要重写完成自定义 View 的绘制逻辑，通常 ViewGroup 不需要重写 onDraw 方法，因为作为容器没有自己的内容需要进行显示

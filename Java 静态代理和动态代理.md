@@ -65,6 +65,7 @@ public class UserLoginProxy implements ILogin {
 - 可以减少类的数量，降低工作量，灵活性高，可以在运行时动态地为不同的目标类创建代理类对象
 - 减少对业务接口的依赖，降低耦合，便于后期维护，可以用于实现 AOP 面向切面编程，比如在某个逻辑功能前后添加日志记录、监控性能和权限检查控制等操作
 - 由于因为使用了反射，所以会在运行时会消耗一定的性能
+- PS：Retrofit 内部就是通过 JDK 动态代理的方式（Proxy.newProxyInstance）生成接口对象的
 
 ```java
 private InvocationHandler mInvocationHandler = new InvocationHandler() {

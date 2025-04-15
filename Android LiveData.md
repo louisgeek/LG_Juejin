@@ -107,7 +107,7 @@ public abstract class LiveData<T> {
         if (!postTask) {
             return;
         }
-        //通过 Handler#post 到主线程
+        //通过 Handler#post 到主线程（内部是发异步消息的 Handler）
         ArchTaskExecutor.getInstance().postToMainThread(mPostValueRunnable);
     }
     //setValue 方法必须要在主线程调用
@@ -177,6 +177,11 @@ class MainActivity : AppCompatActivity() {
         _testMutableLiveData.postValue("new data")
 }
 ```
+
+## LiveData 多线程频繁 postValue 会出现丢失部分数据
+- 因为更新和分发值分别在两个不同的线程，如果生产者更新值速率过快，消费者分发至速率过低，就会导致上一次更新的值，还没有被分发出去就被新的值更新了，导致丢失了部分中途更新的值（生产者和消费者速度不匹配）
+- 不过 LiveData 一定能接收到 postValue 的最终值
+- LiveData 本身是推荐作为驱动 UI 的数据流的（不建议使用在过于频繁刷新值的场景，可以考虑改用 Kotlin 的 Flow）
 
 ## 数据倒灌
 - 作者 KunMinX 定义的 Data backflow 数据倒灌是专指在页面通信（事件回调）的场景下，通过 SharedViewModel 的 LiveData 给当前页通知过一次，并返回上一页，下次再进入当前页时重复收到旧数据推送的情况
