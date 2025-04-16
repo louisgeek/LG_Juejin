@@ -1,6 +1,6 @@
-# Flutter Channel 通信机制
-- 在 Flutter 中，Channel 通道是实现 Flutter 与原生平台（比如 Android 和 IOS 等）之间通信的核心机制，通过三种不同类型的通道来实现数据的传递和方法的调用
-- Channel 分为 MethodChannel、EventChannel 和 BasicMessageChannel
+# Flutter PlatformChannel
+- PlatformChannel 平台通道是实现 Flutter 与原生平台（比如 Android 和 IOS 等）之间通信的核心机制，通过三种不同类型的平台通道来实现数据的传递和方法的调用
+- PlatformChannel 分为 MethodChannel、EventChannel 和 BasicMessageChannel
 
 ## MethodChannel 方法通道
 - MethodChannel 是最常用的通道，用于 Flutter 端和原生端之间进行方法调用和返回结果，适合一次性调用（比如获取设备信息）
