@@ -224,7 +224,7 @@ WindowManagerImpl#addView
 - 通过 Binder 驱动实现进程间的数据拷贝和通信：当一个进程想要与另一个进程通信时，它会通过 Binder 驱动获取目标进程的 Binder 对象引用（每个 Binder 对象都有一个唯一的 Binder ID），然后通过这个引用发送请求，Binder 驱动会将请求传递给目标进程，目标进程在处理请求后再通过 Binder 驱动返回结果
 
 ## Intent
-- 当使用 Intent 启动跨进程组件（比如通过 startActivity、startService 或 sendBroadcast 等）时，数据需要通过 Binder 机制传输，传输的数据会被封装为 Parcelable 对象并存储在 Binder 的事务缓冲区中（大小通常为 1MB 左右，且所有 Binder 传输共享该缓冲区，所以实际可用大小约为 500K ~ 800K 以下，建议限制在 100K ~ 200K 以下），所以此时 Intent 传输数据的大小就受 Binder 机制的制约限制
+- 当使用 Intent 启动跨进程组件（比如通过 startActivity、startService 或 sendBroadcast 等）时，数据需要通过 Binder 机制传输，传输的数据会被封装为 Parcelable 对象并存储在 Binder 的事务缓冲区中（大小通常为 1MB 左右，且所有 Binder 传输共享该缓冲区，所以实际可用大小约为 500K ~ 800K 以下，建议限制在 100K ~ 200K 以下），所以此时 Intent 传输数据的大小受 Binder 机制的制约限制
 
 ## onNewIntent
 可以利用 `setIntent(intent);` 更新 intent
@@ -561,3 +561,17 @@ data
 - Glide 内部的 KeyPool 是基于 Queue 队列实现的，Glide 内部的 BitmapPool 是基于带了 LRU 算法的 Map 实现的
 
 
+
+## Room 和 Realm 区别
+
+Room
+- 基于 SQLite，在 SQLite 上提供了一个抽象层，简化数据库操作，通过注解（比如 @Entity、@Dao 和 @Database 等）定义数据库操作
+- 类型安全：通过 DAO 接口定义查询，自动生成 DAO 的实例
+- 编译时检查：支持 SQL 语句的编译时验证，减少运行时错误
+- 支持直接编写 SQL 语句，适合复杂查询场景（比如多表关联等）
+- 可以和 LiveData、ViewModel 和 Flow 无缝结合
+
+Realm
+- 跨平台、简单高效（通常情况下读写速度优于 Room）
+- 面向对象：属于面向对象 NoSQL 数据库，可以避免编写 SQL，直接通过对象操作数据
+- 多端（多平台）可以保持数据模型统一

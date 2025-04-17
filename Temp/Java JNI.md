@@ -1,5 +1,5 @@
 # Java JNI
-- JNI 是 Java Native Interface 的缩写，即 Java 本地接口，是 Java 提供的一种技术方案，作用就是能让 Java 与本地其他语言（如 C/C++）进行交互，JNI 是连接 Java 与 Native 之间的通讯桥梁，可以看作是个转换器
+- JNI：Java Native Interface 就是 Java 本地接口，是 Java 提供的一种技术方案，作用就是能让 Java 与本地其他语言（如 C/C++）进行交互，JNI 是连接 Java 与 Native 之间的通讯桥梁，可以看作是个转换器
 - Java 层调用 Native 层是通过 JNI 来实现的，而 Native 层调用 Java 层则是通过反射来调用的
 - Java 层的反射 API 其实本质上是调用 C++ 的函数去实现的，所以 C++ 中的反射可以去直接调用 C++ 的函数去实现，会比调用 Java 中的反射要更加直接，减少了一层调用链
 - JNI 是 C 语法实现的，所以在 cpp 文件中需要添加 extern "C" 来声明当前代码是 C 的语法，另外 extern "C" 可以修饰 #include，声明导入的头文件是 C 的语法
@@ -94,10 +94,6 @@ Java_com_louis_myjni_MainActivity_stringFromJNI
 - Java 和 C++ 支持函数重载（方法重载），而 C 不支持函数重载
 
 
-
-
-
-
 ## 特点
 - 可以提高性能，比如 Native 层去实现视频渲染等会更加高效
 - 方便进行平台之间的移植
@@ -107,9 +103,6 @@ Java_com_louis_myjni_MainActivity_stringFromJNI
 - Static Library 静态库：编译时静态链接到目标程序，形成一个可执行文件，其中 .a（Unix/Linux，archive 归档文件的缩写）或 .lib（Windows）是静态库常见的扩展名
 - Shared Library 动态库（共享库）：在运行时动态链接到目标程序，其中 .so（Unix/Linux，shared object 共享对象的缩写）或 .dll（Windows）是动态库常见的扩展名
  
-
-
-
 
 
 JNI Java 本地接口
