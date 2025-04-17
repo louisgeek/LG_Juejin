@@ -1,5 +1,5 @@
 # Flutter PlatformChannel
-- PlatformChannel 平台通道是实现 Flutter 与原生平台（比如 Android 和 IOS 等）之间通信的核心机制，通过三种不同类型的平台通道来实现数据的传递和方法的调用
+- PlatformChannel 平台通道是实现 Flutter 与原生平台（比如 Android 和 IOS 等）之间通信的核心机制，通过三种不同类型的平台通道来实现数据传递和方法调用
 - PlatformChannel 分为 MethodChannel、EventChannel 和 BasicMessageChannel
 
 ## MethodChannel 方法通道

@@ -1,5 +1,5 @@
 # Flutter StatelessWidget 和 StatefulWidget 的区别
-- StatelessWidget 和 StatefulWidget 是构建 UI 用户界面的两种基础组件，主要区别在于状态管理（数据变化）、 ​​UI 更新机制​​和生命周期
+- StatelessWidget 和 StatefulWidget 是构建 UI 用户界面的两种基础组件，主要区别在于状态管理（数据变化）、 ​​UI 更新机制​​和生命周期等方面
 - StatelessWidget 适用于静态 UI，而 StatefulWidget 适用于需要动态更新的 UI
 
 ## StatelessWidget 无状态组件
@@ -90,3 +90,6 @@ class _MyCounterState extends State<MyCounter> {
 }
 ```
 
+## 总结
+- StatelessWidget 只依赖于构造函数中的参数来构建 UI，不维护任何内部状态，在需要更新 UI 时，必须重新构建该 Widget 的实例
+- StatefulWidget 维护一个可变的 State 状态，可以响应用户输入或其他事件并更新 UI，当状态发生变化时，通过调用 setState 方法来通知触发 UI 更新
