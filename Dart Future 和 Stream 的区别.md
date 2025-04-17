@@ -1,6 +1,6 @@
-# Flutter Future 和 Stream 的区别
+# Dart Future 和 Stream 的区别
 
-## Future 一次性异步操作
+## Future 单次异步结果
 - 用于表示一个尚未完成的异步操作的结果，承诺最终会返回一个值（或错误），适用于如网络请求、数据库查询、文件读取和延迟任务等
 - Future 无需手动关闭
 - Future 的所有 API 的返回值仍然是一个 Future 对象，所以可以很方便的进行链式调用
@@ -42,6 +42,7 @@ void gainData() async {
 ```dart
 //StreamController 用于管理流的创建、发送数据和关闭
 StreamController<String> streamController = StreamController<String>();
+Stream<String> dataStream = streamController.stream;
 //
 streamController.sink.add("Data 1");
 streamController.sink.add("Data 2");
@@ -59,10 +60,6 @@ Stream<String> fetchDataStream() async* {
 
 通过 listen 监听 Stream 的事件
 ```dart
-streamController.stream.listen((value) {
-    print("Value: $value");
-  });
-//
 streamController.stream.listen(
   (data) => print("Received: $data"), //数据回调
   onError: (error) => print("Error: $error"), //错误回调（可选）
@@ -82,4 +79,19 @@ Future<String> futureData = fetchData();
 Stream<String> streamData = Stream.fromFuture(futureData);
 //转换多个 Future
 Stream<String> streamData2 = Stream.fromFutures([futureData,futureData2]);
+```
+
+```dart
+Stream<String> streamFromFutures(Iterable<Future<String>> futures) async* {
+  for (final future in futures) {
+    var result = await future;
+    yield result; //发送 Future 结果
+  }
+}
+//
+Stream<String> streamFromFuture(Future<String> future) async* {
+  final result = await future;
+  yield result; //发送 Future 结果
+  yield "Additional data"; //可追加其他数据
+}
 ```
