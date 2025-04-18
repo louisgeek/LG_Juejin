@@ -1,6 +1,22 @@
-# Android 知识点
+# Android 
 
-GC不是在Activity销毁时就立即进行的。GC是每隔一段时间就自发进行一次，而且这次回收不了、下次还有机会。这就是说，即便你的新线程里存在耗时的代码（之所以强调新线程，是因为阻塞主线程会直接报错），即便你那耗时的代码在其外部的Activity销毁之后仍然运行，只要这代码别整个几分钟都停不下来，那就算稍微晚几秒被回收也无所谓。为什么要强调这个呢？因为这样你就不用非得把一些有可能在Activity销毁后继续运行但耗时较短的内部类设为静态了
+
+------------------------ 临时  --------------------- 
+内存泄漏：指不再使用的对象因被引用而无法被回收，导致内存占用持续增加
+长生命周期的对象持有了短生命周期对象的引用，尽管短生命周期的对象已不再使用，但是因为长生命周期对象持有它的引用而导致不能被回收
+
+
+
+
+
+
+
+
+------------------------ 临时  --------------------- 
+
+
+
+
  
 ## 卡顿优化
 1、 利用UI线程的Looper打印的日志匹配；  是blockcanary的原理，就是利用looper.loop分发事件的时间间隔作为卡顿的依据
@@ -14,8 +30,7 @@ GC不是在Activity销毁时就立即进行的。GC是每隔一段时间就自�
 在doframe里调用postFrameCallback，从而来达到完美的监听ui卡顿的效果
 也就是onMeasure、onLayout 和 onDraw的耗时时间
 
-内存泄漏：指不再使用的对象因被引用而无法被回收，导致内存占用持续增加
-长生命周期的对象持有了短生命周期对象的引用，尽管短生命周期的对象已不再使用，但是因为长生命周期对象持有它的引用而导致不能被回收
+
 
 Handler机制。MessageQueue中的Message是如何排列的？Msg的runnable对象可以外部设置么，比如说不用Handler#post系列方法（反射可以实现）；
 
@@ -38,6 +53,12 @@ profiler 内存分类
 - Gabage Collection 垃圾收集
 - 垃圾回收是一种自动的存储管理机制。 当一些被占用的内存不再需要时，就应该予以释放，以让出空间
 - 在 JVM 中，对于对象的回收 GC 是基于**可达性分析**。简单来说，就是从 GC Root 出发，被引用的对象均被标记为存活，而没有被引用的对象，则被标记为垃圾，即可以被 GC 回收。
+
+GC不是在Activity销毁时就立即进行的。GC是每隔一段时间就自发进行一次，而且这次回收不了、下次还有机会。这就是说，即便你的新线程里存在耗时的代码（之所以强调新线程，是因为阻塞主线程会直接报错），即便你那耗时的代码在其外部的Activity销毁之后仍然运行，只要这代码别整个几分钟都停不下来，那就算稍微晚几秒被回收也无所谓。为什么要强调这个呢？因为这样你就不用非得把一些有可能在Activity销毁后继续运行但耗时较短的内部类设为静态了
+
+## GC
+引用计数法：为每个对象添加一个引用计数器，每当有一个引用指向它时，计数器就加1，当引用失效时，计数器就减1，当计数器为0时，则认为该对象可以被回收（目前在Java中已经弃用这种方式了）。
+可达性分析算法：从一个被称为 GC Roots 的对象开始向下搜索，如果一个对象到GC Roots没有任何引用链相连时，则说明此对象不可用。
 
 
 
@@ -91,7 +112,7 @@ Executor框架解读实战
 正确方式：通过 Handler、runOnUiThread()、协程的 withContext(Dispatchers.Main) 或 LiveData 回调更新
 
 
-知识形成了闭环
+## 知识形成了闭环
 
 
 
@@ -131,13 +152,10 @@ Factory2 继承自 Factory 接口
 如果没有采用 Material 主题而是 AppCompat 主题的话，就自动映射成 AppCompat 开头的控件
 
 
-
+## 路由
 兜底  降级
 
 
-## GC
-引用计数法：为每个对象添加一个引用计数器，每当有一个引用指向它时，计数器就加1，当引用失效时，计数器就减1，当计数器为0时，则认为该对象可以被回收（目前在Java中已经弃用这种方式了）。
-可达性分析算法：从一个被称为 GC Roots 的对象开始向下搜索，如果一个对象到GC Roots没有任何引用链相连时，则说明此对象不可用。
 
 
 
@@ -829,18 +847,7 @@ ZygoteProcess#zygoteSendArgsAndGetResult
 
 
 
- 
- 
-
-
-
-### AsyncTask 异步任务
-
-- 内部通过 Handler 实现
-
-
-
-
+  
 
 
  
@@ -1072,7 +1079,7 @@ lifecycleScope 绑定 fragment 的整个生命周期onCreate()到onDestroy()这�
 
 
 
- https://www.cnblogs.com/jingdongkeji/p/17784848.html#:~:text=%E7%BB%B4%E5%9F%BA%E7%99%BE%E7%A7%91%EF%BC%9A%E5%8D%8F%E7%A8%8B%EF%BC%8C%E8%8B%B1%E6%96%87Coroutine%20%5Bk%C9%99ru%E2%80%99tin%5D%20%EF%BC%88%E5%8F%AF%E5%85%A5%E5%8E%85%EF%BC%89%EF%BC%8C%E6%98%AF%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%A8%8B%E5%BA%8F%E7%9A%84%E4%B8%80%E7%B1%BB%E7%BB%84%E4%BB%B6%EF%BC%8C%E6%8E%A8%E5%B9%BF%E4%BA%86%E5%8D%8F%E4%BD%9C%E5%BC%8F%E5%A4%9A%E4%BB%BB%E5%8A%A1%E7%9A%84%E5%AD%90%E7%A8%8B%E5%BA%8F%EF%BC%8C%E5%85%81%E8%AE%B8%E6%89%A7%E8%A1%8C%E8%A2%AB%E6%8C%82%E8%B5%B7%E4%B8%8E%E8%A2%AB%E6%81%A2%E5%A4%8D%E3%80%82,%E4%BD%9C%E4%B8%BAGoogle%E9%92%A6%E5%AE%9A%E7%9A%84Android%E5%BC%80%E5%8F%91%E9%A6%96%E9%80%89%E8%AF%AD%E8%A8%80Kotlin%EF%BC%8C%E5%8D%8F%E7%A8%8B%E5%B9%B6%E4%B8%8D%E6%98%AF%20Kotlin%20%E6%8F%90%E5%87%BA%E6%9D%A5%E7%9A%84%E6%96%B0%E6%A6%82%E5%BF%B5%EF%BC%8C%E7%9B%AE%E5%89%8D%E6%9C%89%E5%8D%8F%E7%A8%8B%E6%A6%82%E5%BF%B5%E7%9A%84%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80%E6%9C%89Lua%E8%AF%AD%E8%A8%80%E3%80%81Python%E8%AF%AD%E8%A8%80%E3%80%81Go%E8%AF%AD%E8%A8%80%E3%80%81C%E8%AF%AD%E8%A8%80%E7%AD%89%EF%BC%8C%E5%AE%83%E5%8F%AA%E6%98%AF%E4%B8%80%E7%A7%8D%E7%BC%96%E7%A8%8B%E6%80%9D%E6%83%B3%EF%BC%8C%E4%B8%8D%E5%B1%80%E9%99%90%E4%BA%8E%E7%89%B9%E5%AE%9A%E7%9A%84%E8%AF%AD%E8%A8%80%E3%80%82
+ https://www.cnblogs.com/jingdongkeji/p/17784848.html
 
 
 # 结构化并发
@@ -1180,32 +1187,11 @@ MediatorLiveData：这是一种特殊的 LiveData 类，它可以观察其他 Li
 
      https://www.cnblogs.com/zhengbin/p/5654805.html
 
-  ### hashmap 原理
+ 
 
 
 
-### 红黑树
-
-
-
-二叉树
-
-
-
-### jvm内存
-
-
-
-- Java堆
-
-
-
-
-
-### 类加载器
-
-Android平台上虚拟机运行的是Dex字节码,一种对class文件优化的产物,传统Class文件是一个Java源码文件会生成一个.class文件，而Android是把所有Class文件进行合并，优化，然后生成一个最终的class.dex,目的是把不同class文件重复的东西只需保留一份,如果我们的Android应用不进行分dex处理,最后一个应用的apk只会有一个dex文件。
- Android中常用的有两种类加载器，DexClassLoader和PathClassLoader，它们都继承于BaseDexClassLoader。区别在于调用父类构造器时，DexClassLoader多传了一个optimizedDirectory参数，这个目录必须是内部存储路径，用来缓存系统创建的Dex文件。而PathClassLoader该参数为null，只能加载内部存储目录的Dex文件。所以我们可以用DexClassLoader去加载外部的apk。
+ 
 
 
 
@@ -1213,25 +1199,7 @@ Android平台上虚拟机运行的是Dex字节码,一种对class文件优化的�
  
 
 
-### 线程池
-
-- 对线程统一管理，统一调度的工具，可以复用已存在的线程，减少线程的创建和销毁的开销，降低消耗，增加速度
-
-- 能够控制并发的线程数的上限，既能够降低资源的消耗浪费，也一定程度上避免了系统处理时候的堵塞，提高了系统资源的合理利用率，增强了对线程的管理性
-
-- 能够实现定时周期任务
-
-  ​	
-
-### 内置线程池
-
-FixedThreadPool
-SingleThreadPool
-ScheduleThreadPool
-CachedThreadPool
-
-### 自定义线程池
-
+ 
 
 
 
@@ -1330,5 +1298,11 @@ Android 系统中用于监控和协调 UI 动画的核心接口
 
 
 //需要在 UI 主线程中调用
+
+
+
+-----------------
+
+
 
 
