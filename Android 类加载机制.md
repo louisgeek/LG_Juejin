@@ -3,6 +3,9 @@
 - Lazy Loading 懒加载：类只有在第一次被使用时才会被加载（按需加载），而不是一次性全部加载，这样可以减少内存占用，提高程序的启动速度
 - Parent Delegation Model 双亲委派模型：通过双亲委派确保类的安全性和唯一性 
 
+## Dex 文件
+- 是一种对传统 .class 文件（一个 Java 源码文件对应会生成一个 .class 文件）优化后的产物，Android 把所有 .class 文件进行合并优化（不同 .class 文件中重复的内容只保留一份），然后最终生成一个的 classes.dex 文件（不分包的情况）
+
 ## ClassLoader 类加载器
 - BootClassLoader 启动类加载器：负责加载系统核心类库（比如 java.lang、android.util 和 android.app 等），使用 C++ 实现的，在 Java 中无法直接获取，不可直接访问
 - PathClassLoader：负责加载已安装 Apk 的 Dex 文件（比如 /data/app/xxx.apk 中的 classes.dex 文件）
