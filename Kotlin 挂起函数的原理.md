@@ -1,7 +1,7 @@
 # Kotlin 挂起函数的原理
 
-## CPS 思想
-- Continuation Passing Style 延续传递风格，是一种函数式的编程风格（思想），核心理念是函数接受一个 Continuation 参数，最终会通过调用该参数来传递结果，而不是直接返回结果给调用者
+## CPS 风格
+- Continuation Passing Style 延续传递风格，是一种函数式的编程范式，核心理念是函数接受一个 Continuation 参数，最终会通过调用该参数来传递结果，而不是直接返回结果给调用者
 - Continuation 延续（继续），是一种抽象，表示当前函数执行完后剩余要执行的逻辑（即后续操作），这样可以更灵活地控制执行顺序
 
 ## ​​Continuation
@@ -144,5 +144,5 @@ public final Object testSuspend(Continuation completion) {
 ```
 
 ## 总结
-- Kotlin 挂起函数的挂起和恢复的本质是 CPS 思想（挂起函数的基础） + 状态机，CPS 帮我们引入 Continuation，通过 ​​Continuation 传递上下文配合 Kotlin ​​编译器生成的状态机的​​流转，从而实现了异步代码的同步化编写（可以用同步的方式写异步代码，就是因为 Continuation 包含了 Callback 的形态）
+- Kotlin 挂起函数的挂起和恢复的本质是 CPS 风格（挂起函数的基础） + 状态机，CPS 帮我们引入 Continuation，通过 ​​Continuation 传递上下文配合 Kotlin ​​编译器生成的状态机的​​流转，从而实现了异步代码的同步化编写（可以用同步的方式写异步代码，就是因为 Continuation 包含了 Callback 的形态）
 - 状态机原理：每两个挂起点之间可以看为一个状态，每次进入状态机时都有一个当前的状态，然后执行该状态下对应的代码，如果程序执行完毕则返回结果值，否则返回一个特殊值（比如 COROUTINE_SUSPENDED），表示从这个状态退出并等待下次进入，相当于创建了一个可重复进入的方法，每次都进入使用同一个方法，然后根据不同状态来执行不同分支的代码
