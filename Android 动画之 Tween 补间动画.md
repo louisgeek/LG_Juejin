@@ -3,7 +3,6 @@
 - 补间动画不会改变视图的实际属性，只是改变了视图在视觉上呈现动画效果，所以不适合用在有事件交互的场景
 - 补间动画可以通过 Java 代码或者 xml 文件来实现，定义动画的 xml 文件通常存放在 res/anim 目录下，通过 AnimationUtils#loadAnimation 加载文件
 
-
 ## TranslateAnimation 平移动画
 - 改变视图的位置，实现视图平移的功能
 
@@ -45,7 +44,6 @@ Animation animation = AnimationUtils.loadAnimation(context, R.anim.view_translat
 view.startAnimation(animation);
 ```
 
-
 ## ScaleAnimation 缩放动画
 - 改变视图的尺寸大小，可以指定缩放中心点以及设置 X 和 Y 方向上的缩放比例
 
@@ -75,7 +73,6 @@ scaleAnimation.setFillAfter(true);
     android:duration="1000" />
 ```
 
-
 ## RotateAnimation 旋转动画
 - 旋转视图，可以指定旋转中心点以及旋转的角度
 
@@ -101,7 +98,6 @@ rotateAnimation.setFillAfter(true);
     android:duration="1000" />
 ```
 
-
 ## AlphaAnimation 透明度动画
 - 改变视图的透明度，比如实现淡入淡出的效果
 
@@ -112,7 +108,6 @@ alphaAnimation.setDuration(1000);
 alphaAnimation.setFillAfter(true);
 ```
 
-
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
 <alpha xmlns:android="http://schemas.android.com/apk/res/android"
@@ -120,7 +115,6 @@ alphaAnimation.setFillAfter(true);
     android:toAlpha="0.0"
     android:duration="1000" />
 ```
-
 
 ## AnimationSet
 - 将多个动画组合在一起播放
@@ -162,7 +156,6 @@ view.startAnimation(animationSet);
 </set>
 ```
 
-
 ## Interpolator 插值器
 - 用于控制动画的播放速度
 - AccelerateDecelerateInterpolator 先加速后减速（默认插值器）
@@ -173,7 +166,6 @@ view.startAnimation(animationSet);
 ```java
 animation.setInterpolator(new AccelerateInterpolator());
 ```
-
 
 ## AnimationListener 动画监听器
 ```java

@@ -25,7 +25,7 @@
 - 其中抽象类 CoroutineDispatcher 继承了 AbstractCoroutineContextElement 类（实现了 CoroutineContext.Element 接口）和 ContinuationInterceptor 接口
 
 Dispatchers 里的 CoroutineDispatcher 类型，可以看到它叫 Dispatchers 而不是 Threads，比如 Threads.Main，Threads.IO 等等
-- 1 Dispatchers.Default 默认，对应 DefaultScheduler，为 JVM 共享线程池，$schedulerName-worker-${index}，默认前缀是 DEFAULT_SCHEDULER_NAME = "DefaultDispatcher"，比如 DefaultDispatcher-worker-1，比如用于图片裁剪、二维码计算和 Json 解析操作等
+- 1 Dispatchers.Default 默认，对应 DefaultScheduler，为 JVM 共享线程池，`$schedulerName-worker-${index}`，默认前缀是 DEFAULT_SCHEDULER_NAME = "DefaultDispatcher"，比如 DefaultDispatcher-worker-1，比如用于图片裁剪、二维码计算和 Json 解析操作等
 - 2 Dispatchers.Main  对应 MainCoroutineDispatcher，Android 主线程
 - 3 Dispatchers.IO  对应 DefaultIoScheduler，IO 线程池，默认为 64 个线程，比如用于网络请求，文件读写，数据库操作等
 - 4 Dispatchers.Unconfined  对应 kotlinx.coroutines.Unconfined，不限制，当前 CoroutineScope 的线程策略

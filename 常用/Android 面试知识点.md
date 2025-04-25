@@ -5,7 +5,7 @@
 
 ## Activity 生命周期
 - 6 个
-- 锁屏不走 onStop
+- onRestart 回调方法是在 Activity 从不可见（onStop）重新回到前台时调用的
 - 下拉状态栏不走生命周期
 ```java
 onCreate —— onStart 可见 —— onResume 有焦点 —— onPause 无焦点 —— onStop 不可见 —— onDestory
@@ -175,13 +175,13 @@ ActivityTaskSupervisor#startSpecificActivity
 ActivityThread#handleResumeActivity
 -ActivityThread#performResumeActivity
 -WindowManager.addView(decorView) //就是 ViewManager#addView，WindowManager 接口继承了 ViewManager 接口，作用就是添加 DecorView 到 Window
---WindowManagerImpl#addView //WindowManagerImpl 实现了 WindowManager 接口
+--WindowManagerImpl#addView(decorView) //WindowManagerImpl 实现了 WindowManager 接口
 ```
 
 ```java
-WindowManagerImpl#addView
--WindowManagerGlobal#addView //内部进行 ViewRootImpl 的初始化
---ViewRootImpl#setView //通过 setView 方法设置关联的 DecorView（保存了 DecorView 实例），然后再通过 DecorView.assignParent 把 ViewRootImpl 设置成 DecorView 的 ViewParent（ViewRootImpl 不是一个真正的 View）
+WindowManagerImpl#addView(decorView)
+-WindowManagerGlobal#addView(decorView) //内部进行 ViewRootImpl 的初始化
+--ViewRootImpl#setView(decorView) //通过 setView 方法设置关联的 DecorView（保存了 DecorView 实例），然后再通过 DecorView.assignParent 把 ViewRootImpl 设置成 DecorView 的 ViewParent（ViewRootImpl 不是一个真正的 View）
 ---ViewRootImpl#requestLayout //触发了第一次 View 的布局绘制
 ----ViewRootImpl#scheduleTraversals //内部有 Handler 同步屏障逻辑 MessageQueue#postSyncBarrier
 -----Choreographer#postCallback //设置传入一个 Choreographer.CALLBACK_TRAVERSAL 类型和一个 mTraversalRunnable 对象，Runnable#run 方法里就是执行 ViewRootImpl#doTraversal 方法
@@ -200,7 +200,7 @@ WindowManagerImpl#addView
 - 5 重写 onDraw，绘制内容
 
 ## 事件分发机制
-- MotionEvent 事件产生后，按照 Activity ->  Window -> DectorView -> View 顺序传递的过程就叫事件分发，遵循了一种类似于责任链模式的设计
+- MotionEvent 事件产生后，按照 Activity ->  Window -> DecorView -> View 顺序传递的过程就叫事件分发，遵循了一种类似于责任链模式的设计
 - 事件序列：通常情况下 MotionEvent.ACTION_DOWN 标志着一个事件序列的开始，而 MotionEvent.ACTION_UP 则标志着一个事件序列的结束，只有当一个视图处理了 ACTION_DOWN 事件，它才会收到后续的 ACTION_MOVE 和 ACTION_UP 事件（一旦对 ACTION_DOWN 事件返回 true，那么后续的 ACTION_MOVE 和 ACTION_UP 事件都会直接传递给它）
 - View#dispatchTouchEvent 分发事件
 - ViewGroup#onInterceptTouchEvent 拦截事件（只有 ViewGroup 有）
@@ -212,9 +212,20 @@ WindowManagerImpl#addView
 - 内部拦截法：是在子 View 的 dispatchTouchEvent 或 onTouchEvent 方法中，通过调用父视图的 ViewGroup#requestDisallowInterceptTouchEvent 方法来控制父 View 是否拦截事件（父View 是否会跳过 onInterceptTouchEvent）
 
 ## View 生命周期
-- 在 Activity 的 onResume 方法里是无法获取 View 正确的宽高的
+- onAttachedToWindow 在 Activity#onResume 方法调用后执行，当 View 被添加到 Window 时候被调用，Window 就是指 PhoneWindow
+- 在 Activity 的 onResume 方法里是无法获取 View 正确的宽高的（因为 Activity#onResume 方法走的时候 onMeasure 这类方法还没开始走）
 - 官方推荐采用 onWindowFocusChanged(true) 回调来确定当前 View 所在的 Activity 是对用户可见的并且可交互的，所以这里可以获取到 View 正确的宽高
 - onAttachedToWindow 进行资源准备初始化，onDetachedFromWindow 进行资源释放取消
+
+```java
+//View 的 visibility 属性是 VISIBLE 的情况
+onAttachedToWindow —— onWindowVisibilityChanged(VISIBLE) —— onMeasure —— onSizeChanged —— onLayout —— onDraw —— onWindowFocusChanged(true)  —— onWindowVisibilityChanged(GONE) —— onWindowFocusChanged(false) —— onDetachedFromWindow
+```
+
+```java
+//重点记忆
+onAttachedToWindow —— onMeasure —— onSizeChanged —— onLayout —— onDraw —— onWindowFocusChanged(true) —— onWindowFocusChanged(false) —— onDetachedFromWindow
+```
 
 ## Binder IPC 进程间通信机制
 - Binder 是 Android 提供的一种 IPC 进程间通信机制，Binder 是一种基于消息传递的 IPC 机制，基于 C/S 架构

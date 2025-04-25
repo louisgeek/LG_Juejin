@@ -3,10 +3,10 @@
 
 ## 核心回调
 - 6 个核心的生命周期
+- onRestart 回调方法是在 Activity 从不可见（onStop）重新回到前台时调用的
 ```java
 onCreate —— onStart 可见 —— onResume 有焦点 —— onPause 无焦点 —— onStop 不可见 —— onDestory
 ```
-- onRestart 回调方法是在 Activity 从不可见（onStop）重新回到前台时调用的
 
 ![Activity 生命周期](https://developer.android.google.cn/guide/components/images/activity_lifecycle.png "https://developer.android.google.cn/guide/components/images/activity_lifecycle.png")
 
@@ -42,7 +42,7 @@ onCreate（重新创建） -> onStart -> onResume
 - 4 点击 HOME 键、来电
 ```java
 //点击 Home 键、来电
-onPause -> onStop 
+onPause -> onStop
 //回到 App
 onRestart -> onStart -> onResume  
 //如果被系统回收了，则这么走
