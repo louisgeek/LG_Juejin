@@ -188,13 +188,13 @@ class CustomAnimatedWidget extends AnimatedWidget {
 //RotationTransition 继承自 MatrixTransition，而 MatrixTransition 又继承自 AnimatedWidget
 //FadeTransition 继承自 SingleChildRenderObjectWidget，而 SingleChildRenderObjectWidget 又继承自 RenderObjectWidget
 //
-//平移动画，通过 position 控制位置
+//滑动动画，通过 position 控制位置
 SlideTransition
 //缩放动画，通过 scale 控制缩放
 ScaleTransition
 //旋转动画，通过 turns 控制旋转次数
 RotationTransition
-//透明度动画（比如实现淡入淡出效果），通过 opacity 控制不透明度
+//透明度动画（比如实现淡入淡出效果），通过 opacity 控制透明度
 FadeTransition
 //...
 ```
