@@ -1,10 +1,12 @@
 # Kotlin 协程 launch 和 async 的区别
-- launch 和 async 都是用于启动协程的函数，都是 CoroutineScope 接口的扩展函数
+- launch 和 async 都是用于创建启动协程的函数，不阻塞当前线程，都是 CoroutineScope 接口的扩展函数
+- 默认情况下 launch 和 async 的任务都是并行执行的
 - launch 用于执行无需返回值的异步任务（比如日志上传、埋点和 IO 操作）
 - async 用于执行并发任务并汇总结果的场景（比如多个接口并行请求后合并数据）
 
 ## launch
-- launch 返回 Job 对象，用于控制协程生命周期（比如取消协程、等待协程完成）
+- launch 返回协程的 Job 对象，用于控制协程生命周期（比如取消协程、等待协程完成）
+- Job 有一个 join 挂起函数，可以用于等待子协程运行完毕，有一个 cancel 函数可以取消协程
 - 异常处理​：异常立即传播，导致协程取消（取消整个协程作用域），可通过 try-catch 捕获
 ```kotlin
 val job = launch { 
@@ -46,8 +48,9 @@ suspend fun fetchTwoDocs2() =
 ```
 
 ## async
-- async 返回 Deferred 对象（Deferred 继承自 Job，额外提供 await 方法用于获取结果）
-- 异常处理​：异常暂存在 Deferred 中，直到调用 await 方法时抛出
+- async 返回协程的 Deferred 对象（Deferred 继承自 Job，额外提供 await 挂起函数用于获取结果，可以看成是一个带返回值的 Job）
+- 通过 await 挂起函数获取返回结果，就是 async return 返回的值，如果不使用 await，那么效果就相当于 launch
+- 异常处理​：异常暂存在 Deferred 中（持有异常并将其作为 await 调用的一部分重新抛出），直到调用 await 函数时抛出，这意味着如果在普通函数中使用 async 的话，就只能以静默方式丢弃异常，而这些丢弃的异常不会出现在崩溃指标中，也不会出现在 logcat 中
 ```kotlin
 val deferred = async {
     //...
@@ -55,8 +58,6 @@ val deferred = async {
 }
 val result = deferred.await() //阻塞等待结果
 ```
-
-
 
 ```kotlin
 suspend fun suspendFun_fetchDoc1(): String {
