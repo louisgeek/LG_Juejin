@@ -46,6 +46,7 @@ class _ExplicitAnimationWidgetState extends State<ExplicitAnimationWidget>
 
     //3 监听动画值的变化
     _animation.addListener(() {
+      print('addListener Callback');
       setState(() {}); //触发 UI 更新
     });
     _animation.addStatusListener((status) {

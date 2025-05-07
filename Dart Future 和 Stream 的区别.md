@@ -1,4 +1,5 @@
 # Dart Future 和 Stream 的区别
+- Dart 中使用 Future 和 Stream 编写异步任务
 
 ## Future 单次异步结果
 - 用于表示一个尚未完成的异步操作的结果，承诺最终会返回一个值（或错误），适用于如网络请求、数据库查询、文件读取和延迟任务等
@@ -95,3 +96,9 @@ Stream<String> streamFromFuture(Future<String> future) async* {
   yield "Additional data"; //可追加其他数据
 }
 ```
+
+## 总结
+- Future 用于表示一个尚未完成的异步操作的结果，承诺最终会返回一个值，Stream 用于表示一系列异步事件的序列（数据流），可以持续发送多个数据
+- Future 无需手动关闭，Stream 需要手动关闭
+- Future 的所有 API 的返回值仍然是一个 Future 对象，所以可以很方便的进行链式调用
+- Future 适用于如网络请求、数据库查询、文件读取和延迟任务等，Stream 适用于如传感器数据、实时推送、键盘输入、轮询请求和定时器等

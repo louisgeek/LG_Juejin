@@ -116,7 +116,7 @@ void main() {
 ```
 
 ## mixin class 混入类
-- 使用 mixin class 同时声明混入和类，该类既可以当作常规类使用，又可以当作混入使用
+- 使用 mixin class 同时声明混入和类，该类既可以当作常规类使用，又可以当作混入使用（比如 ChangeNotifier）
 - 应用于类或混入的任何限制也适用于混入类（比如不能使用 on）
 
 ```dart
