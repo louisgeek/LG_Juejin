@@ -29,7 +29,7 @@ class AppSharedDataInherited extends InheritedWidget {
 
   //提供 of 静态方法，方便子 Widget 访问数据
   static AppSharedDataInherited? of(BuildContext context) {
-    //通过 dependOnInheritedWidgetOfExactType 获取最近的 InheritedWidget 实例，并建立依赖关系（子 Widget 会被标记为依赖此 InheritedWidget）
+    //通过 dependOnInheritedWidgetOfExactType 获取最近的 InheritedWidget 实例，并建立依赖关系（子 Widget 会被注册为依赖此 InheritedWidget）
     return context.dependOnInheritedWidgetOfExactType<AppSharedDataInherited>();
   }
 }

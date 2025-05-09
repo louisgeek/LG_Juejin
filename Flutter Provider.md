@@ -2,7 +2,7 @@
 - Provider 是 Flutter 官方推荐的状态管理库，基于 InheritedWidget 和 ChangeNotifier 实现跨组件状态共享与响应式更新，是一个轻量级的状态管理解决方案，旨在简化复杂的状态管理流程，从而能够更高效地管理应用中的状态共享逻辑，同时保持代码的可读性和可维护性
 
 ## ChangeNotifierProvider
-- 状态提供者，继承自 InheritedProvider，用于状态数据管理
+- 状态提供者，继承自 InheritedProvider（InheritProvider 本质上是 InheritWidget 实现的），用于状态数据管理
 - 结合 ChangeNotifier 类，当状态变化时通知依赖的 Widget 更新
 
 ## Consumer 
