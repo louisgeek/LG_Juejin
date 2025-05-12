@@ -103,5 +103,5 @@ class MyBody extends StatelessWidget {
 
 ## 总结
 - InheritedWidget 是 Flutter 中用于在 Widget 树中进行高效共享和传递数据的核心组件，适合需要跨层级传递数据的场景（比如用户登录状态、应用状态、全局配置等），Flutter 中内置的 Theme 主题和 Locale 国际化功能均基于 InheritedWidget 实现
-- 同时 InheritedWidget 也是作为 Provider、Riverpod 等高级状态管理工具的基础
+- 同时 InheritedWidget 也是作为 Provider、Riverpod（增强改进版的 Provider） 等高级状态管理工具的基础
 - InheritedWidget 适合简单的数据共享场景，对于复杂场景，推荐使用 Provider、Riverpod 和 Bloc 等状态管理工具

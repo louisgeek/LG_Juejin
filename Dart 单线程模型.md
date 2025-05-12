@@ -5,7 +5,7 @@
 - 每个 Isolate 都会维护一个 Event Loop 事件循环来处理异步任务（Isolate 承担了事件循环调度职责），包含两个任务队列，分别是 Microtask Queue 微任务队列和 Event Queue 事件队列
 
 ## Isolate 隔离区
-- 主 Isolate（UI 主线程）：是应用启动时自动创建的第一个 Isolate，也是默认的执行环境，主 Isolate 的入口是 main 函数，从这里开始执行同步代码，之后进入事件循环处理异步任务（在 Flutter 中，主 Isolate 还负责 UI 渲染和交互处理，所以也可以称为 UI Isolate）
+- 主 Isolate（UI 主线程，也称为 Root Isolate）：是应用启动时自动创建的第一个 Isolate，也是默认的执行环境，主 Isolate 的入口是 main 函数，从这里开始执行同步代码，之后进入事件循环处理异步任务（在 Flutter 中，主 Isolate 还负责 UI 渲染和交互处理，所以也可以称为 UI Isolate）
 - 子 Isolate：处理耗时操作或独立任务，通过消息传递机制与主 Isolate 解耦，适用于 CPU 计算密集型的耗时任务（比如复杂数学运算、加解密操作、图片编解码处理、图片缩放裁剪旋转、文件读写和 JSON 解析）
 
 ## Isolate#spawn 手动创建 Isolate

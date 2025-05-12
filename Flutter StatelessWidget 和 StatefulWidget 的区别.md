@@ -30,7 +30,7 @@ class MyText extends StatelessWidget {
 ```
 
 ## StatefulWidget 有状态组件
-- 是一种有状态的组件（包含一个 State 对象），State 状态可以随时间变化，可以动态修改其状态并触发 UI 重新渲染
+- 是一种有状态的组件（包含一个 State 对象），State 状态可以随时间变化，可以动态修改其状态并触发 UI 重新渲染（通过 setState 触发）
 - 包括如 createState、initState、build（UI 由 build 方法描述，根据 State 状态构建 UI）、didUpdateWidget 和 dispose 等方法
 - 适合需要动态更新的场景（如表单输入、列表刷新、计数器和动画等）
 
