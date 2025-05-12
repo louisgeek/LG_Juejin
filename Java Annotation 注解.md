@@ -19,7 +19,7 @@ public @interface Override {
 @Deprecated
 ```java
 @Documented
-@Retention(RetentionPolicy.RUNTIME) //SOURCE
+@Retention(RetentionPolicy.RUNTIME)
 @Target(value={CONSTRUCTOR, FIELD, LOCAL_VARIABLE, METHOD, PACKAGE, MODULE, PARAMETER, TYPE})
 public @interface Deprecated {
     String since() default "";
