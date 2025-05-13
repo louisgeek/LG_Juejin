@@ -1,4 +1,4 @@
-# Flutter Widget、Element 和 RenderObject 的区别
+# Flutter Widget、Element 和 RenderObject
 - Widget、Element 和 RenderObject 的三者通过分工（描述、管理和渲染）和协作，实现高效、灵活的 UI 渲染和更新机制
 
 ## Widget 组件
