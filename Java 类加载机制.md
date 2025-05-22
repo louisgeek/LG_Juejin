@@ -22,11 +22,11 @@
 - Custom ClassLoader 自定义类加载器：可以继承 java.lang.ClassLoader 并重写 findClass 方法实现，通常用于加载非标准路径中的类（比如动态代理、加密文件中加载和网络下载后加载等）
 
 ## 双亲委派模型
-- 当一个类加载器在查找 Class 时候，先判断该类是否已经加载（避免重复加载，判断已加载就直接读取已加载的 Class），如果没有，它首先不会自己去加载这个类，而是委派父类加载器去查找，递归向上委托直到最上层 Bootstrap ClassLoader 启动类加载器，如果找到就返回，如果还没找到才继续往下找，最后还没找到就回到了自身类加载器去尝试查找加载
+- 当一个类加载器在 ClassLoader#loadClass 查找 Class 时候，先通过 ClassLoader#findLoadedClass 判断该类是否已经加载（避免重复加载，判断已加载就直接读取已加载的 Class），如果没有，它首先不会自己去加载这个类，而是委派父类加载器去查找（parent 不为 null，就调用 parent 的 loadClass 方法），递归向上委托直到最上层 Bootstrap ClassLoader 启动类加载器（findBootstrapClassOrNull 方法），如果找到就返回，如果还没找到才继续往下找，最后还没找到就回到了自身类加载器去尝试查找加载（findClass 方法）
 - 不同类加载器负责不同范围的类
 - 安全性：核心类库（比如 java.lang.String）由启动类加载器加载，防止核心类被自定义类冒充篡改
 - 唯一性：一个类只能由一个类加载器加载，同一个类不会被加载多次，避免重复加载，保证加载的类的唯一性
-
+- PS：Tomcat 没有遵照双亲委派原则，而是提供隔离的机制，它会为每个 Web 应用单独提供一个 WebAppClassLoader 加载器，会优先加载 Web 应用自己定义的类，加载不到时才交给 CommonClassLoader 去加载，这和双亲委派原则正好相反
 ```java
 //父子类加载器之间是 Composition 组合关系，而不是 Inheritance 继承关系
 Custom ClassLoader -> Application ClassLoader -> Extension ClassLoader -> Bootstrap ClassLoader
@@ -36,13 +36,4 @@ Custom ClassLoader -> Application ClassLoader -> Extension ClassLoader -> Bootst
 - Java 类加载机制就是把类的字节码文件动态加载到内存中，并且对其进行加载、链接和初始化等操作
 - 当一个类加载器收到加载请求时，优先委派父类加载器处理，仅在父类加载器无法加载时，才由当前类加载器尝试加载，确保核心类库的优先加载，保证核心类安全
 - Java 类加载机制确保了 Java 程序的灵活性、安全性和高效性
-
-
-
-
-
-
-
-
-
 

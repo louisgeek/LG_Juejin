@@ -14,7 +14,7 @@
 - 简称 DI，依赖注入是实现控制反转的最常用方式
 - 依赖注入的实现方式
     - Constructor Injection 构造器（构造函数）注入
-    - Field Injection 属性（字段）注入（Setter Injection 注入）
+    - Field Injection 属性（字段、参数）注入（Setter Injection 注入）
     - Interface Injection 接口注入
     - 使用依赖注入框架（比如 Spring 框架）
  
