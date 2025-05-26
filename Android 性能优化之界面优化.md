@@ -11,9 +11,8 @@
 ## 优化策略
 - 在 onDraw 方法中避免创建新对象，减少内存分配和垃圾回收
 - 减少布局层级嵌套
-    - 优先使用 ConstraintLayout 约束布局减少布局嵌套
-    - 使用 `<include>` 标签复用布局，减少布局层级
-    - 使用 `<merge>` 和 `<ViewStub>` 标签优化布局层级
+    - 优先使用 ConstraintLayout 约束布局、RelativeLayout相对布局等减少布局嵌套
+    - 使用 `<include>` 标签复用布局，使用 `<merge>` 和 `<ViewStub>` 标签优化布局层级
 - 通过打开开发者选项 -> 调试 GPU 过度绘制，通过显示的不同颜色来区分是存在过度绘制
 - 通过 Tools -> Layout Inspector 布局检查器工具查看布局层级，排查是否存在多层无用的嵌套
 - 利用 dumpsys 系统抓取器辅助分析卡顿原因，通过 adb shell dumpsys gfxinfo <package_name> 获取系统界面性能状态信息，进行排查优化

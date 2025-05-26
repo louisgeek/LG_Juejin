@@ -25,7 +25,6 @@ interface Producer<out T> {
 }
 ```
 
-
 ## 逆变
 - 适用于 Consumer 消费者角色的泛型类或接口，只能写入数据，不能读取
 - 类中不能有返回该类型参数的成员，只能接受该类型作为参数
@@ -46,8 +45,8 @@ interface Consumer<in T> {
 ```
 
 ## 总结
-- 协变：在 Java 中使用 ? extends E 表示，在 Kotlin 中使用 out E 表示，表示上界为 E
-- 逆变：在 Java 中使用 ? super E 表示，而在 Kotlin 中使用 in E 表示，表示下界为 E
+- 协变：在 Java 中使用 ? extends T 表示，在 Kotlin 中使用 out T 表示，表示上界为 T
+- 逆变：在 Java 中使用 ? super T 表示，而在 Kotlin 中使用 in T 表示，表示下界为 T
 - PECS 原则：Producer-Extends，Consumer-Super
 - Producer -> output -> out
 - Consumer -> input -> in
