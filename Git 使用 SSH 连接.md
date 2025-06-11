@@ -56,7 +56,15 @@ ssh-add -D
 touch ~/.ssh/config
 ```
 
-## 总结
+```shell
+# ~/.ssh/config
+
+Host 192.168.x.x
+    HostName 192.168.x.x # 主机地址
+    IdentityFile ~/.ssh/id_rsa # 认证文件路径
+```
+
+## 步骤
 ```shell
 # 1 创建密钥
 ssh-keygen -t rsa -b 4096 -C "your_email@example.com"
@@ -71,9 +79,31 @@ ssh-add ~/.ssh/id_rsa
 
 # ~/.ssh/config
 
-Host gitwork # alias 192.168.x.x
-    HostName 192.168.x.x # 主机地址
-    IdentityFile ~/.ssh/id_rsa # 认证文件路径
+Host gitwork # alias
+    HostName 192.168.x.x
+    IdentityFile ~/.ssh/id_rsa
+```
+
+## 多账号
+```shell
+# 创建个人账号的密钥
+ssh-keygen -t rsa -b 4096 -C "your_pers_email@example.com" -f ~/.ssh/id_rsa_pers
+# 创建工作账号的密钥
+ssh-keygen -t rsa -b 4096 -C "your_work_email@company.com" -f ~/.ssh/id_rsa_work
+```
+
+```shell
+# ~/.ssh/config
+
+Host gitpers # alias
+    HostName github.com
+    User your_pers_name
+    IdentityFile ~/.ssh/id_rsa_pers
+
+Host gitwork
+    HostName 192.168.x.x
+    User your_work_name
+    IdentityFile ~/.ssh/id_rsa_work
 ```
 
 
