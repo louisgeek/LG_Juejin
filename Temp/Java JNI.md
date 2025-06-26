@@ -45,9 +45,9 @@ extern "C" JNIEXPORT jstring JNICALL
 Java_com_louis_myjni_MainActivity_stringFromJNI(
         JNIEnv* env,           //JNIEnv 指的是当前 java 环境，利用 JNIEnv 可以操作 java 层代码
         jobject /* this */) {  //jobject 指的是 JNI 函数对应的 java native 本地方法所在类的实例对象，如果本地方法是 static 的话则类型就需要改成 jclass，代表的是类对象
-    std::string hello = "Hello from C++";
+    std::string hello = "Hello from C++"; //std::string 是 C++ 标准库中类
     //利用 UTF-8 char 字符数组构造出 jstring 并返回，通过 env 去创建的对象会由 GC 来管理内存释放
-    return env->NewStringUTF(hello.c_str());
+    return env->NewStringUTF(hello.c_str()); //c_str 函数可以将 std::string 转换为 C 风格的 UTF-8 字符串（即 const char*）
 }
 //
 extern "C"
@@ -63,7 +63,7 @@ Java_com_louis_myjni_MainActivity_doSometing(JNIEnv *env, jobject thiz, jint int
     //
     //通过 thiz 对象和函数 ID 来调用函数，无返回值用 CallVoidMethod，返回值 int 用 CallIntMethod
     jobject backObj = env->CallObjectMethod(thiz, methodId, float_value_new);
-    jstring backStr = (jstring) (backObj);
+    jstring backStr = (jstring) (backObj); //jstring 是 Java 对象，无需手动释放，由 GC 自动管理
     //
     const char *newStr = env->GetStringUTFChars(backStr, 0);
     LOGE("C 打印 onSometing 方法返回值是：%s", newStr);//C 打印 onSometing 方法返回值是：floatValue=11.6
@@ -105,6 +105,10 @@ Java_com_louis_myjni_MainActivity_stringFromJNI
  
 
 
+
+
+
+
 JNI Java 本地接口
 
 - Java Native Interface 
@@ -121,6 +125,11 @@ JNIEnv *env 一定永远是每个jni函数的第一个参数  通过env去创建
 
 
 ```java
+// Used to load the 'myjni' library on application startup.
+static {
+    System.loadLibrary("myjni");
+}
+
 public class JNIUtils {
     // 加载native-jni
     static {
@@ -189,12 +198,87 @@ MyJni
 Java类型  JNI类型  C/C++类型   描述
 boolean（布尔类型）jbooleanunsigned short无符号8位byte（字节类型）jbytesigned char有符号8位char（字符型）jcharunsigned short无符号16位shor（短整型）jshortshort有符号16位int（整型）jint/jsizeint有符号32位long（长整型）jlonglong/long long(_int64)有符号64位float（浮点型）jfloatfloat32位double（双精度浮点型）jdoubledouble64位
  
+
+
 ，在 Java 与 C++ 的函数进行匹配时，编译器会根据函数名、参数和返回值信息一起去匹配
 
 ，所以Java调用JNI函数时，编译器是根据JNI的函数名去匹配的。但是C++支持重载，所以Java调用JNI函数时，编译器会根据JNI的函数名+参数一起去匹配，所以出现找不到对应JNI函数的异常。
 
 
 
+## 转换
+std::string -> const char*
+```c
+std::string hello = "Hello from C++"; //std::string 是 C++ 标准库中类
+const char *c_str = hello.c_str(); //c_str 函数可以将 std::string 转换为 C 风格的 UTF-8 字符串（即 const char*）
+```
 
+const char* -> std::string
+```c
+//...
+const char *c_str = hello.c_str();
+std::string hello(c_str); //构造 std::string
+```
 
+std::string -> jstring
+```c
+std::string hello = "Hello from C++";
+const char *c_str = hello.c_str();
+jstring jString = env->NewStringUTF(c_str);
+```
 
+jstring -> std::string
+```c
+const char *c_str = env->GetStringUTFChars(jString, NULL);
+std::string hello(c_str); //构造 std::string
+//释放
+env->ReleaseStringUTFChars(jString, c_str);
+```
+
+const char* -> jstring
+```c
+//...
+const char *c_str = hello.c_str();
+jstring jString = env->NewStringUTF(c_str);
+```
+
+const char* -> jstring
+```c
+//...
+const char *c_str = hello.c_str();
+//查找获取 Java 的 java.lang.String 类
+jclass strClass = (env)->FindClass("java/lang/String");
+if (strClass == nullptr) {
+    //类未找到
+    return nullptr;
+}
+//查找获取 String 的构造方法 String(byte[] bytes, String charsetName)
+jmethodID ctorMethodID = env->GetMethodID(strClass, "<init>", "([BLjava/lang/String;)V"); //<init> 是 Java 中实例构造函数的特殊方法名，在对象被创建时被调用，用于完成对象的初始化工作
+if (ctorMethodID == nullptr) {
+    //方法未找到
+    env->DeleteLocalRef(strClass);
+    return nullptr;
+}
+//创建 byte 数组并复制数据
+jsize len = strlen(c_str);
+jbyteArray bytes = env->NewByteArray(len);
+env->SetByteArrayRegion(bytes, 0, len, (jbyte*)c_str); //将char* 转换为byte数组
+//指定编码类型（比如 GB2312）
+jstring encoding = env->NewStringUTF("UTF-8");
+//通过构造方法创建出对象
+jobject strObject = env->NewObject(strClass, ctorMethodID, bytes, encoding);
+jstring jString = (jstring)strObject;
+//释放临时引用
+env->DeleteLocalRef(strClass);
+env->DeleteLocalRef(bytes);
+env->DeleteLocalRef(encoding);
+```
+
+jstring -> const char* 
+```c
+//...
+const char* c_str = env->GetStringUTFChars(jString, NULL);
+LOGD("test c_str: %s", c_str);  //直接打印 const char*
+//释放
+env->ReleaseStringUTFChars(jString, c_str);
+```
