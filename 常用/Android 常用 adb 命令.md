@@ -142,3 +142,7 @@ adb logcat > logs.txt
 adb  bugreport D:\bugs
 ```
 
+获取当前栈顶 Activity 的相关信息
+```shell
+adb shell dumpsys activity top
+```
