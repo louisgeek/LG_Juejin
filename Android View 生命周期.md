@@ -16,7 +16,7 @@ onFinishInflate —— onAttachedToWindow —— onWindowVisibilityChanged(VISIB
 - onAttachedToWindow 在 Activity#onResume 方法调用后执行，当 View 被添加到 Window 时候被调用，Window 就是指 PhoneWindow
 - onWindowVisibilityChanged(VISIBLE) 紧跟着 onAttachedToWindow，不过需要注意的是锁屏的时候 onWindowVisibilityChanged(GONE) 不执行
 - onMeasure、onSizeChanged、onLayout 和 onDraw 通常在 onWindowVisibilityChanged(VISIBLE) 方法调用后执行，所以在 Activity 的 onResume 方法里是无法获取 View 正确的宽高的
-- onSizeChanged 是在 View 的大小发生改变后才会执行（屏幕旋转导致 View 所在的布局空间尺寸变化等场景），这里可以根据新的宽高重新调整绘制的一些布局、重新初始化与尺寸相关的资源等操作
+- onSizeChanged 在 View 的大小发生改变后才会执行（屏幕旋转导致 View 所在的布局空间尺寸变化等场景），可以根据新的宽高重新调整绘制的一些布局、重新初始化与尺寸相关的资源等操作
 - onWindowFocusChanged 官方推荐采用 onWindowFocusChanged(true) 回调来确定当前 View 所在的 Activity 是对用户可见的并且可交互的（PS：下拉状态栏操作也会触发该回调），所以这里可以获取到 View 正确的宽高
 - 默认 View 属性 visibility 是 GONE 的情况下整个流程就不继续走 onMeasure、onSizeChanged、onLayout 和 onDraw 了
 - 默认 View 属性 visibility 是 INVISIBLE 的情况下整个流程就不继续走 onDraw 了

@@ -1,8 +1,9 @@
 # Dart 单线程模型
 - 单线程模型是一种在单个线程中处理所有任务的编程模型，这种设计避免了多线程复杂的锁竞争和同步问题，降低开发复杂度
 - Dart 代码（包括 UI 渲染、事件处理、异步任务）默认运行在单一线程（UI 主线程）中，所有代码按顺序执行，尽管 Dart 是单线程的，但它通过引入 Isolate 隔离区（隔离单元）的机制来实现类似多线程的功能
-- Isolate 是 Dart 中的独立执行单元，每个 Isolate 都有自己的内存空间，Isolate 之间不能直接共享内存，而是需要通过消息传递（SendPort 和 ReceivePort）来进行通信
+- Isolate 是 Dart 中的独立执行单元，每个 Isolate 都有自己的内存堆，Isolate 之间不能直接共享内存（不能直接共享可变对象），而是需要通过消息传递（SendPort 和 ReceivePort）来进行通信
 - 每个 Isolate 都会维护一个 Event Loop 事件循环来处理异步任务（Isolate 承担了事件循环调度职责），包含两个任务队列，分别是 Microtask Queue 微任务队列和 Event Queue 事件队列
+- Isolates Group 可以共享相同的内存堆（减少了内存分配的开销），不过仍旧不能直接共享可变对象，可以通过共享内存堆实现对象（比如 List、Map 等）传递
 
 ## Isolate 隔离区
 - 主 Isolate（UI 主线程，也称为 Root Isolate）：是应用启动时自动创建的第一个 Isolate，也是默认的执行环境，主 Isolate 的入口是 main 函数，从这里开始执行同步代码，之后进入事件循环处理异步任务（在 Flutter 中，主 Isolate 还负责 UI 渲染和交互处理，所以也可以称为 UI Isolate）
@@ -117,8 +118,8 @@ Timer(Duration(seconds: 2), () {
 ```
 
 ## 总结
-- Dart 的单线程模型通过 Isolate 隔离区的双队列事件循环机制来实现高效并发处理，在简化并发编程的同时，实现了高效的异步处理和多任务并行，也保证了 UI 流畅性（事件循环确保界面渲染优先，避免卡顿）
-- 内存隔离：每个 Isolate 拥有独立内存堆，不共享数据，通过 SendPort ReceivePort 消息传递通信
+- Dart 的单线程模型（每一个 Isolate 隔离区里都是单线程模型）通过 Isolate 里的双队列事件循环机制来实现高效并发处理，在简化并发编程的同时，实现了高效的异步处理和多任务并行，也保证了 UI 流畅性（事件循环确保界面渲染优先，避免卡顿）
+- 内存隔离：每个 Isolate 都拥有自己的内存堆，不共享数据，通过 SendPort ReceivePort 消息传递通信
 - Future 适合耗时不超过 16ms 的操作（轻量级异步任务），对于超过 16ms 以上的操作推荐使用 Isolate（复杂耗时操作，可以说 CPU 密集型任务、耗时操作必须要放到子 Isolate）
 - PS：Flutter UI 相关逻辑（包括 setState）是在主 Isolate 中执行，无需额外的线程安全处理，不过需保证异步回调中不执行耗时同步操作
 - PS：网络请求实际是由 Dart 运行时委托给操作系统内核处理的，网络请求完成后将数据告诉 Dart 层，通过事件循环回调处理结果，因此不会导致卡顿

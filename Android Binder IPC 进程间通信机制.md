@@ -11,6 +11,8 @@
 - Shared Memory 共享内存
 - Pipe 管道
 - Message Queue 消息队列
+- Semaphore 信号量
+- Signal 信号
 - Socket 套接字：不仅支持在同一主机上的不同进程之间通信，也可以支持在不同主机上进行进程间通信
 - 文件共享
 

@@ -1,7 +1,8 @@
 # Android Glide
 - Glide 可以进行图片缓存，还支持 Gif、WebP、缩略图，甚至是 Video
 - 绑定生命周期：可以使加载图片的生命周期动态管理起来
-- 高效的缓存策略：支持内存、Disk 缓存，Glide 缓存支持多种规格， Glide 可以根据 ImageView 的大小来缓存相应大小的图片尺寸
+- 高效的缓存策略：支持内存、Disk 缓存，
+Glide 缓存支持多种规格， Glide 可以根据 ImageView 的大小来缓存相应大小的图片尺寸
 - 内存开销小：默认的 Bitmap 格式是 RGB_565 格式的
 
 Glide 会自动根据 ImageView 的大小来决定加载图片的大小
@@ -46,7 +47,7 @@ Glide 内存缓存如何控制大小
 如果自己去实现图片库，怎么做？
 
 
-
+glide中对Bitmap做了哪些操作？三级缓存？为何在有了内存缓存后，还要持有ActivityRef这个呢？
 ##### 写个图片浏览器，说出你的思路？
 
 
@@ -103,7 +104,7 @@ RequestManagerRetriever
 
 
 
-1 Glide 如何关联生命周期的？
+1 Glide 如何的？
 
 Glide#with 方法内会创建并添加一个 Fragment ，通过在其内部进行主动回调各个生命周期的方式实现监听，关联的 FragmentRequestManager 就能感知生命周期了，然后它里面由把事件传递给了 TargetTracker 
 

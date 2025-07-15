@@ -139,8 +139,7 @@ val result =  numList.let {
 - T.apply 和 T.also 返回作用域对象（就是 return this）
     - T.apply 使用 this 访问上下文对象，通常是对一个对象的属性进行设置
     - T.also 使用 it 访问上下文对象，通常是对一个对象进行一些附加处理
-
-- T.run、T.let, kotlin.run, 和 with(T) 返回 Lambda 表达式的结果值（就是最后一行的值）
+- T.run、T.let、kotlin.run 和 with(T) 返回 Lambda 表达式的结果值（就是最后一行的值）
     - T.run 使用 this 访问上下文对象，通常是对一个对象的属性进行设置并需要返回结果值
     - T.let 使用 it 访问上下文对象，通常是是在一个局部作用域内引入变量，在非 null 对象上执行表达式
     - kotlin.run 需要自行引用上下文对象，通常是在需要表达式的地方执行多条语句

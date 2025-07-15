@@ -53,8 +53,9 @@ Activity 负责承载 UI 用户界面、处理用户事件交互和管理生命�
 Activity#startActivity //启动一个 Activity
 -Activity#startActivityForResult
 --Instrumentation#execStartActivity //与 ActivityManagerService 进行跨进程通信
----ActivityTaskManager.getService().startActivity //通过 Binder 跨进程通信请求 AMS，然后经过一系列操作后，再由 AMS 通过 Binder 跨进程通信调用触发 ActivityThread 进行处理启动目标 Activity，最终会调用到 ActivityThread#handleLaunchActivity 方法
-----ActivityThread#handleLaunchActivity 
+---Instrumentation#checkStartActivityResult //比如检验 Activity 是否在 AndroidManifest.xml 注册，如果未注册就抛出 ActivityNotFoundException 异常
+----ActivityTaskManager.getService().startActivity //通过 Binder 跨进程通信请求 AMS，然后经过一系列操作后，再由 AMS 通过 Binder 跨进程通信调用触发 ActivityThread 进行处理启动目标 Activity，最终会调用到 ActivityThread#handleLaunchActivity 方法
+-----ActivityThread#handleLaunchActivity 
 ```
 
 ```java
@@ -116,7 +117,8 @@ Launcher#startActivitySafely //带上 FLAG_ACTIVITY_NEW_TASK 标记让 Activity 
 -Activity#startActivity
 --Activity#startActivityForResult
 ---Instrumentation#execStartActivity
-----ActivityManager.getService().startActivity //通过 Binder 跨进程通信请求 AMS，然后会调用到 ActivityManagerService#startActivity 方法
+----Instrumentation#checkStartActivityResult //比如检验 Activity 是否在 AndroidManifest.xml 注册
+-----ActivityManager.getService().startActivity //通过 Binder 跨进程通信请求 AMS，然后会调用到 ActivityManagerService#startActivity 方法
 ```
 
 ```java
@@ -165,6 +167,15 @@ ActivityTaskSupervisor#startSpecificActivity
 - ViewRootImpl 是 WindowManager 和 DecorView 之间的桥梁，用来管理 View 的各种事件，包括 invalidate、requestLayout 和 dispatchInputEvent 等
 - ViewRootImpl 是 DecorView 的 ViewParent，也正因为这样 View#requestLayout 层层调用最终能调到 ViewRootImpl#requestLayout
 
+## 子线程一定不能更新 UI 吗
+- 在 onCreate 或 onResume 方法里可以实现子线程更新 UI
+- 因为判断并抛出 CalledFromWrongThreadException("Only the original thread that created a view hierarchy can touch its views.") 异常的逻辑在 ViewRootImpl#checkThread 里
+- 而 ViewRootImpl 在 ActivityThread#handleResumeActivity 方法里进行初始化，在回调 onCreate 或 onResume 方法时还没完成 ViewRootImpl 对象的创建，所以不会进行是否是主线程的判断
+
+## 为什么不允许子线程直接去更新 UI
+- 因为 UI 控件不是线程安全的，子线程直接去操作 UI 可能会导致 UI 的不稳定和不确定性
+- 为啥不采用加锁机制，因为加锁会让 UI 访问的逻辑变得复杂，而且每次加锁会降低 UI 访问的效率
+
 ## View 绘制机制
 - 由 ViewRootImpl 来统一协调管理整个视图树的绘制流程，处理来自系统的输入事件分发和生命周期变化
 - 每个 Activity 的 Window 都对应一个 ViewRootImpl 实例（将 ViewRootImpl 和 DecorView 建立关联）
@@ -187,17 +198,19 @@ WindowManagerImpl#addView(decorView)
 -----Choreographer#postCallback //设置传入一个 Choreographer.CALLBACK_TRAVERSAL 类型和一个 mTraversalRunnable 对象，Runnable#run 方法里就是执行 ViewRootImpl#doTraversal 方法
 ------ViewRootImpl#doTraversal
 -------ViewRootImpl#performTraversals //内部代码逻辑就是依次按照条件判断是否去执行 performMeasure、performLayout 和 performDraw 方法
---------ViewRootImpl#performMeasure
---------ViewRootImpl#performLayout
---------ViewRootImpl#performDraw
+--------ViewRootImpl#performMeasure //内部调用 View#measure -> View#onMeasure
+--------ViewRootImpl#performLayout //内部调用 View#layout -> View#onLayout
+--------ViewRootImpl#performDraw //内部调用 View#draw -> View#onDraw
 ```
 
 ## 自定义 View 的基本流程
-- 1 重写构造方法，通常是 4 个构成方法，至少重写一个，初始化和获取自定义属性（TypedArray）
-- 2 重写 onMeasure，测量 View 大小
-- 3 重写 onSizeChanged，确定 View 大小
-- 4 重写 onLayout，确定子 View 的布局（ViewGroup）
-- 5 重写 onDraw，绘制内容
+- 1 继承 View 或其子类
+- 2 构造方法：至少实现 3 个构造方法，可选通过 TypedArray 获取 attrs.xml 中的自定义属性
+- 3 重写 onMeasure 方法：测量 View 的大小，通常必须处理 wrap_content 模式的尺寸计算（否则默认填充父布局）
+- 4 重写 onSizeChanged（可选），确定 View 的大小
+- 5 重写 onLayout（仅 ViewGroup）：布局子 View，为每个子 View 调用 View#layout 方法
+- 6 重写 onDraw 方法：绘制 View 的内容
+- 7 处理触摸事件：重写 onTouchEvent 方法并按需返回 true 消费事件
 
 ## 事件分发机制
 - MotionEvent 事件产生后，按照 Activity ->  Window -> DecorView -> View 顺序传递的过程就叫事件分发，遵循了一种类似于责任链模式的设计
@@ -236,6 +249,8 @@ onAttachedToWindow —— onMeasure —— onSizeChanged —— onLayout —— 
 
 ## Intent
 - 当使用 Intent 启动跨进程组件（比如通过 startActivity、startService 或 sendBroadcast 等）时，数据需要通过 Binder 机制传输，传输的数据会被封装为 Parcelable 对象并存储在 Binder 的事务缓冲区中（大小通常为 1MB 左右，且所有 Binder 传输共享该缓冲区，所以实际可用大小约为 500K ~ 800K 以下，建议限制在 100K ~ 200K 以下），所以此时 Intent 传输数据的大小受 Binder 机制的制约限制
+
+Bundle
 
 ## onNewIntent
 可以利用 `setIntent(intent);` 更新 intent
@@ -476,8 +491,6 @@ Lottie 动画依托于 ValueAnimator 属性动画，动画更新的监听不断�
 UDP 协议，和 TCP 的区别
 前后台传输数据需要用密钥对数据加密，那加密过程应该放在哪个位置
 
-## OkHttp
-OkHttp 中可以通过 Interceptor 拦截器实现重试机制，使用 GZIP 压缩请求和响应数据，减少传输数据量
 
 ## 缓存机制
 三级缓存：内存、硬盘、网络
@@ -513,19 +526,21 @@ Android 缓存机制
 - 拥有控制拦截能力，可以配置拦截器来控制页面跳转
 - ARouter 路由跳转实际上还是调用了 startActivity 的跳转（基于注解处理、动态生成代码、使用反射加载）
 
-## MVVM 和 MVI
-- MVVM 侧重双向数据绑定（View <-> ViewModel），双向绑定一般由 DataBinding 实现，但是大部分开发者都会使用 LiveData、Flow 来观察数据变化，通常为了保证数据流的单向流动性（非必须），会向外暴露不可变的 LiveData，所以 ViewModel 里一个 State 状态会存在两个 LiveData，一个可变的一个不可变的，如果状态很多，LiveData 数量就会大大地增多
-- MVI 是 MVVM 的升级方案，侧重单向数据流（View -> UIIntent -> ViewModel -> UIState -> View）约束，强调不可变状态（State 实例是不可变的，每次状态更新时都会创建新的 State 对象）和单一（唯一可信）数据源，MVI 里的 Model 侧重指 UIState 状态，UIState 用于封装页面状态和数据（比如页面加载状态、控件位置等），对 State 进行了集中状态管理（这样一来 LiveData 就只需要一份了，一个可变的一个不可变的），UIIntent 用于包装用户的操作意向（意图）发送给 ViewModel 进行数据请求，另外可以额外引入 UIEvent 来处理一次性的事件
-- UIState、UIIntent 通常都可以采用密闭类（密封类）
-- Activity/Fragment 里观察 UiState 状态，然后通过 when 判断处理对应逻辑
-- ViewModel 里可以提供集中统一处理 UIIntent 的入口方法
-- MVI 中所有 UIState 状态都可以通过一个 LiveData 来管理，也随之而来引出新的问题，就是页面不支持局部刷新
-- 由于 UIState 状态是不变的，因此每当 UIState 需要更新时都要创建新对象替代老对象，这会带来一定内存开销
-```kotlin
-//ViewModel 里的模板代码
-private val _loading: MutableLiveData<String> = MutableLiveData()
-val loading: LiveData<String> = _loading
-```
+## Glide
+- 关联生命周期，通过一个无界面的 Fragment 绑定生命周期
+
+## OkHttp
+- 可以通过 Interceptor 拦截器实现重试机制
+- 使用 Gzip 压缩请求和响应数据，减少传输数据量
+
+## Retrofit
+- Retrofit 遵循 Restful API 接口设计规范，通过注解配置网络请求参数
+- Retrofit 引用了 OkHttp，Retrofit 专注于请求接口的封装，OkHttp 专注于高效网络请求
+- 涉及设计模式：
+    - Retrofit#create 方法采用的是非常典型的代理模式（利用 JDK 动态代理 Proxy#newProxyInstance 生成接口对象）
+    - Retrofit#Builder 建造者模式
+    - 网络请求工厂用了工厂方法模式
+
 
 ## 架构
 - 使用 ViewModel 而非 AndroidViewModel：不建议使用 AndroidViewModel，不应该在 ViewModel 中使用 Application 类，应该将依赖项移至界面层或数据层
@@ -549,6 +564,19 @@ data
 -- models
 - repository
 - model
+
+```kotlin
+//ViewModel 里的模板代码
+private val _loading: MutableLiveData<String> = MutableLiveData()
+val loading: LiveData<String> = _loading
+```
+
+## 协变和逆变
+- 协变：在 Java 中使用 ? extends E 表示，在 Kotlin 中使用 out E 表示，表示上界为 E
+- 逆变：在 Java 中使用 ? super E 表示，而在 Kotlin 中使用 in E 表示，表示下界为 E
+- PECS 原则：Producer-Extends，Consumer-Super
+- Producer -> output -> out
+- Consumer -> input -> in
 
 ## Acoustic Echo Cancellation 回声消除
 - 麦克风采集到的音频通过扬声器（喇叭）播放出来后又被采集进去，从而产生了回声或啸叫声

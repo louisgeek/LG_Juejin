@@ -34,9 +34,10 @@ public class AppCompatActivity extends FragmentActivity implements AppCompatCall
 
 by 是 Kotlin 中用来实现委托的，编译器会生成委托模式的模板代码，使我们能够更方便的利用聚合来替代继承
 - 类委托（需要实现同一个接口，不能是抽象类）
-- 属性委托（ getValue / setValue 方法的委托）
+- 属性委托（getValue/setValue 方法的委托）
 
 ## 类委托
+- 将接口实现委托给另一个类对象
 ```kotlin
     interface IPlayer{
         fun start()
@@ -71,7 +72,8 @@ by 是 Kotlin 中用来实现委托的，编译器会生成委托模式的模板
 ```
 
 ## 属性委托
-- 类需要提供 getValue 或者 setValue 约定函数
+- 将属性的 get/set 逻辑委托给另一个类对象
+- 此类需要提供 getValue 或者 setValue 约定函数
 ```kotlin
    private var test03: String by Delegate()
 

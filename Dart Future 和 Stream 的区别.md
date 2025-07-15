@@ -24,6 +24,7 @@ fetchData()
 ```
 
 通过 async 和 await 来使用 Future
+- await 是语法糖，底层还是 Future.then 实现的
 ```dart
 void gainData() async {
   try {

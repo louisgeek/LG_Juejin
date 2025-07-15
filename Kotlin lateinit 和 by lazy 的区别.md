@@ -102,7 +102,6 @@ private class SynchronizedLazyImpl<out T>(initializer: () -> T, lock: Any? = nul
 }
 ```
 
-
 ## 总结
 - lateinit 和 by lazy 都可以实现类似于延迟初始化的情景
 - lateinit 延迟初始化，适用于非空类型的 var 属性（不能用于 val 只读属性），需要自行确保在属性访问前被初始化，不保证线程安全，不能用于基本数据类型，没有默认值
