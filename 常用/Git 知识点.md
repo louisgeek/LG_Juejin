@@ -5,29 +5,43 @@
 - Remote：远程仓库，存放在远程服务器
 
 ## 全局配置文件路径
+
+```
 ```shell
 # git config --global 保存位置
 C:\Users\<User>\.gitconfig
 ```
 
+## 设置配置
 ## config
 ```shell
 git config  user.name "louisgeek"
 git config  user.email "louisgeek@qq.com"
+//全局
 # 全局
 git config --global user.name "louisgeek"
 git config --global user.email "louisgeek@qq.com"
+//
 # sslVerify
 git config --global http.sslVerify "false"
+```
 
+## 查询配置
+```shell
 # 查询配置
 git config --list
+//全局
 # 查询全局配置
 git config --global --list
+```
 
+## 取消配置
+```shell
 # 取消配置
 git config --global --unset http.sslbackend
 ```
+
+
 
 ## 常用命令
 ```shell
@@ -37,14 +51,17 @@ git init
 git add README.md
 # 添加所有文件
 git add .
+```
 # 提交文件
 git commit -m "修改文件" # 描述
 # 推送
 git push -u origin main
 ```
 
+```shell
 ## log
 ```shell
+git commit -m "修改文件"
 git log
 # 简洁
 git log --oneline
@@ -52,6 +69,7 @@ git log --oneline
 git log --pretty=oneline
 ```
 
+```shell
 ## commit
 - -- amend 修改最近一次提交的描述信息、作者信息等
 ```shell
@@ -81,6 +99,11 @@ git push
 #
 ```
 
+
+
+
+
+
 ## checkout
 - 用于切换分支/恢复文件
 - 用 HEAD 表示当前版本（也就是最新的提交），上个版本就是 HEAD^（也可以写成 HEAD~1），上上个版本就是 HEAD^^，当然往上 100 个版本写 100 个 ^ 容易出错，所以可以写成 HEAD~100
@@ -106,6 +129,7 @@ git checkout -- README.md # 丢弃对 README.md 的未提交修改
 # 切换到某个提交，将 HEAD 指向某个具体的提交（而非分支），进入分离头指针状态，提交不关联任何分支
 git checkout <commit-hash> 
 
+## 修改 .gitignore 文件后立即生效
 # 创建孤立分支​（适用于重构项目）
 git checkout --orphan dev-branch # 创建无历史记录的新分支
 
@@ -148,8 +172,10 @@ git commit -m "修改 .gitignore 文件"
 git push origin main
 ```
 
+## 修改提交信息
 ## 保存未提交的修改
 ```shell
+git commit --amend --author "louisgeek <louisgeek@qq.com>"
 # 暂存修改
 git stash          
 git checkout branch
@@ -159,20 +185,43 @@ git stash pop      # 恢复暂存
 ## 删除仓库所有提交的历史记录，成为一个干净的新仓库
 
 ```shell
+1.Checkout
+
 # 1.Checkout
 git checkout --orphan latest_branch
-# 2. Add all the files
-git add -A
-# 3. Commit the changes
-git commit -am "commit message"
-# 4. Delete the branch
-git branch -D main
-# 5.Rename the current branch to main
-git branch -m main
-# 6.Finally, force update your repository
-git push -f origin main
-```
 
+2. Add all the files
+
+# 2. Add all the files
+
+git add -A
+
+3. Commit the changes
+
+# 3. Commit the changes
+
+git commit -am "commit message"
+
+
+4. Delete the branch
+
+# 4. Delete the branch
+
+git branch -D main
+
+5.Rename the current branch to main
+
+# 5.Rename the current branch to main
+
+git branch -m main
+
+6.Finally, force update your repository
+
+# 6.Finally, force update your repository
+
+git push -f origin main
+
+```
 
 
 

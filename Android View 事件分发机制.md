@@ -289,5 +289,5 @@ public boolean onTouchEvent(View v, MotionEvent event) {
 - 事件分发到 ViewGroup 默认不拦截
 - 满足条件走 for 循环遍历子 View，未找到子 View
 - 然后 ViewGroup 自己执行 super#dispatchTouchEvent 
-- 也就是此时走父视图自己的 View#dispatchTouchEvent -> View#onTouchEvent -> View#performClick -> View#onClick，也就是执行了 ViewGroup 自己的点击事件
+- 也就是此时走父 View 自己的 View#dispatchTouchEvent -> View#onTouchEvent -> View#performClick -> View#onClick，也就是执行了 ViewGroup 自己的点击事件
 

@@ -2,7 +2,7 @@
 - JNI：Java Native Interface 就是 Java 本地接口，是 Java 提供的一种技术方案，作用就是能让 Java 与本地其他语言（如 C/C++）进行交互，JNI 是连接 Java 与 Native 之间的通讯桥梁，可以看作是个转换器
 - Java 层调用 Native 层是通过 JNI 来实现的，而 Native 层调用 Java 层则是通过反射来调用的
 - Java 层的反射 API 其实本质上是调用 C++ 的函数去实现的，所以 C++ 中的反射可以去直接调用 C++ 的函数去实现，会比调用 Java 中的反射要更加直接，减少了一层调用链
-- JNI 是 C 语法实现的，所以在 cpp 文件中需要添加 extern "C" 来声明当前代码是 C 的语法，另外 extern "C" 可以修饰 #include，声明导入的头文件是 C 的语法
+- JNI 是 C 语法实现的，所以在 cpp 文件中需要添加 extern "C" 来声明当前代码是 C 的语法（采用 C 语言的链接规则），另外 extern "C" 可以修饰 #include，声明导入的头文件是 C 的语法
 
 ## Java 调用 Native
 ```java
@@ -120,7 +120,7 @@ JNI Java 本地接口
 ## extern "C" JNIEXPORT
 - 函数标识
 - extern "C" 让编译器以 C 的方式去编译它，如果不加的话，对于静态注册的函数而言，函数名发生了变更
-
+如果不用 extern C，由于 C++ 和 C 语言在编译和链接时使用的命名规则不同，这会导致 C++ 代码无法调用 C 语言编写的函数或变量（链接时找不到符号）
 JNIEnv *env 一定永远是每个jni函数的第一个参数  通过env去创建的对象，会由GC来管理它的内存与释放
 
 

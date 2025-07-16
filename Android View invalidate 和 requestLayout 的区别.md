@@ -12,14 +12,19 @@
 ## requestLayout
 - 在自定义视图中使用 requestLayout 时，会通知系统该视图的布局等信息已经改变，标记视图需要重新进行布局，之后在系统下一次绘制流程中会对视图进行测量、布局，如果视图的内容也发生了变化，那么还可能会触发绘制过程（requestLayout 不保证后续条件一定满足去重新绘制，所以某些情况下要进行重新绘制可以再按需手动调用 invalidate 方法）
 
-```
+```java
 View#requestLayout
--ViewParent#requestLayout
+-ViewParent#requestLayout //因为 ViewRootImpl 是 DecorView 的 parent，所以最终会调用到 ViewRootImpl#requestLayout
 --ViewRootImpl#requestLayout
----ViewRootImpl#scheduleTraversals 内部有同步屏障逻辑
-----mChoreographer.postCallback 设置了一个 mTraversalRunnable 对象，它是一个 Runnable，run 方法里就是执行 ViewRootImpl#doTraversal 方法
+---ViewRootImpl#scheduleTraversals //内部有 Handler 同步屏障逻辑 MessageQueue#postSyncBarrier
+----Choreographer#postCallback //设置传入一个 mTraversalRunnable 对象，Runnable#run 方法里就是执行 ViewRootImpl#doTraversal 方法
 -----ViewRootImpl#doTraversal
-------ViewRootImpl#performTraversals 内部代码逻辑就是依次按照条件判断是否去执行 ViewRootImpl#performMeasure、ViewRootImpl#performLayout 和 ViewRootImpl#performDraw 方法，此处 performMeasure 和 performLayout 两个方法会跳过不执行，而 performDraw 方法会执行，内部最终会调用到 View#draw 这个方法，然后 View#draw 方法就会调用 View#onDraw 方法进行视图重绘操作
+------ViewRootImpl#performTraversals //内部代码逻辑就是依次按照条件判断是否去执行 performMeasure、performLayout 和 performDraw 方法
+-------ViewRootImpl#performMeasure
+-------ViewRootImpl#performLayout
+-------ViewRootImpl#performDraw
+// ！！！！！！！！！
+// ，此处 performMeasure 和 performLayout 两个方法会跳过不执行，而 performDraw 方法会执行，内部最终会调用到 View#draw 这个方法，然后 View#draw 方法就会调用 View#onDraw 方法进行视图重绘操作
 ```
 
 

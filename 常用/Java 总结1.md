@@ -19,7 +19,7 @@ Java 四种线程池
 ## 动态代理的实现
 
 
-HashMap1.7和1.8的实现原理
+ 
 
 GCRoot
 
@@ -41,12 +41,6 @@ Executor框架解读实战
 
 
 
-Java的双亲委派
-
-
-HashMap讲一下，数据结构、hash过程、扩容、加载因子为何是0.75等
-
- 
 
 ## ArrayList
 - 内部 Object[] elementData 数组加了 transient

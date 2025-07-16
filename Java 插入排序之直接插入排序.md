@@ -23,13 +23,12 @@ public static void main(String[] args) {
     for (int i = 1; i < arr.length; i++) {
         int key = arr[i]; //当前待插入元素 key
         int j = i - 1; //已排序部分的最后 1 个元素索引
-
         //从后向前比较，找到插入位置并移动元素（将已排序部分中比 key 大的元素后移）
         while (j >= 0 && arr[j] > key) {
             arr[j + 1] = arr[j];
             j--;
         }
-        //插入 key
+        //插入元素 key
         arr[j + 1] = key; 
     }
     //
