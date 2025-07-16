@@ -17,7 +17,7 @@
 - android.os.Bundle 底层用的就是 ArrayMap
 
 ## 总结
-- SparseArray 和 ArrayMap 适用于存储小到中等规模的数据两，当数据量较大时（超过千级），推荐改用 HashMap 更合适，如果对查找速度有较高要求，则应选择 HashMap，如果内存占用更重要，则可以考虑选择 SparseArray 或 ArrayMap
+- SparseArray 和 ArrayMap 适用于存储小到中等规模的数据两，当数据量较大时（超过千级），推荐改用 HashMap 更合适，如果对查找速度有较高要求，则应优先选择 HashMap，如果内存占用更重要，则可以考虑选择 SparseArray 或 ArrayMap
 - SparseArray 适合场景：当键为 int 类型，且对内存使用要求较高时，特别是涉及频繁的插入和删除操作（比如缓存 View 视图对象、存储 ID 对应的用户信息和存储 ID 对应的列表项对象）
 - ArrayMap 适合场景：如果键需要是任意类型时 （比如配置参数信息存储）的场景，由于 ArrayMap 需维护哈希值，且需要对哈希值数组进行排序，当数据量不断增加时，内存开销会逐渐增加，性能下降明显
 - SparseArray 和 ArrayMap 均通过二分查找实现检索，所以两者查找操作的时间复杂度都是 O(log n)，SparseArray 插入和删除操作的时间复杂度为 O(n)，不过当涉及标记（DELETED）的插入和删除操作时间复杂度为 O(1)，而 ArrayMap 插入和删除操作的时间复杂度为 O(n)

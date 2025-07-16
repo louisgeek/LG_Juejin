@@ -1,7 +1,6 @@
 # Android 处理 View 重复点击的 4 种方式
 
 ## 1 抽象类
-
 ```java
 //抽象类实现 View.OnClickListener 接口
 public abstract class OnThrottleClickListener implements View.OnClickListener {
@@ -36,7 +35,6 @@ id_tv_1.setOnClickListener(new OnThrottleClickListener() {
 
 
 ## 2 代理模式
-
 ```java
 //代理类实现 View.OnClickListener 接口
 public class ThrottleClickProxy implements View.OnClickListener {
@@ -75,7 +73,6 @@ id_tv_2.setOnClickListener(new ThrottleClickProxy(new View.OnClickListener() {
 
 
 ## 3 RxAndroid 之 RxBinding
-
 ```groovy
 implementation 'com.jakewharton.rxbinding3:rxbinding:3.0.0-alpha1'
 ```
@@ -94,7 +91,6 @@ implementation 'com.jakewharton.rxbinding3:rxbinding:3.0.0-alpha1'
 
 
 ## 4 AOP 之 Eclipse AspectJ
-
 ```groovy
 //采用 AspectJX 来快速配置 Eclipse AspectJ
 

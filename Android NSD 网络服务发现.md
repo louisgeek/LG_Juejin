@@ -41,7 +41,7 @@ private void registerService(Context context) {
 
         @Override
         public void onServiceRegistered(NsdServiceInfo serviceInfo) {
-            String serviceName = serviceInfo.getServiceName();
+            String serviceName = serviceInfo.getServiceName(); //只能读取到 serviceName
             Log.d(TAG, "服务注册成功，服务名称：" + serviceName);
         }
 
@@ -92,8 +92,9 @@ private void discoverServices(Context context) {
         }
         @Override
         public void onServiceFound(NsdServiceInfo serviceInfo) {
-            String serviceType = serviceInfo.getServiceType();
+            //只能读取到 serviceName 和 serviceType
             String serviceName = serviceInfo.getServiceName();
+            String serviceType = serviceInfo.getServiceType();
             if (!SERVICE_TYPE.equals(serviceType)) {
                 Log.e(TAG, "onServiceFound: serviceType："+serviceType);
                 return;
@@ -139,6 +140,7 @@ private void resolveService(Context context, NsdServiceInfo serviceInfo) {
 
         @Override
         public void onServiceResolved(NsdServiceInfo serviceInfo) {
+            //能读取到 serviceName、serviceType、host 和 port
             String host = serviceInfo.getHost().getHostAddress();
             int port = serviceInfo.getPort();
             Log.d(TAG, "服务解析成功，IP 地址：" + host + "，端口：" + port);

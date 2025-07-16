@@ -247,7 +247,7 @@ const char* -> jstring
 //...
 const char *c_str = hello.c_str();
 //查找获取 Java 的 java.lang.String 类
-jclass strClass = (env)->FindClass("java/lang/String");
+jclass strClass = env->FindClass("java/lang/String");
 if (strClass == nullptr) {
     //类未找到
     return nullptr;

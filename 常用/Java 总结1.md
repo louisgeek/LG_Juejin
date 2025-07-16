@@ -158,18 +158,7 @@ CachedThreadPool
 
 
 
-注解是什么，元注解又是什么？
 
-注解：是针对代码的一种标注、描述、解释，可以针对代码来配置一些功能，能够用来自动生成 Java 代码
-
-
-
-元注解：修饰注解的注解就叫元注解
-
-- @Target
-- @Retention
-- @Inherited
-- @Documented
 
 
 
@@ -308,18 +297,50 @@ char 类型 --- 单引号
 
 
 
-！ 非 not
-
-& 且 and
-
+## ! 非 not
 && 且且 and and 
-
-| 或 or
-
-|| 或 或 or or 
+|| 或或 or or 
 
 
 
+
+ try-with-resouce写法是在JDK1.7引入的一个语法糖，用来进行io数据流关闭的简易写法
+在处理必须关闭的资源时，始终有限考虑使用 try-with-resources，而不是 try–catch-finally
+数据库操作、IO操作等需要使用结束close()的对象必须在try -catch-finally 的finally中close()，如果有多个IO对象需要close()，需要分别对每个对象的close()方法进行try-catch,防止一个IO对象关闭失败其他IO对象都未关闭。
+Android Studio 3.0已经支持任意版本的try-with-resource语法，对于AutoCloseable对象，可以使用该语法简化操作
+Kotlin中有没有类似的语法呢？实际上也是有的，有一个内联的扩展方法，use，它就是来做相同的事情的。
+kotlin.io.CloseableKt#use
+
+
+//权限控制与状态管理 使用位掩码表示多个状态或权限 权限检查（通过位掩码判断特定位是否为1）
+   int READ = 1 << 0; // 0001
+   int WRITE = 1 << 1; // 0010
+   int hasPermission = READ | WRITE; // 0011
+   boolean canRead = (hasPermission & READ) != 0; // true【1†source】【7†source】
+   
+
+   final int READ = 1 << 0;  // 0001
+final int WRITE = 1 << 1; // 0010
+final int EXECUTE = 1 << 2; // 0100
+
+int permissions = READ | WRITE;  // 0011（表示同时拥有读写权限）
+boolean hasRead = (permissions & READ) != 0;  // true
+
+
+
+
+## 原码和补码
+00000000 00000000 00000000 00000101 是 5的 原码。
+10000000 00000000 00000000 00000101 是 -5的 原码
+
+补码
+正数的补码与原码相同，负数的补码为对该数的原码除符号位外各位取反，然后在最后一位加1.
+比如：10000000 00000000 00000000 00000101 的补码是：11111111 11111111 11111111 11111010。
+那么，补码为：
+11111111 11111111 11111111 11111010 + 1 = 11111111 11111111 11111111 11111011
+
+-5 在计算机中表达为：
+11111111 11111111 11111111 11111011。
 
 
 

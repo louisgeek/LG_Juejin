@@ -56,6 +56,7 @@ Ctrl + ]
 
 Ctrl + Enter 智能分隔行
 Ctrl + Shift + Enter 自动结束代码，行末自动添加分号
+Tab 补全，去掉紧跟的内容
 
 Ctrl + Space 基础代码补全
 
@@ -66,9 +67,9 @@ Ctrl + Shift + U 大小写转换
 Ctrl + Shift + J 自动将下一行合并到当前行末尾
 
 Ctrl + Alt + 左方向键 退回到上一个操作的地方
-
 Ctrl + Alt + 右方向键 前进到上一个操作的地方
 
-
+Ctrl + Shift + 上方向键
+Ctrl + Shift + 下方向键
 
 Alt + Enter 根据光标所在问题，提供快速修复选项

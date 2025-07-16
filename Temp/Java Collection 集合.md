@@ -1,4 +1,25 @@
-集合
+# Java Collection 集合
+
+
+
+## java.util.Collection
+- 集合类的上层接口，实现 Collection 接口的主要有 Set、List 和 Map
+
+
+
+
+
+
+## java.util.Collections
+- 针对集合类的一个工具类，提供一系列静态方法，实现对集合进行搜索、排序、线程安全化相关操作等功能
+
+
+
+
+
+
+
+
 
 - 一个 Java 对象可以在内部持有若干个其他 Java 对象，并且对外提供访问的接口
 

@@ -1,7 +1,6 @@
 # Android 常用代码
 
 
-
 ## isMainThread
 ```java
 //androidx.arch.core.executor.DefaultTaskExecutor#isMainThread
@@ -11,27 +10,32 @@
 ```
 
 ## IP、Email 等正则表达式
-
 ```java
 //androidx.core.util.PatternsCompat
 androidx.core.util.PatternsCompat#IP_ADDRESS
 androidx.core.util.PatternsCompat#EMAIL_ADDRESS
 ```
 
+```java
+ContextCompat.getMainExecutor
+ContextCompat.checkSelfPermission
+ContextCompat.getString
+ContextCompat.getDrawable
+```
 
-
-
-SQLite 查询最新的 10 条记录
+## SQLite
+SQLite 查询前 10 条最新记录
 ```sql
-SELECT * FROM records ORDER BY created_at DESC LIMIT 10;
+SELECT * FROM records 
+ORDER BY created_at DESC --按时间戳降序排列 updated_at
+LIMIT 10; --限制返回前 10 条
 ```
 
-
-```
-SELECT * 
-FROM my_table 
-ORDER BY created_at DESC 
-LIMIT 10 OFFSET 10;
+SQLite 查询第 11-20 条最新记录
+```sql
+SELECT * FROM records 
+ORDER BY created_at DESC
+LIMIT 10 OFFSET 10; -- OFFSET 跳过前 10 条
 ```
 
 
@@ -52,6 +56,7 @@ LIMIT 10 OFFSET 10;
     android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
 4.XML隐藏标题栏、隐藏状态栏（全屏 应用全局） 
 
+```xml
     <!-- Application theme. -->
     <style name="AppTheme" parent="AppBaseTheme">
     <!-- All customizations that are NOT specific to a particular API-level can go here. -->
@@ -60,6 +65,7 @@ LIMIT 10 OFFSET 10;
     <!-- 隐藏标题栏 -->
     <item name="android:windowNoTitle">true</item>
     </style>
+```
 
 
 
@@ -70,12 +76,11 @@ LIMIT 10 OFFSET 10;
 
 
 
-
-
+```shell
     .bat
 start javaw -jar Resizer-1.4.2.jar
 exit
-
+```
 
 
 Android View Binding in Thread error NullPointerException
@@ -84,12 +89,14 @@ https://stackoverflow.com/questions/70526892/android-view-binding-in-thread-erro
 
 
 
-# logcat
+## logcat
 
 ^(?!(ANDROID_LOG_FROM_APP|ANDROID_LOG_FROM_MT|DSP|BSP|chatty|sssss))
 
 
 注意运算符的优先级，并用括号明确表达式的操作顺序，避免使用默认优先级
+
+
 
  #禁用增量编译 show duplicated file
 kapt.incremental.apt=false
@@ -97,7 +104,7 @@ kapt.incremental.apt=false
 
 
 
-# gitbook
+## gitbook
 
 npm config set cache D:\DevTools\node-v14.17.6-win-x64\node_cache
 npm config set prefix D:\DevTools\node-v14.17.6-win-x64\node-global
@@ -219,13 +226,16 @@ allprojects {
 	
 
 
-
+```C
 extern "C"
 JNIEXPORT jstring JNICALL
 Java_com_hikvision_common_EncryptConst_getHeNanAESKey(JNIEnv *env, jclass clazz) {
     std::string data = "567502e0e087c22b";
     return env->NewStringUTF(data.c_str());
 }
+```
+
+
 
   externalNativeBuild {
             cmake {
@@ -242,7 +252,6 @@ Java_com_hikvision_common_EncryptConst_getHeNanAESKey(JNIEnv *env, jclass clazz)
             version '3.10.2'
         }
     }
-
 
 
 

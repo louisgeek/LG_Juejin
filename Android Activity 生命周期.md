@@ -128,7 +128,7 @@ onPause 或 onStop 中结合 isFinishing 判断来执行
 设置了 Activity 的 android:configChanges="orientation|keyboardHidden" 时，切屏不会重新调用各个生命周期，只会执行 onConfigurationChanged 方法
 
 //Android 3.2 API 13 及以后
-不设置 Activity 的 android:configChanges 时，或者设置了 Activity 的 android:configChanges="orientation" 时，或者设置了 Activity 的android:configChanges="orientation|keyboardHidden" 时，切屏会重新调用各个生命周期，切横屏时会执行一次，切竖屏时会执行一次
+不设置 Activity 的 android:configChanges 时，或者设置了 Activity 的 android:configChanges="orientation" 时，或者设置了 Activity 的 android:configChanges="orientation|keyboardHidden" 时，切屏会重新调用各个生命周期，切横屏时会执行一次，切竖屏时会执行一次
 设置了 Activity 的 android:configChanges="orientation|screenSize|keyboardHidden"，切屏不会重新调用各个生命周期，只会执行 onConfigurationChanged 方法
 ```
 
