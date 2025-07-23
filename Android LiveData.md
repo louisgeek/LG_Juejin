@@ -81,12 +81,12 @@ public abstract class LiveData<T> {
     public void observe(@NonNull LifecycleOwner owner, @NonNull Observer<? super T> observer) {
         assertMainThread("observe");
         if (owner.getLifecycle().getCurrentState() == DESTROYED) {
-            // ignore
+            // ignore 直接 return 不处理了
             return;
         }
         //LifecycleBoundObserver 实现了 LifecycleObserver 接口并且包装了 LiveData 对应的 Observer 观察者，做到了将生命周期观察者和 LiveData 的观察者绑定在一起
-        //每次走 observe 方法都会重新创建出 LifecycleBoundObserver 实例
-        LifecycleBoundObserver wrapper = new LifecycleBoundObserver(owner, observer);
+        //每次走 observe 方法都会重新创建出 LifecycleBoundObserver 实例，LifecycleBoundObserver#onStateChanged 处理状态进入 DESTROYED 后，observer 会被自动移除（避免内存泄露）
+        LifecycleBoundObserver wrapper = new LifecycleBoundObserver(owner, observer); //LifecycleBoundObserver#shouldBeActive 判断至少是 STARTED（状态进入 STARTED 或 RESUMED 后才进行 Observer#onChanged 分发处理，可以节省资源）
         ObserverWrapper existing = mObservers.putIfAbsent(observer, wrapper);
         if (existing != null && !existing.isAttachedTo(owner)) {
             throw new IllegalArgumentException("Cannot add the same observer"
@@ -178,10 +178,27 @@ class MainActivity : AppCompatActivity() {
 }
 ```
 
-## LiveData 多线程频繁 postValue 会出现丢失部分数据
-- 因为更新和分发值分别在两个不同的线程，如果生产者更新值速率过快，消费者分发至速率过低，就会导致上一次更新的值，还没有被分发出去就被新的值更新了，导致丢失了部分中途更新的值（生产者和消费者速度不匹配）
-- 不过 LiveData 一定能接收到 postValue 的最终值
-- LiveData 本身是推荐作为驱动 UI 的数据流的（不建议使用在过于频繁刷新值的场景，可以考虑改用 Kotlin 的 Flow）
+## 多线程频繁 postValue 会出现丢失数据
+- 因为更新和分发值分别在两个不同的线程，如果生产者更新值速率过快，消费者分发至速率过低，就会导致上一次更新的值，还没有被分发出去就被新的值更新了，导致丢失了部分中途更新的值（生产者和消费者速度不匹配），不过 LiveData 一定能接收到 postValue 的最终值
+- 由于 postValue 内部是通过将更新任务异步提交到主线程，并通过 mPendingData 暂存值来实现的，如果短时间内多次调用，只有最后一次值会被保留并触发回调内部是 Runnable 未执行，后续值会覆盖前值，最终仅最后一次值被观察者接收
+- 避免使用 postValue 去传递高频事件，如果主线程可以优先使用 setValue 方法（不过要考虑 UI 可见状态）
+- LiveData 本身是推荐作为驱动 UI 的数据流的，在过于频繁刷新值的场景，可以考虑改用 Kotlin 的 Flow，可以考虑通过自定义 LiveData 实现每次 postValue 都能触发独立的 Runnable 任务
+```java
+liveData.postValue("A") //丢失（由于 Runnable 没来得及执行，且值被后续值覆盖）
+liveData.postValue("B")
+//仅能接收到 "B"
+```
+
+## 在非活跃状态下多次调用 setValue 会出现丢失数据
+- 观察者处于非活跃状态下去设置值不会被即时处理，仅会在观察者处于活跃状态（STARTED 或 RESUMED）时触发 onChanged 回调
+- setValue 方法虽然会更新 LiveData 的内部值，但并不会触发观察者的回调，后续在 UI 重新处于活跃状态时，仅最新值会被传递，中间值丢失
+- 可以考虑拆分重要的事件通知到单独的 LiveData，使得重要的通知不会被不重要的通知给覆盖
+```java
+//在 UI 不可见时连续执行（比如 onPause 后）
+liveData.setValue("A") //丢失
+liveData.setValue("B") 
+//UI 可见后仅能接收到 "B"
+```
 
 ## 数据倒灌
 - 作者 KunMinX 定义的 Data backflow 数据倒灌是专指在页面通信（事件回调）的场景下，通过 SharedViewModel 的 LiveData 给当前页通知过一次，并返回上一页，下次再进入当前页时重复收到旧数据推送的情况
@@ -292,3 +309,11 @@ myViewModel.navigateToDetails.observe(this, Observer {
 ### SharedFlow
 - 可以通过用 MutableSharedFlow 构造将 replay 参数设置成 0 以使得重放 0 个之前发射的值，来替代 LiveData 的功能
 - 通过实现非粘性事件以解决数据倒灌的问题
+
+
+## 总结
+- LiveData 只在 Observer 至少处于 STARTED 状态时才能收到事件通知（如果处于 STARTED 或 RESUMED 状态，认为该观察者当前处于活跃状态，此时 LiveData 才会向观察者发送事件通知，非活跃状态的观察者不会收到任何事件通知）
+- LiveData 被设计成是黏性的（当界面被意外销毁后，我们需要根据已有的数据来进行界面重建，所以 LiveData 被设计为黏性的）
+- LiveData 中间值可以被新值直接覆盖，当界面处于后台时，如果 LiveData 先后接收到了多个值，那么当界面回到前台时也只会收到最新值的一次回调，中间值直接被覆盖了（对于界面状态值来说，往往需要的只是其最新状态，而不需要处理中间值，所以 LiveData 的中间值可以被新值直接覆盖）
+- 所以界面相关的刷新可以使用 LiveData、事件相关的可以采用 SingleLiveEvent 等方案，避免二次触发
+
