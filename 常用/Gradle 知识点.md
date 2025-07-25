@@ -6,16 +6,16 @@ https://mirrors.cloud.tencent.com/gradle/
 ```java
 //bin all 等 zip 下载存放路径
 D:\DevToolsCache\.gradle\wrapper\dists
-//特别的 src 下载存放路径
+//特别的 src 下载存放路径（哈希算法就是文件的 sha1 值）
 D:\DevToolsCache\.gradle\caches\modules-2\files-2.1\gradle\gradle\8.11.1\9c644d15409b381dbb7955662d16d55acf90e909\gradle-8.11.1-src.zip
+D:\DevToolsCache\.gradle\caches\modules-2\files-2.1\gradle\gradle\8.6\992d01a52586a897215f4a816bf303e30367606b\gradle-8.6-src.zip
 ```
 
-
+## 哈希算法
 ```java
 //获取 zip 下载缓存的目录名
 //https://github.com/gradle/gradle/blob/master/platforms/core-runtime/wrapper-shared/src/main/java/org/gradle/wrapper/PathAssembler.java
 
-//distributionUrl=https://services.gradle.org/distributions/gradle-8.12-bin.zip
  private static String getHash(String string) {
         try {
             MessageDigest messageDigest = MessageDigest.getInstance("MD5");
@@ -25,7 +25,11 @@ D:\DevToolsCache\.gradle\caches\modules-2\files-2.1\gradle\gradle\8.11.1\9c644d1
         } catch (Exception e) {
             throw new RuntimeException("Could not hash input string.", e);
         }
-    }
+ }
+ public static void main(String[] args) {
+    String distributionUrl = "https://services.gradle.org/distributions/gradle-8.12-bin.zip";
+    System.out.println(getHash(distributionUrl)); //cetblhg4pflnnks72fxwobvgv
+ }
 ```
 
 ```groovy
@@ -67,9 +71,15 @@ maven { url 'https://maven.aliyun.com/repository/gradle-plugin' }
 maven { url 'https://www.jitpack.io' }
 ```
 
-
+gradlew -q  mobile_petv:assemblePetVGoogleplayRelease
 
 ```shell
-//打印依赖
+//打印包依赖关系  app 代表模块名称
+//CMD
 gradlew -q app:dependencies
+//PowerShell
+.\gradlew -q app:dependencies
 ```
+
+
+gradlew assembleRelease 可以简写为 ./gradlew aR

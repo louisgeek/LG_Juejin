@@ -5,7 +5,7 @@
 - Singleton 单例（比如 Calendar#getInstance、InputMethodManager#getInstance）
 - Factory Method 工厂方法
 - Abstract Factory 抽象工厂（比如 BaseActivity）
-- Builder 建造者（比如 AlertDialog.Builder）
+- Builder 建造者（比如 AlertDialog.Builder、StringBuilder）
 - Prototype 原型
 
   额外有个 Simple Factory 简单工厂模式

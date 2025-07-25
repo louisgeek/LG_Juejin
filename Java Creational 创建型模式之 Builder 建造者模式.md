@@ -3,6 +3,7 @@
 - 链式调用：利用链式调用使代码更简洁、易读、灵活，方便配置可选参数（逐步设置属性）
 - 封装性：将对象复杂的构建过程与其表示分离，隐藏了创建对象的具体细节，保持产品类的简洁
 - 不可变性：构造函数私有化，只能通过 Builder 构建对象
+- 应用：java.lang.StringBuilder、java.lang.StringBuffer 和 java.nio.ByteBuffer
 
 产品类
 ```java
