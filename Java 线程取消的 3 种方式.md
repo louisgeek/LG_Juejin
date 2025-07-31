@@ -17,7 +17,7 @@
 ## 设置 volatile 标记位来停止线程
 - 使用 volatile 关键字来设置标记位来停止线程在某些情况下是不完全可靠的：
     - 1 单纯使用 volatile 关键字虽然可以保证变量的可见性（即一个线程对变量的修改能够及时让其他线程看到），但不能保证复合操作的原子性，可能会导致线程在不正确的时间点结束，导致出现不可预期的行为
-    - 2 如果线程当前正在阻塞或等待情况下，那么它将不会立刻响应标记位的变化，而是必须等到它从阻塞或等待状态恢复过来才有机会去检查标记位，然后才能开始处理结束流程，时间点可能就出现一定的滞后了
+    - 2 如果线程当前正在阻塞或等待情况下，那么它将不会立刻响应标记位的变化，而是必须等到它从阻塞或等待状态恢复过来才有机会去检查标记位，然后才能开始处理结束流程，时间点可能就会出现一定程度的滞后了
 
 ## 协作式中断线程
 - 线程中断机制是一种协作式机制，允许一个线程请求另一个线程应该停止其正在执行的操作，调用线程 Thread#interrupt 中断操作并不会直接中断线程（不会立即停止线程），而只是改变了目标线程的中断状态这个标志位，被请求中断的线程可以在适当位置（如循环条件、方法调用前后等）通过检查自身的中断状态来判断是否被中断了，从而采取相应的行动去响应这个中断请求，不过甚至也可以选择忽略它（因为响应中断并不是强制性的要求，这取决于具体的实现和需求） 
@@ -84,7 +84,7 @@ public static void main(String[] args) {
                 if (Thread.currentThread().isInterrupted()) {
                     System.out.println("线程检测到自身的中断状态为 true ，于是准备停止");
                     //释放资源并结束线程
-                    break; //这里用 return 也行
+                    break; //响应中断的逻辑
                 }
                 System.out.println("线程运行中 i=" + i);
             }
@@ -119,9 +119,9 @@ public static void main(String[] args) {
                 } catch (InterruptedException e) {
                     //当一个线程在阻塞状态时如果调用了该线程的 interrupt 方法的话，那么阻塞方法就会抛出 InterruptedException 异常，类似于线程检测到自身的中断状态为 true，也就意味着这里需要加入响应中断的逻辑了
                     //这里抛出 InterruptedException 异常的设计是为了线程可以从阻塞状态恢复（唤醒）过来（表示阻塞操作由于中断而提前结束），能在线程结束前有机会去处理中断请求
-                    //另外抛出 InterruptedException 异常的同时会清除线程的中断标志位（中断状态被重置为 false）
+                    //需要特别注意的是当抛出 InterruptedException 异常的同时会清除线程的中断标志位（即中断状态被重置为 false）
                     //所以这里可以做一些停止线程任务继续执行的逻辑（比如直接退出循环）或者也可以在这里再次调用 Thread#interrupt 重设中断状态（标记回中断状态为 true）然后和适当位置的 Thread#isInterrupted() 判断配合来完成响应中断请求的逻辑
-                    break;
+                    break; //响应中断的逻辑
                 }
                 System.out.println("线程运行中 i=" + i);
             }
@@ -155,13 +155,13 @@ public static void main(String[] args) {
                 if (Thread.currentThread().isInterrupted()) {
                     System.out.println("线程检测到自身的中断状态为 true ，于是准备停止");
                     //释放资源并结束线程
-                    break; //这里用 return 也行
+                    break; //响应中断的逻辑
                 }
                 try {
                     Thread.sleep(2);
                 } catch (InterruptedException e) {
-                    //抛出 InterruptedException 异常的同时会清除中断标志位（中断状态被重置为 false）
-                    //所以这里要特别注意，可以按需重设中断标志位，就能做到即使线程在阻塞状态下也能够正确地响应中断请求了（不然很容易错过外部设置的那一次中断请求）
+                    //当抛出 InterruptedException 异常的同时会清除线程的中断标志位（即中断状态被重置为 false）
+                    //这里要特别注意，可以按需重设中断标志位，就能做到即使线程在阻塞状态下也能够正确地响应中断请求了（不然很容易错过外部设置的那一次中断请求，因为外部刚设为 true 就被抛异常时候重置为 false，上面的 isInterrupted 判断马上就不满足了）
                     Thread.currentThread().interrupt();
                 }
                 System.out.println("线程运行中 i=" + i);
@@ -181,6 +181,91 @@ public static void main(String[] args) {
     System.out.println("请求线程中断");
     //对 thread 线程请求线程中断
     thread.interrupt();
+}
+```
+
+FutureTask 同理
+```java
+public static void main(String[] args) {
+    FutureTask<String> futureTask = new FutureTask<>(new Callable<String>() {
+        @Override
+        public String call() throws Exception {
+            //模拟线程执行任务
+            for (int i = 0; i < 100000; i++) {
+                //适当位置检查自身的中断状态，并完成响应中断请求的逻辑
+                if (Thread.currentThread().isInterrupted()) {
+                    System.out.println("线程检测到自身的中断状态为 true ，于是准备停止");
+                    //释放资源并结束线程
+                    break; //响应中断的逻辑
+                }
+                try {
+                    Thread.sleep(2);
+                } catch (InterruptedException e) {
+                    //当抛出 InterruptedException 异常的同时会清除线程的中断标志位（即中断状态被重置为 false）
+                    //这里要特别注意，可以按需重设中断标志位，就能做到即使线程在阻塞状态下也能够正确地响应中断请求了（不然很容易错过外部设置的那一次中断请求，因为外部刚设为 true 就被抛异常时候重置为 false，上面的 isInterrupted 判断马上就不满足了）
+                    Thread.currentThread().interrupt();
+                }
+                System.out.println("线程运行中 i=" + i);
+            }
+            //
+            System.out.println("---- 线程结束 ----");
+            return "success";
+        }
+    });
+    Thread thread = new Thread(futureTask);
+    thread.start();
+    //演示逻辑
+    try {
+        //等待一段时间后去中断 thread 线程
+        Thread.sleep(10);
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+    System.out.println("请求线程中断");
+    //对 thread 线程请求线程中断
+    thread.interrupt();
+}
+```
+
+Future 同理
+```java
+public static void main(String[] args) {
+    ExecutorService executor = Executors.newSingleThreadExecutor(); //线程池
+    Future<String> future = executor.submit(new Callable<String>() {
+        @Override
+        public String call() throws Exception {
+            //模拟线程执行任务
+            for (int i = 0; i < 100000; i++) {
+                //适当位置检查自身的中断状态，并完成响应中断请求的逻辑
+                if (Thread.currentThread().isInterrupted()) {
+                    System.out.println("线程检测到自身的中断状态为 true ，于是准备停止");
+                    //释放资源并结束线程
+                    break; //响应中断的逻辑
+                }
+                try {
+                    Thread.sleep(2);
+                } catch (InterruptedException e) {
+                    //当抛出 InterruptedException 异常的同时会清除线程的中断标志位（即中断状态被重置为 false）
+                    //这里要特别注意，可以按需重设中断标志位，就能做到即使线程在阻塞状态下也能够正确地响应中断请求了（不然很容易错过外部设置的那一次中断请求，因为外部刚设为 true 就被抛异常时候重置为 false，上面的 isInterrupted 判断马上就不满足了）
+                    Thread.currentThread().interrupt();
+                }
+                System.out.println("线程运行中 i=" + i);
+            }
+            //
+            System.out.println("---- 线程结束 ----");
+            return "success";
+        }
+    });
+    //演示逻辑
+    try {
+        //等待一段时间后去中断 thread 线程
+        Thread.sleep(10);
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+    System.out.println("请求线程取消");
+    //对 future 线程请求取消
+    future.cancel(true); //FutureTask#cancel 传 true 内部会调用 Thread#interrupt 方法
 }
 ```
 
