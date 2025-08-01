@@ -1,4 +1,4 @@
-# Android GestureDetector 和 ScaleGestureDetector
+# Android ScaleGestureDetector 和 GestureDetector 手势检测
 - ScaleGestureDetector.SimpleOnScaleGestureListener 静态内部类，实现了 OnScaleGestureListener 接口，方法都是默认空实现
 - GestureDetector.SimpleOnGestureListener 静态内部类，实现了 OnGestureListener, OnDoubleTapListener, OnContextClickListener，方法都是默认空实现
 
