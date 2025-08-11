@@ -39,6 +39,16 @@ LIMIT 10 OFFSET 10; -- OFFSET 跳过前 10 条
 ```
 
 
+## retrofit2.AndroidMainExecutor
+```java
+final class AndroidMainExecutor implements Executor {
+    private final Handler handler = new Handler(Looper.getMainLooper());
+
+    public void execute(Runnable r) {
+        this.handler.post(r);
+    }
+}
+```
 
 
 
@@ -77,7 +87,7 @@ LIMIT 10 OFFSET 10; -- OFFSET 跳过前 10 条
 
 
 ```shell
-    .bat
+//Resizer.bat
 start javaw -jar Resizer-1.4.2.jar
 exit
 ```

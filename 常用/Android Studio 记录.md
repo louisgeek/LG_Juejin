@@ -54,6 +54,16 @@ C:\Users\admin\AppData\Local\Google\AndroidStudio2024.3.2
  */
 ```
 
+## 自动导包 
+打开 Setting -> Editor -> General -> Auto Import 
+勾选 Java 和 Kotlin 下的复选框
+```java
+Add unambiguous imports on the fly //自动添加无歧义的 import（这里的 fly 大概的意思就是在输入时或者文件获取焦点时）
+Optimize imports on the fly //自动优化清除无用的 import
+```
+
+
+
 
 
 
@@ -80,29 +90,9 @@ A 8F0005
 ```
 
 
-
-
-
-3 自动导包 
-打开 Setting -> Editor -> General -> Auto Import 
-勾选 Java 和 Kotlin 下的复选框
-
-```java
-Add unambiguous imports on the fly //自动添加无歧义的 import（这里的 fly 大概的意思就是在输入时或者文件获取焦点时）
-Optimize imports on the fly //自动优化清除无用的 import
-```
-
-
 4 代码提示不区分大小写 
 打开 Setting -> Editor -> General -> CodeCompletion 
  
-
-
-
- 
-
-
-
 
 
 8 cannot run program “git.exe”…
@@ -117,14 +107,11 @@ Static Filed 前缀为:s
 
 
 11 去掉第一次初始化功能
-
 进入刚安装的Android Studio目录下的bin目录。找到idea.properties文件，用文本编辑器打开。 在idea.properties文件末尾添加一行： disable.android.first.run=true
 
 
 ## 安装问题
-
 - Android Studio 4.2.2 
-
 - Android Studio 2020.3.1
 
  install apk 夜神 7.1.2  模拟器报如下错误

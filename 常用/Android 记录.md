@@ -3,15 +3,6 @@
 ## Res
 - Android selector 选择器，会从上往下匹配，一旦匹配到就返回了
 
-## Gradle
-- 依赖库版本问题：如果 lib 库有引入高版本的依赖库 ，那主项目里的该依赖库会全部替换成高版本的，即使代码里显式引入低版本也不生效（默认情况下），所以推荐 lib 里尽量引入低版本的依赖库，这样主项目里依赖高低版本都可以，比较灵活（比如 `implementation 'androidx.constraintlayout:constraintlayout:1.1.3'`）
-
-```groovy
-//打印依赖
-gradlew -q app:dependencies
-```
-
-
 ## Button
 - 默认情况下为了能够让 Button 样式变小，以适应 wrap_content
 ```xml
@@ -25,7 +16,33 @@ android:minHeight="0dp"
 - 却把清梅嗅 https://qingmei2.blog.csdn.net
 - HiDhl https://juejin.cn/user/2594503168898744
 
+## 网络
+https://github.com/square/okhttp
+https://github.com/square/retrofit
 
+## 图片加载
+https://github.com/bumptech/glide
+https://github.com/coil-kt/coil
+
+## 图片展示
+https://github.com/chrisbanes/PhotoView
+
+## 图表
+https://github.com/PhilJay/MPAndroidChart
+
+## 数据库
+https://github.com/realm/realm-kotlin
+
+## 列表
+https://github.com/CymChad/BaseRecyclerViewAdapterHelper
+https://github.com/wasabeef/recyclerview-animators
+
+## ComponentActivity.java 中 post 主线程方法 
+```java
+new Handler(Looper.getMainLooper()).post(new Runnable()(){
+    
+});
+```
 
 
 
@@ -1132,7 +1149,7 @@ java 的 yield
 
 
 
-Semaphore 
+ 
 Phaser 
 
 
@@ -1195,25 +1212,7 @@ MediatorLiveData：这是一种特殊的 LiveData 类，它可以观察其他 Li
 
  
 
-
  
-
-
-
-
-注解是什么，元注解又是什么？
-
-注解：是针对代码的一种标注、描述、解释，可以针对代码来配置一些功能，能够用来自动生成 Java 代码
-
-
-
-元注解：修饰注解的注解就叫元注解
-
-- @Target
-- @Retention
-- @Inherited
-- @Documented
-
 
 
 ### effectively final

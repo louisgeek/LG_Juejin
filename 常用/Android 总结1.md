@@ -30,25 +30,9 @@ Android面试官装逼失败之：Activity的启动模式https://www.jianshu.com
 
   最强 Android Studio 使用技巧和快捷键 http://www.open-open.com/lib/view/open1458715872710.html
 
-- Gradle
+ 
 
-  版本问题：如果 lib 库有引入高版本的 lib ，那项目里该 lib 会全部替换成新的，即便代码里显示引入低版本也不生效，所以推荐 lib 尽量引入低版本的正式版 这样代码中依赖高、低版本都可以，比较灵活
-
-  e.g. `implementation 'androidx.constraintlayout:constraintlayout:1.1.3'`
-
-  
-
-- 四大组件 Activity 
-
-  - 主线程 
-
-    ComponentActivity.java 中 post 主线程方法 
-    
-    ```java
-    new Handler(Looper.getMainLooper()).post(new Runnable()(){
-        
-    });
-    ```
+ 
     
     
 
@@ -91,19 +75,6 @@ Service执行的操作最多是20s，BroadcastReceiver是10s，Activity是5s
 
 
 
-
-
-UI
-
-- Button
-
-  能够让 Button 样式变小,适应 wrap_content
-
-  ```  
-  //覆盖默认的的最小高度 默认主题中有 android:minHeight 设定 
-  android:minHeight="0dp"
-  ```
-
   
 
 - ListView
@@ -128,9 +99,7 @@ Android UI性能优化详解 http://mrpeak.cn/android/2016/01/11/android-perform
 
 
 
-- Res
-
-Android selector 选择器 从上往下匹配 匹配到就返回了
+ 
 
 - Material Design
 
@@ -214,15 +183,7 @@ https://github.com/googlesamples/mlkit/tree/master/android/vision-quickstart
 
 ------
 
-- 博客
 
-总李写代码 https://www.cnblogs.com/whoislcj
-
-谷哥的小弟 https://blog.csdn.net/lfdfhl
-
-却把清梅嗅 https://qingmei2.blog.csdn.net
-
-HiDhl https://juejin.cn/user/2594503168898744
 
 其他附加知识
 

@@ -71,6 +71,15 @@ maven { url 'https://maven.aliyun.com/repository/gradle-plugin' }
 maven { url 'https://www.jitpack.io' }
 ```
 
+
+## 依赖库版本问题
+- 如果 lib 库有引入高版本的依赖库 ，那主项目里的该依赖库会全部替换成高版本的，即使代码里显式引入低版本也不生效（默认情况下），所以推荐 lib 里尽量引入低版本的依赖库，这样主项目里依赖高低版本都可以，比较灵活（比如 `implementation 'androidx.constraintlayout:constraintlayout:1.1.3'`）
+
+
+
+
+
+
 gradlew -q  mobile_petv:assemblePetVGoogleplayRelease
 
 ```shell

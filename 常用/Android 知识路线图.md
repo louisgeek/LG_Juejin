@@ -2,18 +2,15 @@
 
 
 ##1.2Java基础##
-Java基本语法、面向对象相关的基本概念与思想，常用String类的api，异常处理，IO基础，容器，多线程，内存管理与垃圾回收， 知道并最好知道几种常见的 Java 设计模式等，建议可以找些网上Java面试宝典之类的文章，熟悉下面试常遇到的一些Java知识点，一般都是Java基础。
+Java基本语法、面向对象相关的基本概念与思想，常用String类的api，异常处理，IO基础，容器，多线程，内存管理与垃圾回收，
+ 
 
-# 2. Android基础知识 #
-
-## Activity 基础 ##
-
-## Activity 的生命周期 ##
+ 
 
 Android四大基本组件介绍与生命周期
 http://www.cnblogs.com/bravestarrhu/archive/2012/05/02/2479461.html
 
-## Activity 之间传递参数 ##
+ 
 
 
 ## Activity 四种启动模式 ##
@@ -139,12 +136,16 @@ XML/JSON
 6. 网络通信
 
 
-网络编程相关的基础知识要掌握，如http协议相关，如http method, status code, request & response, http cache, request header, params等，Android请求网络相关的api，虽然现在成熟的网络请求库很多，但是自己应该试着用 HttpUrlConnection 封装一个网络库，哪怕封装的很烂，自己也要尝试着写一下。
+网络编程相关的基础知识要掌握，如http协议相关，如
+http method, status code, request & response, 
+http cache, request header, params 等，
+Android请求网络相关的api，虽然现在成熟的网络请求库很多，
+但是自己应该试着用 HttpUrlConnection 封装一个网络库，哪怕封装的很烂，自己也要尝试着写一下。
 
 
 异步任务处理
 
-Http、Volley、Android-async-http
+Http、
 
 
 Socket
@@ -152,24 +153,21 @@ Socket
 
 ZXing 
 
-
-7. 混合编程
-NDK
-
+ 
 
 8. Android 主流开源库
 
-图片加载Universal-Image-Loader
+ 
 
 事件总线分发Event Bus 
 
-注解式框架Butterknife 
+ 
 
 视图切换SwitchLayout 
 
 ORM
 
-JSON 解析
+ 
 
 Html、XML等解析
 
