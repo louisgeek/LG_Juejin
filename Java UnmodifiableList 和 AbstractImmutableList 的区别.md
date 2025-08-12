@@ -23,7 +23,7 @@ public static void main(String[] args) {
 ```
 
 ## AbstractImmutableList
-- ImmutableCollections 是 Java 9 引入的可以用于创建不可变集合的工具类
+- ImmutableCollections 是 JDK 9 引入的可以用于创建不可变集合的工具类
 - 线程安全，元素固定，不能修改，与原列表完全隔离，修改原列表不影响此列表
 - 不支持 null 元素
 ```java
