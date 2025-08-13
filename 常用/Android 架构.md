@@ -26,6 +26,42 @@ private val _loading MutableLiveDataString = MutableLiveData()
 val loading LiveDataString = _loading
 ```
 
+MVI（Model-View-Intent）是一种基于响应式编程的架构模式，核心目标包括：
+Model：不仅是数据模型，更代表应用的状态（State）（如 “加载中”“数据成功”“错误” 等），通常是不可变对象。
+View：负责展示 UI 并将用户操作（如点击、输入）转换为意图（Intent） 发送给 ViewModel。
+Intent：用户操作的抽象表示（如 “加载数据”“提交表单”），是 View 到 ViewModel 的唯一数据输入渠道。
+ViewModel：接收 Intent，处理业务逻辑（如调用仓库层），将结果转换为新的 State，最终通过数据流暴露给 View。
+LiveData 常被用作State 的持有者和分发者，实现 ViewModel 到 View 的状态传递
+View 发送 Intent：用户操作（如点击 “加载数据” 按钮）被 View 封装为 Intent（如LoadDataIntent），通过函数调用传递给 ViewModel。
+ViewModel 处理 Intent：ViewModel 接收 Intent 后，调用仓库层（Repository）处理业务逻辑（如网络请求、数据库操作）。
+生成新 State：业务逻辑执行后（如请求成功 / 失败），ViewModel 将结果转换为不可变的 State 对象（如DataSuccessState、DataErrorState）。 不可变 State 保证线程安全，减少并发问题。
+LiveData 分发 State：ViewModel 通过 LiveData 将新 State 发送给 View（LiveData 确保只在 View 活跃时通知）。
+View 响应 State：View 观察 LiveData 的变化，根据接收的 State 更新 UI（如展示数据、显示错误提示）。
+
+单向数据流：用户通过 View 发出 Intent → ViewModel 处理 Intent → 更新 State → 驱动 View 刷新。  单向数据流使状态变化可追踪，降低调试难度
+状态集中管理：通过单一数据源（如 ViewState）统一管理 UI 状态，解决 MVVM 中因逻辑复杂导致多个 LiveData（可变与不可变）难以维护的问题
+单向数据流：用户操作（Intent）触发状态变化，状态更新驱动 UI 渲染，形成清晰的"Intent → Model → View"闭环，提升逻辑可预测性
+唯一可信数据源：所有 UI 状态集中在一个 State 中，避免多个 LiveData 造成状态分散
+MVI 通过 ViewState 封装状态，减少了对多个 LiveData 的依赖。例如，在 MVVM 中需为不同数据类型创建多个 LiveData，而 MVI 将所有状态聚合到单一对象中，简化状态管理
+UIState​​：不可变对象，封装UI所有状态（如加载状态、数据列表等），作为唯一数据源
+UIEvent 处理一次性操作（如Toast、Snackbar），避免状态残留
+UIIntent​：用户交互事件（如按钮点击），通过传递uiIntent 至ViewModel  用户操作意图，通常用密封类表示
+ViewModel通过LiveData暴露UIState​，View层订阅并自动更新UI
+
+data class NewsState(val list: List<Article>, val isLoading: Boolean)
+class NewsViewModel : ViewModel() {
+    private val _state = MutableLiveData<NewsState>()
+    val state: LiveData<NewsState> = _state.asLiveData()
+
+    fun loadNews() {
+        viewModelScope.launch {
+            _state.postValue(NewsState(isLoading = true))
+            val data = repository.fetchNews() // 异步获取数据
+            _state.postValue(data.copy(isLoading = false))
+        }
+    }
+}
+
 ## UI ViewModel
 - 核心职责是 "准备和管理 UI 所需的数据"，它应该专注于与 UI 交互相关的逻辑，比如处理用户输入、维护 UI 状态、将数据转换为 UI 友好的格式等。它的生命周期与 UI 控制器（Activity/Fragment）绑定，不适合承担数据共享的职责。
 - 仅作为 UI 层与业务层之间的桥梁，负责将数据以 UI 友好的形式暴露给界面（如通过 LiveData、StateFlow 等），并处理用户交互事件。它不应该直接持有或操作全局共享的数据。
@@ -70,4 +106,311 @@ UseCase 用来封装可复用的单一业务逻辑。这里的两个关键词一
 UseCase 不应该依赖任何 Android 平台相关对象，甚至 Context、UseCase 内部不应该包含 mutable 的数据 与 UI 或平台无关的代码（如网络请求、数据库操作、数据转换等）（将 Context 相关操作移至 Repository 或 Data Source）（或者通过接口抽象隐藏 Context 依赖，比如获取字符串供 UseCase 使用）
 - UseCase 应该是 Main-safe 的，即可以在主线程安全的调用，其中的耗时处理应该自动切换到后台线程
 单一职责的 UseCase 应该只有一个方法或一类重载方法，而且方法最好是纯函数逻辑，不依赖 UseCase 对象的任何状态，因此从这个角度讲，UseCase 可以是一个单例，直接使用 object 定义---所以不应该把 UseCase 搞成抽象的
+通过 ViewState 封装所有 UI 状态，对外暴露一个 LiveData
+通过 LiveData 的个别属性监听（如 distinctUntilChanged）实现局部 UI 更新。
 
+单向数据流: View → Intent → Model → View
+单向数据流：用户交互（Intent） → 模型（Model） → 视图状态（ViewState） → 视图（View）。
+用户操作（Intent）→ ViewModel处理 → 状态更新（LiveData发射）→ View渲染
+
+
+用户点击刷新按钮（Intent） → ViewModel 发起网络请求。
+网络请求成功 → ViewModel 更新 ViewState 中的 newsList。
+UI 根据 newsList 刷新 RecyclerView（局部刷新）。
+加载失败 → ViewModel 更新 ViewState 中的错误状态 → UI 显示错误提示。
+
+
+
+UIState
+	页面状态，统一封装在一个 data class 中
+- Immutable State 不可变状态
+- 使用不可变 data class 数据类（可以使用其 copy 方法创建新对象）封装UI所需的所有状态,任何状态变更均通过生成新对象实现，避免意外修改
+- 也可以使用 sealed class，自行处理创建新对象
+State 必须设计为不可变（使用val），避免 View 直接修改状态。
+状态集中管理：通过一个不可变的 ViewState 对象管理所有 UI 状态，避免状态分散。
+但是复杂页面建议拆分 State，避免单个 State 过于庞大。
+所有 UI 状态集中在 ViewState 中，避免分散的 LiveData。
+通过 distinctUntilChanged 防止重复渲染。
+ViewState 应设计为不可变数据类，通过 copy 方法更新状态。
+
+```kotlin
+data class CounterState(
+    val count: Int = 0,
+    val isLoading: Boolean = false,
+    val errorMessage: String? = null
+)
+```
+
+UIIntent
+用户操作意图，通常用密封类表示
+- 用户操作或系统事件被封装为Intent对象（如点击按钮、网络请求），作为状态变更的触发器
+- 使用密封类封装用户操作或系统事件：
+
+```kotlin
+sealed class CounterIntent {
+    object Increment : CounterIntent()
+    object Decrement : CounterIntent()
+    data class SetCount(val value: Int) : CounterIntent()
+}
+```
+
+
+```kotlin
+//处理意图、更新状态，并通过LiveData暴露状态：
+class CounterViewModel : ViewModel() {
+    //用 LiveData 承载 State 并通知 UI 更新
+    private val _state = MutableLiveData(CounterState())
+    val state: LiveData<CounterState> = _state
+
+    fun processIntent(intent: CounterIntent) {
+        when (intent) {
+            is CounterIntent.Increment -> updateState { it.copy(count = it.count + 1) }
+            is CounterIntent.Decrement -> updateState { it.copy(count = it.count - 1) }
+            is CounterIntent.SetCount -> updateState { it.copy(count = intent.value) }
+        }
+    }
+
+    private fun updateState(transform: (CounterState) -> CounterState) {
+        val currentState = _state.value ?: return
+        _state.value = transform(currentState)
+    }
+
+
+    // ViewModel中暴露属性级LiveData  结合Transformations.map或switchMap实现属性级观察，减少不必要的UI更新。
+val countLiveData = Transformations.map(state) { it.count }
+val isLoadingLiveData = Transformations.map(state) { it.isLoading }
+
+}
+```
+
+```kotlin
+//观察LiveData状态并更新UI，同时将用户事件转化为Intent：
+class CounterActivity : AppCompatActivity() {
+    private val viewModel: CounterViewModel by viewModels()
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_counter)
+
+        // 观察状态变化
+        viewModel.state.observe(this) { state ->
+            countTextView.text = state.count.toString()
+            progressBar.isVisible = state.isLoading
+            errorMessageTextView.text = state.errorMessage ?: ""
+        }
+
+        // 绑定用户事件到Intent
+        incrementButton.setOnClickListener {
+            viewModel.processIntent(CounterIntent.Increment)
+        }
+        decrementButton.setOnClickListener {
+            viewModel.processIntent(CounterIntent.Decrement)
+        }
+
+
+        // View中分别观察
+viewModel.countLiveData.observe(this) { count ->
+    countTextView.text = count.toString()
+}
+viewModel.isLoadingLiveData.observe(this) { isLoading ->
+    progressBar.isVisible = isLoading
+}
+
+    }
+}
+```
+
+
+
+
+```kotlin
+// Intent
+sealed class DemoIntent {
+    object LoadData : DemoIntent()
+}
+
+// 状态
+data class DemoState(
+    val data: List<String> = emptyList(),
+    val loading: Boolean = false
+)
+
+data class MainViewState(
+    val fetchStatus: FetchStatus = FetchStatus.NotFetched,
+    val newsList: List<NewsItem> = emptyList()
+)
+
+// ViewModel
+class DemoViewModel : ViewModel() {
+    private val _state = MutableLiveData(DemoState())
+    val state: LiveData<DemoState> = _state
+
+    fun dispatch(intent: DemoIntent) {
+        when (intent) {
+            is DemoIntent.LoadData -> loadData()
+        }
+    }
+
+    private fun loadData() {
+        _state.value = _state.value?.copy(loading = true)
+        viewModelScope.launch {
+            val result = repository.getData()
+            _state.value = DemoState(data = result, loading = false)
+        }
+    }
+}
+
+class MainViewModel : ViewModel() {
+    private val _viewState = MutableLiveData<MainViewState>(MainViewState())
+    val viewState = _viewState
+
+    fun fetchNews() {
+        // 更新状态为加载中
+        _viewState.value = _viewState.value?.copy(fetchStatus = FetchStatus.Fetching)
+        
+        // 模拟网络请求
+        viewModelScope.launch {
+            when (val result = repository.getMockApiResponse()) {
+                is Success -> {
+                    _viewState.value = _viewState.value?.copy(
+                        fetchStatus = FetchStatus.Success,
+                        newsList = result.data
+                    )
+                }
+                is Error -> {
+                    _viewState.value = _viewState.value?.copy(
+                        fetchStatus = FetchStatus.Error
+                    )
+                }
+            }
+        }
+    }
+}
+
+
+class MainFragment : Fragment() {
+    private val viewModel: MainViewModel by viewModels()
+    private val binding by viewBinding(FragmentMainBinding::inflate)
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        // 观察 ViewState
+        viewModel.viewState.observe(viewLifecycleOwner) { state ->
+            binding.progressBar.isVisible = state.fetchStatus == FetchStatus.Fetching
+            binding.errorText.isVisible = state.fetchStatus == FetchStatus.Error
+            binding.recyclerView.isVisible = state.fetchStatus == FetchStatus.Success
+            binding.recyclerView.adapter = NewsAdapter(state.newsList)
+        }
+
+        // 用户交互触发 Intent
+        binding.refreshButton.setOnClickListener {
+            viewModel.fetchNews()
+        }
+    }
+}
+
+//局部刷新方案
+fun <T, A> LiveData<T>.observeState(
+    lifecycleOwner: LifecycleOwner,
+    prop: KProperty1<T, A>,
+    action: (A) -> Unit
+) {
+    this.map { prop.get(it) }
+        .distinctUntilChanged() // 防抖
+        .observe(lifecycleOwner, Observer(action))
+}
+
+// 使用示例
+viewModel.viewState.observeState(
+    viewLifecycleOwner,
+    MainViewState::newsList,
+    { newsList -> binding.recyclerView.adapter = NewsAdapter(newsList) }
+)
+```
+
+
+
+
+
+```kotlin
+（1）定义 Intent（用户意图）
+
+// 密封类表示所有可能的用户意图
+sealed class UserIntent {
+    object LoadUser : UserIntent() // 加载用户数据的意图
+    data class UpdateUserName(val newName: String) : UserIntent() // 更新用户名的意图
+}
+
+（2）定义 State（UI 状态）
+// 密封类表示所有可能的UI状态（不可变）
+sealed class UserState {
+    object Loading : UserState() // 加载中状态
+    data class Success(val user: User) : UserState() // 数据成功状态
+    data class Error(val message: String) : UserState() // 错误状态
+}
+
+// 数据模型
+data class User(val id: String, val name: String)
+
+（3）ViewModel（处理 Intent，通过 LiveData 暴露 State）
+class UserViewModel(private val repository: UserRepository) : ViewModel() {
+    // 私有LiveData用于内部更新状态
+    private val _state = MutableLiveData<UserState>(UserState.Loading)
+    // 暴露给View的不可变LiveData（只允许观察，不允许修改）
+    val state: LiveData<UserState> = _state
+
+    // 接收View发送的Intent
+    fun handleIntent(intent: UserIntent) {
+        when (intent) {
+            is UserIntent.LoadUser -> loadUser()
+            is UserIntent.UpdateUserName -> updateUserName(intent.newName)
+        }
+    }
+
+    private fun loadUser() {
+        viewModelScope.launch {
+            _state.value = UserState.Loading
+            try {
+                val user = repository.getUser() // 调用仓库层获取数据
+                _state.value = UserState.Success(user)
+            } catch (e: Exception) {
+                _state.value = UserState.Error(e.message ?: "加载失败")
+            }
+        }
+    }
+
+    private fun updateUserName(newName: String) {
+        // 类似处理更新逻辑...
+    }
+}
+（4）View（观察 State，发送 Intent）
+class UserActivity : AppCompatActivity() {
+    private val viewModel: UserViewModel by viewModels()
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_user)
+
+        // 观察State变化，更新UI
+        viewModel.state.observe(this) { state ->
+            when (state) {
+                is UserState.Loading -> showLoading()
+                is UserState.Success -> showUser(state.user)
+                is UserState.Error -> showError(state.message)
+            }
+        }
+
+        // 点击按钮发送"加载数据"的Intent
+        btnLoad.setOnClickListener {
+            viewModel.handleIntent(UserIntent.LoadUser)
+        }
+    }
+
+    // UI更新方法...
+    private fun showLoading() { /* 显示加载框 */ }
+    private fun showUser(user: User) { /* 展示用户数据 */ }
+    private fun showError(message: String) { /* 显示错误提示 */ }
+}
+
+```

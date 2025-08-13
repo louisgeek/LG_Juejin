@@ -50,10 +50,19 @@ interface Consumer<in T> {
 inline fun <reified T> isType(value: Any): Boolean {
     return value is T
 }
-//JSON 解析
-inline fun <reified T> parseJson(json: String): T {
+
+//JSON 解析普通对象
+inline fun <reified T> fromJson(json: String): T {
     return Gson().fromJson(json, T::class.java)
 }
+
+//JSON 解析带泛型的数据
+inline fun <reified T> parseJson(json: String): T {
+    //仍旧借助 TypeToken 类获取具体的泛型类型
+    val type = object : TypeToken<T>() {}.type
+    return Gson().fromJson(json, type)
+}
+
 inline fun <reified T> Context.startActivity()  {
     startActivity(Intent(this, T::class.java)) 
 }
