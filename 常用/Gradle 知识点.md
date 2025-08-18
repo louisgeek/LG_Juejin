@@ -53,6 +53,23 @@ task getGradleWrapperDiskCacheName doLast {
 - Gradle 版本：\gradle\wrapper\gradle-wrapper.properties
 - AS 查看当前项目版本：File -> Project Structure -> Project 中
 
+组合示例
+```shell
+com.android.application 
+agp = "7.3.0"
+kotlin = "1.8.20" #1.8.10 有点问题
+coreKtx = "1.6.0"
+distributionUrl=https\://services.gradle.org/distributions/gradle-7.4-bin.zip
+```
+
+```shell
+com.android.application 
+agp = "8.12.0"
+kotlin = "2.0.21"
+coreKtx = "1.10.1"
+distributionUrl=https\://services.gradle.org/distributions/gradle-8.13-bin.zip
+```
+
 ## maven
 ```groovy
 //            url layout.buildDirectory.dir("maven-repo")
