@@ -1,20 +1,7 @@
 # Android OkHttp Interceptor
-- 采用了责任链模式，拦截器允许在请求和响应的过程中插入自定义逻辑
+- 采用了责任链模式，拦截器链是一个有序的拦截器集合，请求和响应会依次经过每个拦截器，拦截器允许在请求和响应的过程中插入自定义逻辑
+- OkHttp 提供了两种不同层级的拦截器：Application Interceptor 应用拦截器和 Network Interceptor 网络拦截器
 - Application Interceptor 执行频率更高（无论是否走网络），需要注意避免耗时操作阻塞主线程
-
-
-## 拦截器执行顺序
-- 请求顺序：
-    - 所有自定义 Application Interceptor 应用拦截器按添加顺序依次执行（应用拦截器是最先执行的拦截器）
-    - 内置拦截器 RetryAndFollowUpInterceptor 重试重定向，处理请求重定向（比如 30X 响应码，重定向时直接发起新的请求）和网络请求失败后进行重试，通过 while 死循环实现多次尝试
-    - 内置拦截器 BridgeInterceptor 桥接拦截器，作为应用层与网络层的桥梁，自动为请求添加必要头信息（比如 Content-Type、Cookie、Host 和 User-Agent 等），设置 Connection 支持 Keep-Alive，并移除响应中的临时头，设置 Accept-Encoding 支持 gzip 压缩传输，并且在接收到内容后进行解压
-    - 内置拦截器 CacheInterceptor 缓存拦截器，管理 HTTP 缓存逻辑，优先返回缓存响应（倘若命中了缓存，那就意味着不需要往下继续走网络请求了，所以后续就不会执行网络拦截器了），否则触发网络请求并更新缓存
-    - 内置拦截器 ConnectInterceptor 连接拦截器，负责与服务器建立 TCP 连接，为后续请求准备网络通道
-    - 所有自定义 Network Interceptor 网络拦截器按添加顺序依次执行（网络拦截器位于内置拦截器 ConnectInterceptor 和内置拦截器 CallServerInterceptor 之间）
-    - 内置拦截器 CallServerInterceptor 网络请求，拦截器链的最后一环，发送最终请求至服务器并获取原始响应（向服务器发起真正的访问请求，获取 Response）
-- 响应顺序：
-    - 返回响应给自定义 Network Interceptor 网络拦截器按添加顺序逆序处理
-    - 返回响应给自定义 Application Interceptor 应用拦截器按添加顺序逆序处理
 
 
 ## Application Interceptor 应用拦截器
@@ -120,6 +107,19 @@ OkHttpClient okHttpClient = new OkHttpClient.Builder()
     .addNetworkInterceptor(new NetworkLoggingInterceptor())
     .build();
 ```
+
+## 拦截器执行顺序
+- 请求顺序：
+    - 所有自定义 Application Interceptor 应用拦截器按添加顺序依次执行（应用拦截器是最先执行的拦截器）
+    - 内置拦截器 RetryAndFollowUpInterceptor 重试和重定向拦截器，处理请求重定向（比如 30X 响应码，重定向时直接发起新的请求）和网络请求失败后进行重试，通过 while 死循环实现多次尝试
+    - 内置拦截器 BridgeInterceptor 桥接拦截器，作为应用层与网络层的桥梁，自动为请求添加必要头信息（比如 Content-Type、Cookie、Host 和 User-Agent 等），设置 Connection 支持 Keep-Alive，并移除响应中的临时头，设置 Accept-Encoding 支持 gzip 压缩传输，并且在接收到内容后进行解压
+    - 内置拦截器 CacheInterceptor 缓存拦截器，管理 HTTP 缓存逻辑，优先返回缓存响应（倘若命中了缓存，那就意味着不需要往下继续走网络请求了，所以后续就不会执行网络拦截器了），否则触发网络请求并更新缓存
+    - 内置拦截器 ConnectInterceptor 连接拦截器，负责与服务器建立 TCP 连接，为后续请求准备网络通道
+    - 所有自定义 Network Interceptor 网络拦截器按添加顺序依次执行（网络拦截器位于内置拦截器 ConnectInterceptor 和内置拦截器 CallServerInterceptor 之间）
+    - 内置拦截器 CallServerInterceptor 网络请求，拦截器链的最后一环，发送最终请求至服务器并获取原始响应（向服务器发起真正的访问请求，获取 Response）
+- 响应顺序：
+    - 返回响应给自定义 Network Interceptor 网络拦截器按添加顺序逆序处理
+    - 返回响应给自定义 Application Interceptor 应用拦截器按添加顺序逆序处理
 
 ## 总结
 - Application Interceptor 应用拦截器：用于业务逻辑处理（认证、日志和错误处理等），避免耗时操作
