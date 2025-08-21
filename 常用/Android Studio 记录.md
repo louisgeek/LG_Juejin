@@ -16,10 +16,15 @@ https://developer.android.google.cn/studio/releases?hl=zh-cn#android_gradle_plug
 
 
 ## Android Studio 中文乱码
+- 不管 java 源代码用的是什么编码格式, 编译成的 class 文件编码格式都是一样的
+- Java 虚拟机在运行时有一个 JVM 参数 file.encoding，代码中的 FileReader、String.getBytes、网络、序列化等操作均会受其影响
+- 通过在 \android-studio\bin\studio64.exe.vmoptions 文件中或者通过 Help -> Edit Custom VM Options 操作中添加 -Dfile.encoding=UTF-8 配置可以覆盖 file.encoding 的值
+- Android Studio -> Settings -> Editor -> File Encodings -> Project Encoding 的设置可以覆盖 file.encoding 的值（优先级比 vmoptions 文件中配置要搞）
+- Android 项目中 gradle.properties 文件中如果指定了 JVM 参数 org.gradle.jvmargs=-Dfile.encoding=UTF-8 优先级更高（项目 Sync 后会覆盖 Android Studio 设置 Project Encoding 中的配置）
 ```java
-JDK 17 及以前：在 \android-studio\bin\studio64.exe.vmoptions 文件中添加 -Dfile.encoding=UTF-8 配置，或者通过 Help -> Edit Custom VM Options 操作中进行添加
-JDK 18 较特殊：在 Run -> Edit Configurations 在 Application 类别下 main() 配置的 Modify options 勾选 Add VM options 后在新出现的 VM Options 输入框中增加 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8 配置
-JDK 19 及以后：在 Run -> Edit Configurations 在 Application 类别下 main() 配置的 Modify options 勾选 Add VM options 后在新出现的 VM Options 输入框中增加 -Dstdout.encoding=UTF-8 -Dstderr.encoding=UTF-8 配置
+- JDK 17 及以前，file.encoding 的值默认是从操作系统获取的（比如中国大陆 Windows 的编码默认是 GBK），而从 JDK 19 及以后（JDK 18 比较特殊不考虑） file.encoding 的值统一默认为 UTF-8 了（不从操作系统获取了，除非显式用 -Dfile.encoding=COMPAT 回退到 JDK 17 及以前的行为），而且也不推荐通过 -Dfile.encoding=GBK 覆盖
+- JDK 17 及以前，标准输出流（比如 System.out 等）受 file.encoding 影响，可以通过 -Dfile.encoding=UTF-8 来解决乱码
+- JDK 19 及以后，标准输出流不再受 file.encoding 影响了，而是新增了 -Dstdout.encoding 和 -Dstderr.encoding 两个参数用来专门指定 System.out 和 System.err 的字符编码，如果不指定就从操作系统获取字符编码（所以标准输出流默认采用的是 GBK，而 file.encoding 决定控制台为 UTF-8），可以在 Run -> Edit Configurations 中在 Application 类别下 main() 配置的 Modify options 勾选 Add VM options 后在新出现的 VM Options 输入框中增加 -Dstdout.encoding=UTF-8 -Dstderr.encoding=UTF-8 配置（或者通过 vmoptions 文件里添加 -Dfile.encoding=GBK 配置进行强制覆盖）来解决乱码
 ```
 
 ## 路径
