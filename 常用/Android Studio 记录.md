@@ -7,6 +7,7 @@ https://developer.android.google.cn/studio/archive
 ## Android Studio 运行 Java 的 main 方法
 - 在项目的 .idea/gradle.xml 文件中的  <GradleProjectSettings> 标签里添加配置
 ```xml
+//注意 Settings 里修改 Gradle JDK 行为会重置修改 .idea/gradle.xml 文件
 <option name="delegatedBuild" value="false" />
 ```
 
@@ -15,16 +16,17 @@ https://developer.android.google.cn/studio/releases?hl=zh-cn#android_gradle_plug
 
 
 ## Android Studio 中文乱码
-- 在 \android-studio\bin\studio64.exe.vmoptions 文件中添加配置
 ```java
--Dfile.encoding=UTF-8
+JDK 17 及以前：在 \android-studio\bin\studio64.exe.vmoptions 文件中添加 -Dfile.encoding=UTF-8 配置，或者通过 Help -> Edit Custom VM Options 操作中进行添加
+JDK 18 较特殊：在 Run -> Edit Configurations 在 Application 类别下 main() 配置的 Modify options 勾选 Add VM options 后在新出现的 VM Options 输入框中增加 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8 配置
+JDK 19 及以后：在 Run -> Edit Configurations 在 Application 类别下 main() 配置的 Modify options 勾选 Add VM options 后在新出现的 VM Options 输入框中增加 -Dstdout.encoding=UTF-8 -Dstderr.encoding=UTF-8 配置
 ```
 
 ## 路径
 ```java
 //系统目录
 C:\Users\<User>\AppData\Local\Google
-//用户配置目录
+//用户配置目录（比如 Edit Custom VM Options 操作生成的 studio64.exe.vmoptions 文件）
 C:\Users\<User>\AppData\Roaming\Google
 ```
 
