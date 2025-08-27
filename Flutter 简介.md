@@ -1,7 +1,7 @@
 # Flutter 简介
 - Apache Cordova：使用 HTML、CSS 和 JavaScript 开发，通过 WebView 进行渲染（性能相对较弱），利用插件调用原生功能
 - Facebook ReactNative：使用 JavaScript 和 React 框架开发，通过原生控件渲染（通过 JavaScript Bridge 将组件映射为原生控件，比如 View 对应 ViewGroup，Image 对应 ImageView 等）
-- Google Flutter：使用 Dart 开发，通过渲染引擎 Skia 进行渲染（目前 Chrome 和 Android 均采用 Skia 作为 2D 渲染引擎），避免了桥接开销，可以保证 Android、IOS 等平台上 UI 的一致性
+- Google Flutter：使用 Dart 开发，通过渲染引擎 Skia 进行渲染（目前 Chrome 和 Android 均采用 Google 开发的 Skia 作为 2D 渲染引擎，支持跨平台高效渲染，不过从 Flutter 3.10 开始引入了全新的渲染引擎 Impeller，专门为 Flutter 定制，旨在消除首次卡顿、降低帧渲染驱动开销、复杂图形优化、能够充分利用现代硬件加速图形 API，比如 IOS 上的 Metal 和 Android 上的 Vulkan），避免了桥接开销，可以保证 Android、IOS 等平台上 UI 的一致性
 
 ## 跨平台
 - 通过共享同一份代码，可以同时为多个平台构建应用，一次编写，到处运行，可以大大减少开发和维护的成本
