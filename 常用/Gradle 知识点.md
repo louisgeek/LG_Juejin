@@ -96,6 +96,11 @@ maven { url 'https://www.jitpack.io' }
 
 
 
+## dependencyResolutionManagement
+Gradle 7.0 及以上 settings.gradle 文件中的 dependencyResolutionManagement.repositories 对应 Gradle 7.0 以下 build.gradle 文件中的 allprojects.repositories
+类似 maven { url 'https://jitpack.io' } 这种需要写在 dependencyResolutionManagement.repositories 下或者 allprojects.repositories 下
+
+
 
 gradlew -q  mobile_petv:assemblePetVGoogleplayRelease
 

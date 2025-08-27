@@ -168,7 +168,7 @@ public class CopyOnWriteArrayList<E> implements List<E>, RandomAccess, Cloneable
 ```
 
 ## Collections$SynchronizedList
-- 通过包装一个普通的 List 来实现，大部分的读写操作都用 synchronized 关键字（对象锁）来保证线程安全，而迭代方法没有加，所以在使用迭代方法的时候需要自行处理线程同步问题，由于读操作也被加锁了，所以性能上受到了一定影响
+- 通过包装一个普通的 List（比如 ArrayList）来实现，大部分的读写操作都用 synchronized 关键字（对象锁）来保证线程安全，而迭代方法没有加锁，所以在使用迭代方法的时候需要自行处理线程同步问题，由于读操作也被加锁了，所以性能上受到了一定影响
 - 常用方法 Collections.synchronizedList 返回一个 SynchronizedList 对象
 - SynchronizedList 比较适合需要简单地将普通非线程安全的 List 转换为线程安全的 List 的情况
 

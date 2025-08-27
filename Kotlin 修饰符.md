@@ -6,7 +6,7 @@
 - private 只能被当前类自身所访问，protected 当前类或子类可访问，internal 同一模块内的类可访问，public 所有的类都可见
 - 和 Java 相比，默认的操作符不同，protected 区别比较大
 
-1 public 公共访问，默认
+1 public 公共访问，默认缺省访问，可以省略不写
 2 internal 模块访问
 3 protected 受保护访问
 4 private 私有访问

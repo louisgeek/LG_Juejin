@@ -5,39 +5,37 @@
 - Remote：远程仓库，存放在远程服务器
 
 ## 全局配置文件路径
-
-```
 ```shell
 # git config --global 保存位置
 C:\Users\<User>\.gitconfig
 ```
 
-## 设置配置
-## config
+## 设置 config 配置
 ```shell
+# 设置 config
 git config  user.name "louisgeek"
 git config  user.email "louisgeek@qq.com"
-//全局
-# 全局
+
+# 设置全局 config
 git config --global user.name "louisgeek"
 git config --global user.email "louisgeek@qq.com"
-//
+
 # sslVerify
 git config --global http.sslVerify "false"
 ```
 
-## 查询配置
+## 查询 config 配置
 ```shell
-# 查询配置
+# 查询 config
 git config --list
-//全局
-# 查询全局配置
+
+# 查询全局 config
 git config --global --list
 ```
 
-## 取消配置
+## 取消 config 配置
 ```shell
-# 取消配置
+# 取消全局 config
 git config --global --unset http.sslbackend
 ```
 
@@ -51,14 +49,12 @@ git init
 git add README.md
 # 添加所有文件
 git add .
-```
 # 提交文件
 git commit -m "修改文件" # 描述
 # 推送
 git push -u origin main
 ```
 
-```shell
 ## log
 ```shell
 git commit -m "修改文件"
@@ -69,7 +65,6 @@ git log --oneline
 git log --pretty=oneline
 ```
 
-```shell
 ## commit
 - -- amend 修改最近一次提交的描述信息、作者信息等
 ```shell
