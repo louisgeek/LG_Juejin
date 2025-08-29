@@ -77,4 +77,55 @@ androidx.core.util.PatternsCompat#IP_ADDRESS
 androidx.core.util.PatternsCompat#EMAIL_ADDRESS
 androidx.core.util.PatternsCompat#PHONE
 ```
- 
+
+
+## 匹配包含中文的 setText
+
+```java
+// setText\(  匹配 setText(
+// \s*        匹配零个或多个空白字符（包括空格、制表符、换行符等）
+// "          匹配 "（即字符串开始的引号）
+// [^"]*      匹配零个或多个非引号字符（即引号中的内容但不包括字符串开始的引号本身）
+// [\u4e00-\u9fff]	 匹配一个中文字符
+// [^"]*      匹配零个或多个非引号字符（即引号中的内容但不包括字符串结束的引号本身）
+// "          匹配 "（即字符串结束的引号）
+// \s*        匹配零个或多个空白字符（包括空格、制表符、换行符等）
+// \)         匹配 ) 右括号
+setText\(\s*"[^"]*[\u4e00-\u9fff][^"]*"\s*\)
+
+
+//匹配（包含中文）
+setText("你好")
+setText("hello你好world")  
+setText( "设置" )
+setText("123你456")
+
+//不匹配（不包含中文）
+setText("hello")
+setText("123456")
+setText("")
+```
+
+## 匹配包含中文的 postShow，支持多参数
+```java
+部分	含义	说明
+// postShow\(  匹配 postShow(
+// [^)]*       匹配零个或多个非右括号字符
+// "           匹配 "（即字符串开始的引号）
+// [^"]*	   匹配零个或多个非引号字符（即引号中的内容但不包括字符串开始的引号本身）
+// [\u4e00-\u9fff]	匹配一个中文字符
+// [^"]*	   匹配零个或多个非引号字符（即引号中的内容但不包括字符串结束的引号本身）
+// "           匹配 "（即字符串结束的引号）
+// [^)]*	   匹配零个或多个非右括号字符
+// \)          匹配 ) 右括号
+postShow\([^)]*"[^"]*[\u4e00-\u9fff][^"]*"[^)]*\)
+
+//匹配（包含中文，支持多参数）
+postShow(activity, "设备失败", flag)
+postShow(context, "连接超时")
+postShow(mActivity, "你好world", true, 123)
+
+//不匹配（不包含中文）
+postShow(activity, "device failed", flag)
+postShow(context, "connection timeout")
+```
