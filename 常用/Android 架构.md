@@ -70,6 +70,11 @@ ViewModel 为 View 暴露的 API 应该是非挂起且无法返回值的方法�
 协调本地数据库、网络 API 等不同数据源
 提供不可变数据给上层，避免外部直接操作数据源
 通常以单例形式
+本地（Room）+ 远程（Retrofit）可能串行、并行、分支，Repository 最清楚该用哪个线程
+UseCase、DataSource 保持纯 Java 类，Android 线程模型只污染 Repository 层，后续换框架（RxJava/Kotlin 协程）也只改 Repository
+DataSource: 返回 CompletableFuture，并确保其内部工作在后台线程，DataSource 只负责“启动”异步操作，而不负责“协调”线程
+Repository: 接收 DataSource 的 Future，使用 thenApply, thenCompose 等进行组合、转换和错误处理，返回一个最终的、代表业务结果的 CompletableFuture
+UseCase 负责纯逻辑，DataSource 负责纯数据，Repository 是数据的协调者和策略制定者。它决定数据从哪里来（本地缓存还是远程网络），并负责整合多个数据源、协调和管理线程切换线程操作:
 
 ## Domain UseCase
 跨模块数据聚合（如用户信息需合并本地缓存与网络数据）
@@ -84,10 +89,10 @@ Android 最新的架构规范中，引入了 Domain Layer（译为领域层or网
 UseCase的目的是成为 ViewModels 和 Repository 之间的中介。--调用一个或多个 Repository，对数据做进一步处理（过滤、排序、转换、组合等）。，比如数据转换、组合多个 Repository 调用或添加业务规则。--ViewModel负责 UI 状态管理，UseCase封装业务逻辑
 UseCase 用来封装可复用的单一业务逻辑。这里的两个关键词一个是单一、一个是业务逻辑、不持有状态。--最好不要沦为只是一个 Repository 的包装器
 UseCase 不应该依赖任何 Android 平台相关对象，甚至 Context、UseCase 内部不应该包含 mutable 的数据 与 UI 或平台无关的代码（如网络请求、数据库操作、数据转换等）（将 Context 相关操作移至 Repository 或 Data Source）（或者通过接口抽象隐藏 Context 依赖，比如获取字符串供 UseCase 使用）
-- UseCase 应该是 Main-safe 的，即可以在主线程安全的调用，其中的耗时处理应该自动切换到后台线程
+- UseCase 应该是 Main-safe 的，即可以在主线程安全的调用，其中的耗时处理应该自动切换到后台线程，通常不推荐线程切换
 单一职责的 UseCase 应该只有一个方法或一类重载方法，而且方法最好是纯函数逻辑，不依赖 UseCase 对象的任何状态，因此从这个角度讲，UseCase 可以是一个单例，直接使用 object 定义---所以不应该把 UseCase 搞成抽象的
-
-
+UseCase 不持有可变状态但依赖 Repository，需要兼具 FP 与 OOP 的特性，更适合用 Class 定义而非 Function（Function Interface 是 Class 之外的另一种定义 UseCase 的方式，有利于代码更加函数式）
+UseCase 的核心价值在于它的纯粹性和可测试性。
 
 
 

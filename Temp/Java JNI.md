@@ -106,7 +106,19 @@ Java_com_louis_myjni_MainActivity_stringFromJNI
 
 
 
-
+```java
+Z - boolean
+B - byte
+C - char
+S - short
+I - int
+J - long
+F - float
+D - double
+Ljava/lang/String; - String
+[I - int[]
+[Ljava/lang/String; - String[]
+```
 
 
 JNI Java 本地接口
@@ -242,7 +254,7 @@ const char *c_str = hello.c_str();
 jstring jString = env->NewStringUTF(c_str);
 ```
 
-const char* -> jstring
+const char* -> jstring 指定编码
 ```c
 //...
 const char *c_str = hello.c_str();
@@ -262,7 +274,7 @@ if (ctorMethodID == nullptr) {
 //创建 byte 数组并复制数据
 jsize len = strlen(c_str);
 jbyteArray bytes = env->NewByteArray(len);
-env->SetByteArrayRegion(bytes, 0, len, (jbyte*)c_str); //将char* 转换为byte数组
+env->SetByteArrayRegion(bytes, 0, len, (jbyte*)c_str); //将 char* 转换为 byte 数组
 //指定编码类型（比如 GB2312）
 jstring encoding = env->NewStringUTF("UTF-8");
 //通过构造方法创建出对象
@@ -281,4 +293,72 @@ const char* c_str = env->GetStringUTFChars(jString, NULL);
 LOGD("test c_str: %s", c_str);  //直接打印 const char*
 //释放
 env->ReleaseStringUTFChars(jString, c_str);
+```
+
+
+
+
+
+
+## 无参构造函数创建对象后设置字段值
+```c
+//获取 Person 类
+jclass jclazz = env->FindClass("com/example/Person");
+//获取构造方法 ID（无参构造方法）， <init> 是构造函数的特殊名称
+jmethodID constructorID = env->GetMethodID(jclazz, "<init>", "()V");
+//通过构造方法创建对象
+jobject person = env->NewObject(jclazz, constructorID);
+
+//获取字段ID
+jfieldID nameFieldID = env->GetFieldID(jclazz, "name", "Ljava/lang/String;");
+jfieldID ageFieldID = env->GetFieldID(jclazz, "age", "I");
+
+//创建字符串
+jstring name = env->NewStringUTF("Jack");
+
+//设置字段值
+env->SetObjectField(person, nameFieldID, name); //jstring 赋值
+env->SetIntField(person, ageFieldID, 25);
+
+//释放局部引用
+env->DeleteLocalRef(name);
+```
+
+## 有参构造函数直接创建对象
+```c
+//获取 Person 类
+jclass jclazz = env->FindClass("com/example/Person");
+//获取构造方法 ID（有参构造方法）
+jmethodID constructorID = env->GetMethodID(jclazz, "<init>", "(Ljava/lang/String;I)V");
+
+//创建字符串参数
+jstring name = env->NewStringUTF("Jack");
+//通过构造方法创建对象
+jobject person = env->NewObject(jclazz, constructorID, name, 25);
+
+//释放局部引用
+env->DeleteLocalRef(name);
+```
+
+
+
+
+```c
+ JniJArrayList arrayList;
+        for (int i = 0; i < output_param.bound_device_count; i++) {
+            basestation_dev_info out_dev_info = output_param.device_info[i];
+
+            JniLocalObject devInfo(PwBaseStationDevInfo);
+
+            char *uuid = out_dev_info.device_sn;
+            devInfo.setCString("deviceSn", uuid);
+            devInfo.setByte("is_alive", out_dev_info.is_alive);
+            devInfo.setByte("led_id", out_dev_info.led_id);
+
+            arrayList.add(devInfo.newLocalRefObj());
+        }
+        jniLocalObj.setObject("devInfoList", SigJArrayList, arrayList.newLocalRefObj());
+
+
+ 
 ```

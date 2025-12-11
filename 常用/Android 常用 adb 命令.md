@@ -146,3 +146,9 @@ adb  bugreport D:\bugs
 ```shell
 adb shell dumpsys activity top
 ```
+
+
+获取当前缓冲区的日志保存到本地文件
+```shell
+adb logcat -d > D:\ALogs\log.txt
+```
