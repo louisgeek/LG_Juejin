@@ -39,8 +39,6 @@ git config --global --list
 git config --global --unset http.sslbackend
 ```
 
-
-
 ## 常用命令
 ```shell
 # 在当前目录下创建 git 库
@@ -93,10 +91,6 @@ git push -u origin main
 git push
 #
 ```
-
-
-
-
 
 
 ## checkout
@@ -219,9 +213,19 @@ git push -f origin main
 ```
 
 
+## 强制重置（会丢失本地修改，比如代码改崩、实验性代码）
+```shell
+git fetch --all # 获取所有远程仓库（如 origin、upstream 等）的更新
+git reset --hard origin/develop # 重置目标分支到远程仓库的最新状态，丢弃本地所有修改
+```
 
-
-
+推荐采用以下方式，比直接重置更安全，但恢复时可能需解决冲突
+```shell
+git stash        # 将当前修改储藏起来
+git fetch --all
+git reset --hard origin/develop
+git stash pop    # 完成后，尝试恢复储藏（可能产生冲突）
+```
 
 
 

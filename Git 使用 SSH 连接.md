@@ -1,7 +1,7 @@
 
 # Git 使用 SSH 连接
 
-## ssh-keygen
+## ssh-keygen 创建密钥
 - SSH key generate，用于生成 SSH 密钥对文件（包含公钥和私钥），用于安全认证（比如远程登录、Git 操作等）
 ```shell
 # -f <filename>  设置密钥保存的文件名（包括路径）
@@ -24,7 +24,7 @@ ssh-keygen
 ssh-keygen -t rsa
 ```
 
-## ssh-agent
+## ssh-agent 启动代理
 - SSH 密钥管理工具（代理），主要是用于缓存 SSH 私钥的密码，简化身份验证流程
 ```shell
 # 整体就是启动 ssh-agent 代理，并将环境变量（SSH_AUTH_SOCK 和 SSH_AGENT_PID）注入当前 Shell 会话，使得当前 Shell 可以使用 SSH 代理管理密钥
@@ -56,6 +56,7 @@ ssh-add -D
 touch ~/.ssh/config
 ```
 
+## 编辑 config 内容
 ```shell
 # ~/.ssh/config
 
@@ -80,8 +81,8 @@ ssh-add ~/.ssh/id_rsa
 # ~/.ssh/config
 
 Host gitwork # alias
-    HostName 192.168.x.x
-    IdentityFile ~/.ssh/id_rsa
+    HostName 192.168.x.x # 主机地址
+    IdentityFile ~/.ssh/id_rsa  # 认证文件路径
 ```
 
 ## 多账号
@@ -104,6 +105,8 @@ Host gitwork
     HostName 192.168.x.x
     User your_work_name
     IdentityFile ~/.ssh/id_rsa_work
+    # HostkeyAlgorithms +ssh-rsa # 主机密钥算法
+	# PubkeyAcceptedKeyTypes +ssh-rsa # 可接受的密钥类型
 ```
 
 
