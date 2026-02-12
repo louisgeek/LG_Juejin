@@ -67,3 +67,27 @@
 逻辑一致性：你看，即使针对“消失的对象”，控制权依然在“拥有约束”的视图 B 手里。
 ## 总结
 - ConstraintLayout 中的 margin 必须配合约束（比如 layout_constraintTop_toTopOf）使用，否则不会生效
+
+
+
+
+
+
+在 ConstraintLayout 中，Margin 必须依附于一个 约束（Constraint） 才能生效
+在ConstraintLayout中，margin总是应用于“拥有”该约束的视图上。具体来说：
+• 当视图A设置了app:layout_constraintBottom_toTopOf="@id/viewB"时，视图A的marginBottom会影响它与视图B之间的距离。
+• 当视图B设置了app:layout_constraintTop_toBottomOf="@id/viewA"时，视图B的marginTop会影响它与视图A之间的距离。
+
+
+当存在双向约束时，ConstraintLayout需要决定使用哪个视图的margin值。根据ConstraintLayout的实现逻辑，它通常会优先使用“接收约束”的视图上的margin。
+
+在ConstraintLayout中，对于垂直排列的视图：
+• 当视图有明确的上下约束时，marginBottom可以生效
+• 当下方视图没有底部约束时，将margin设置在下方视图的marginTop上更可靠
+
+最佳实践
+在ConstraintLayout中，建议遵循以下margin设置原则：
+• 对于垂直方向的约束，将margin设置在**下方视图的marginTop**上
+• 对于水平方向的约束，将margin设置在**右侧视图的marginLeft**上
+• 尽量避免在双向约束的两个视图上都设置margin，这可能导致不可预期的行为
+这种方式更符合ConstraintLayout的设计理念，也更容易获得一致的布局结果。
