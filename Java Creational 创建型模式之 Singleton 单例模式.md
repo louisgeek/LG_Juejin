@@ -100,7 +100,7 @@ public class Singleton {
 ```
 
 ## 3  双重检查锁
-- 双重校验，线程安全，延迟加载，效率较高
+- 双重校验，线程安全，延迟加载（懒加载），效率较高
 - 需要使用 volatile 关键字的原因：默认情况下系统执行 sInstance = new Singleton() 这段代码不是一次性完成的，而是大概分为了三步指令
   - 1 为需要创建的 Singleton 实例分配内存
   - 2 调用对应 Singleton 的构造方法
@@ -109,7 +109,7 @@ public class Singleton {
 ```java
 // Double-Checked Locking 双重检查锁 DCL，进行了两次判空
 public class Singleton {
-    //声明 volatile 关键字，会在编译时加 lock，禁止了指令重排序
+    //声明 volatile 关键字，会在编译时加 lock，禁止了指令重排序，保证可见性和有序性
     private static volatile Singleton sInstance;
     private Singleton() {}
     public static Singleton getInstance() {
@@ -127,7 +127,7 @@ public class Singleton {
 ```
 
 ## 4 静态内部类
-- 避免了线程不安全，延迟加载，效率高
+- 避免了线程不安全，延迟加载（懒加载），效率高
 ```java
 public class Singleton {
     private Singleton() {}
@@ -144,7 +144,7 @@ public class Singleton {
 
 ## 5 枚举式
 - 避免了线程不安全
-- 防止反序列化重新创建新的对象
+- 防止反射、反序列化重新创建新的对象
 ```java
 public enum Singleton {
     INSTANCE;
@@ -155,7 +155,7 @@ public enum Singleton {
 ```
 
 ## 注意
-- 1 以上方案均不考虑反序列化的情况，反序列化时会调用 readResolve() 方法重新生成一个实例，所以需要覆写直接返回单例对象
+- 1 以上方案大部分情况均不考虑反序列化的情况，反序列化时会调用 readResolve() 方法重新生成一个实例，所以需要覆写直接返回单例对象
 - 2 通过用 Map 存值的方式也可以实现单例的概念
 - 3 Android 有自带的 Singleton 抽象类，是采用懒汉式的
 ```java
@@ -189,3 +189,5 @@ public abstract class Singleton<T> {
 - 加载时：通常单例的生命周期较长，假设单例类本身在初始化的时候涉及大量业务逻辑，比较复杂或耗时，那是不是不太适合懒加载，反而需要提前加载呢？
 - 加载后：假设单例类初始化后持有了大量资源，如果初始化后却没能使用上了就显得很浪费，那不管用没用上内存的风险一直都存在着，是否就意味着本身就需要进行内存优化了呢？
 - 所以如果把单例类设计得比较轻，是否就不用过多去纠结懒加载的问题呢？
+- 需要懒加载：首选静态内部类方式，备选 DCL 双重检查锁（复杂、易写错）
+- 不需要懒加载：需要防反射/序列化攻击选枚举方式，不需要就选饿汉式中任意一种

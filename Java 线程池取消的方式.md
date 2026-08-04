@@ -68,7 +68,7 @@ private void executorShutdown() {
     } catch (InterruptedException e) {
         //处理中断（如果当前线程在 awaitTermination 等待期间被其他线程调用 Thread#interrupt 方法中断）
         executor.shutdownNow();
-        Thread.currentThread().interrupt(); //重设中断状态
+        Thread.currentThread().interrupt(); //重设中断标志
     }
 }
 ```

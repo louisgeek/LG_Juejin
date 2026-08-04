@@ -4,9 +4,9 @@
 https://mirrors.cloud.tencent.com/gradle/
 
 ```java
-//bin all 等 zip 下载存放路径
+//bin all 等 zip 下载存放路径（用于项目构建）
 D:\DevToolsCache\.gradle\wrapper\dists
-//特别的 src 下载存放路径（哈希算法就是文件的 sha1 值）
+//特别的 src zip 下载存放路径（用于源码跳转，目录名就是 zip 文件的 sha1 值），可能需要删除 metadata-2.xxx、journal-1 和 build-cache-1 后重启才能生效（高版本好像不行了，可以试试）
 D:\DevToolsCache\.gradle\caches\modules-2\files-2.1\gradle\gradle\8.11.1\9c644d15409b381dbb7955662d16d55acf90e909\gradle-8.11.1-src.zip
 D:\DevToolsCache\.gradle\caches\modules-2\files-2.1\gradle\gradle\8.6\992d01a52586a897215f4a816bf303e30367606b\gradle-8.6-src.zip
 ```

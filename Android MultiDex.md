@@ -1,6 +1,6 @@
 # Android MultiDex
 - 在 Andorid 低版本中，应用程序的单个 dex 文件（Dalvik Executable）可包含的最大方法数有 65536 限制（2^16，也叫 64K 方法数限制），当应用包含大量的代码和三方库时，就很容易超过这个限制，会导致编译错误
-- MultiDex 就是用来解决这个限制的技术，不过 Android 5.0（API 21）及以后的版本，系统会默认启用 MultiDex，且不需要依赖 MultiDex 库，默认就支持从 apk 文件加载多个 dex 文件
+- MultiDex 就是用来解决这个限制的技术，不过 Android 5.0（API 21）及以后的版本，系统会默认启用 MultiDex，且不需要手动依赖 MultiDex 库，默认就支持从 apk 文件加载多个 dex 文件
 - MultiDex 的原理就是将应用的代码拆分成多个 dex 文件（主 dex 文件和多个次 dex 文件），主 dex 文件中包含应用启动所必需的类，系统会在应用启动时加载主 dex 文件，然后在需要时动态加载次 dex 文件，从而允许应用程序包含更多的方法
 - 在构建应用时通过 Gradle 插件利用 MultiDex 工具对应用代码进行切分多个 dex 文件（通常命名 classes.dex、classes2.dex、classes3.dex）
 - 在运行时通过特殊的 ClassLoader 类加载器在多个 dex 文件中搜索加载对应的方法进行使用

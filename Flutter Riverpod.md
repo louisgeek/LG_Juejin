@@ -60,10 +60,11 @@ class CounterWidget extends ConsumerWidget { //使用 ConsumerWidget 代替 Stat
 ```
 
 ## 读写
-- ref.watch(xxxProvider)：订阅监听状态变化（在 build 中或在其他 Provider 内使用，实现 UI 根据自动刷新），简单的说就是：1 取消上次的监听（如果不是第一次），2 设置监听，3 监听到值发生改变时，通知系统重建依赖它的 Widget
+- ref.watch(xxxProvider)：订阅监听状态变化（在 build 中或在其他 Provider 内使用，实现 UI 根据自动刷新），简单的说就是：1 取消上次的监听（如果不是第一次），2 设置监听，3 监听到值发生改变时，通知系统重建依赖它的 Widget（会触发重走 build 方法）
 - ref.read(xxxProvider)：一次性读取值或调用其方法，不订阅监听（通常在事件回调中使用，比如按钮点击等事件）
 - ref.read(xxxProvider.notifier)：获取控制器（通常是一个 StateController），用于修改状态，修改后自动通知所有 watch 了它的 Widget
-- ref.listen(xxxProvider, (prev, next) {})：监听状态变化，通常用于执行副作用（比如导航、显示 SnackBar）
+- ref.listen(xxxProvider, (prev, next) {})：监听状态变化（在 build 中使用），通常用于执行副作用（比如导航、显示 SnackBar，不会触发重走 build 方法）
+- 注意 watch 方法只能在 build 方法中使用，在异步/回调方法中应使用 read 方法
 
 ## Provider 提供只读值（不可变）
 - 适合：配置、Repository、计算属性（由其他 Provider 推导）  固定 / 计算后的只读数据 todo
@@ -137,7 +138,7 @@ final counterStateNotifierProvider = StateNotifierProvider<CounterStateNotifier,
 ## FutureProvider 异步状态（网络请求、本地读取） 
 - 网络请求、数据库读取等异步场景，自带加载中、成功和错误的状态管理（通常 Riverpod 会自动生成和管理），通常被用来替代系统的 FutureBuilder
 - 请求刚发出去时，状态会被设置为 AsyncLoading，请求成功返回时，状态会被设置为 AsyncData(data)，请求抛出异常时，状态会被设置为 AsyncError(error, stackTrace)
-- 通过 switch 或 when 处理 3 个状态，通过 maybeWhen 处理部分状态
+- 通过 switch 或 when 处理 3 个状态，通过 maybeWhen、whenData 处理部分状态
 ```dart
 final asyncData = ref.watch(dataProvider);
 return asyncData.when(
@@ -255,4 +256,32 @@ class CounterWidget extends ConsumerWidget {
 //@riverpod 等价于 @Riverpod()，内部 keepAlive 参数默认为 false
 @Riverpod(keepAlive: true)
 int counter(Ref ref) => 0;
+```
+
+
+## Ref#invalidate
+- 触发失效，交给 UI 的 watch 自动响应
+- Notifier 如果有涉及自带的外部可调用的 refresh/reset/clear 等业务方法，那么要优先用它们，因为它们封装了正确的 cachePolicy、联动逻辑、返回值反馈等行为（只要一个 Notifier 承载的不只是"简单查询结果"，而是有生命周期语义，比如登录态、设备在线状态等复杂状态，几乎都会配一个专门的复位/刷新方法，命名上 refresh 发请求、reset 回到初始态、clear 清空数据等等）
+- 只是简单的函数式 @riverpod provider 或 FutureProvider，没有 Notifier 类那样的额外方法，那么用 invalidate 就没问题，这正是它常用的场景（当然除了 invalidate 也没有自定义方法可用）
+- 不要为了图方便，在明明有 refresh 等额外方法的情况下直接用 invalidate 绕过业务行为
+
+## Ref#refresh
+- 下拉刷新场景、需要同步拿结果做后续判断的场景
+
+```dart
+// RefreshIndicator 需要一个 Future，refresh 完成后才能收起转圈动画
+RefreshIndicator(
+  onRefresh: () => ref.refresh(someDataProvider.future),
+)
+//
+ref.refresh(myFutureProvider);          // 立刻返回，可能是 AsyncLoading
+await ref.refresh(myFutureProvider.future); // 会等待，直到 Future resolve
+```
+
+```dart
+//refresh 和 invalidate 区别
+final value = ref.refresh(provider);
+//相当于
+ref.invalidate(provider);
+final value = ref.read(provider); // refresh 帮你做了这一步，一次调用搞定
 ```

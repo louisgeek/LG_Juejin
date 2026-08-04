@@ -140,7 +140,7 @@ class MyFragment : Fragment() {
 ```
 
 ## 利用委托配合 ::bind
-- 不推荐
+- 个人不推荐
 ```kotlin
 //Fragment 采用自定义属性委托
 inline fun <T : ViewBinding> Fragment.viewBinding(

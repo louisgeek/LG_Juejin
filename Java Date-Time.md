@@ -94,7 +94,7 @@ boolean isEqual = start.isEqual(end);
 - 瞬时时间戳，精确到纳秒
 ```java
 //当前时间戳（UTC 时间）
-Instant now = Instant.now(); //2025-06-11T06:30:00Z
+Instant now = Instant.now(); //2025-06-11T06:30:00Z（Z 表示 Zulu Time 是 UTC 在特定领域，比如军事、航空、航海、气象等的俗称，两者指代的时间完全一致，即与 0 时区（格林尼治标准时间）同步的世界标准时间，时区偏移量为 +00:00）
 //
 ZonedDateTime zonedDateTime = now.atZone(ZoneId.of("Asia/Shanghai"));
 LocalDate localDate = zonedDateTime.toLocalDate();

@@ -22,26 +22,40 @@
 - 不过 Atomic 原子类型无法保证有序性
 
 ## 复合操作（比如 i++）保证安全
-- synchronized 方案
-
 ```java
-private int i = 0;
+//即使声明为 volatile，在并发时仍会导致状态判断错误，需要 synchronized 或 Atomic 等方案来保证
+private volatile boolean isLoginInProgress = false;
+private void doSomething() {
+    //复合操作，需要保证原子性
+    if (!isLoginInProgress) {
+        isLoginInProgress = true;
+    }
+}
+```
 
+- synchronized 方案
+```java
+private int count = 0;
 public synchronized void increment() {
-    i++;
+    count++;
+}
+public synchronized int getCount() {
+    return count;
 }
 ```
 
 - Atomic 原子类型方案
 ```java
-private AtomicInteger i = new AtomicInteger(0);
-
+private AtomicInteger count = new AtomicInteger(0);
 public void increment() {
-    i.incrementAndGet();
+    count.incrementAndGet();
+}
+public int getCount() {
+    return count.get();
 }
 ```
 
 ## 总结
 - 可以使用 synchronized 或 Lock 来保证可见性、原子性和有序性
-- 可以使用 volatile 关键字来保证可见性和有序性
+- 可以使用 volatile 关键字来保证可见性和有序性（无法处理复杂逻辑，比如复合操作、竞态条件等）
 - 可以使用 Atomic 原子类型来保证可见性和原子性

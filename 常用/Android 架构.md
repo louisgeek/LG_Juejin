@@ -2,6 +2,35 @@
 - 使用 ViewModel 而非 AndroidViewModel：不建议使用 AndroidViewModel，不应该在 ViewModel 中使用 Application 类，应该将依赖项移至界面层或数据层
 - 如果是要共享数据的话，应该在业务层或者repo层就做了，不应该在vm这层来做。如果多个 ViewModel 需要共享同一份用户数据，它们应该各自通过 Repository 获取，而不是在 ViewModel 层手动共享数据（比如通过单例或全局变量）。Repository 层本身会负责保证数据的一致性和共享性。
 
+
+
+ 整体采用 Clean Architecture 思想，按 Google 推荐架构落地为 UI / Domain / Data 三层架构；在 UI Layer 内部，使用 MVVM / MVI 进行页面状态管理。普通页面用 MVVM，复杂页面用 MVI。两者不互斥
+
+
+
+--data
+
+--entitity
+--dao
+--XxxDatabase
+
+-remote/network
+--NetApi.kt/ApiService.kt  //Retrofit
+--RemoteDataSource.kt
+--model
+--LoginRequest.kt
+--LoginResponse.kt
+-repository
+--LoginRepositoryImpl.kt
+-model
+
+
+ 
+
+  
+ 
+
+
 ## 命名规范
 - Repository 接口
 NewsRepository（以往是 INewsRepository、NewsRepositoryInterface）
@@ -9,16 +38,7 @@ NewsRepository（以往是 INewsRepository、NewsRepositoryInterface）
 - Repository 实现 
 DefaultNewsRepository（默认）、OfflineFirstNewsRepository、FakeNewsRepository（以往是 NewsRepository、NewsRepositoryImpl）
 
-data
-- local
--- entitity
--- dao
--- XxxDatabase
-- network remote
--- NetApi
--- model
-- repository
-- model
+
 
 ```kotlin
 ViewModel 里的模板代码
@@ -27,6 +47,8 @@ val loading LiveDataString = _loading
 ```
 
  
+UseCase / Repository 负责“把异常变成结果”； ViewModel 负责“把结果变成 UI 状态”
+异常已经在 UseCase / Repository 层被处理并转换成结果
 
 
 data class NewsState(val list: List<Article>, val isLoading: Boolean)
@@ -96,7 +118,9 @@ UseCase 的核心价值在于它的纯粹性和可测试性。
 
 
 
-
+XxxAction  XxxUiAction  XxxUiIntent（容易和 Intent 混淆，推荐加 Ui 前缀）
+XxxState   XxxUiState
+XxxEffect  XxxUiEffect  XxxUiEvent（不推荐）
 
 
 ```kotlin
