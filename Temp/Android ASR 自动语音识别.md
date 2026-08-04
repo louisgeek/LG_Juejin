@@ -19,4 +19,24 @@ org.kaldi.SpeechRecognizer#addListener 添加 RecognitionListener 监听
 RecognitionListener#onPartialResult	语音输入过程中实时触发，实时返回部分、可能不准确的数据，比如用于实时显示字幕、动态更新识别结果  用户说“今天天气”，可能依次返回“今”→“今天”→“今天天”→“今天天气”
 RecognitionListener#onResult	语音输入结束后触发，返回完整、准确、最终结果，比如用于语音转文字、命令识别 作为后续逻辑处理的依据  最终修正后的完整文本
 
-## Pocketsphinx
+## sherpa-onnx → 内置 SenseVoice/Paraformer
+- sherpa-onnx + SenseVoice
+sherpa-onnx 官方已内置 SenseVoice，直接有 Android/iOS Demo
+支持 Flutter/Kotlin/Swift 多种语言绑定
+INT8 量化后约 60MB，极轻量
+实时流式 + VAD 开箱即用
+
+- sherpa-onnx + Paraformer
+非自回归架构，速度比 SenseVoice 还快，中文效果接近
+适合对实时延迟要求极高的场景
+支持方言（四川话、河南话等）
+模型约 220MB，INT8 后更小
+
+
+## whisper.cpp / WhisperKit
+理由： 生态最成熟，多语言兜底
+
+iOS 用 WhisperKit，Apple Silicon Neural Engine 加速
+Android 用 whispercpp Kotlin 封装
+medium 模型中文效果不如前两者，但多语言无敌
+适合需要同时支持多语言的 App
