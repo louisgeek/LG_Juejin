@@ -50,3 +50,7 @@ network_security_config.xml
 
 ## 重复发送请求
 - 右键点击请求，选择 Repeat 立即重复发送一次请求，选择 Repeat Advanced 可设置 Iterations 重复次数、Concurrency 并发量、Delay 延迟等参数后再进行执行，可以用于模拟压力测试
+
+## Flutter/Dart 抓包
+- Flutter 为了保持跨平台网络行为的一致性，通常使用 Dart 自己的网络栈，而不是直接依赖各平台的原生网络 API。因此，Flutter 应用默认不一定会自动读取系统代理配置
+- 若需要使用 Charles 抓取请求，通常还需要在 Flutter 项目代码里中手动配置代理相关逻辑，比如 dio 的 createHttpClient 和 client.findProxy 等，如果不想改代码可以考虑换成 HttpToolkit 等抓包工具
