@@ -23,15 +23,7 @@ Read Eval Print Loop 命令行环境
 
 
 
-
-
-## var、val
-variable 可变的变量
-value 不可变的变量，写代码时候首选 val
-
-PS: val 对应 java final 修饰的变量，var 对应 java 非 final 修饰的变量
-
-
+ 
 
 ### 类型推断
 var d = 1

@@ -1,8 +1,10 @@
 # Kotlin 面试知识点
 
 ## var 和 val
-- var：声明可变变量，可以重新赋值
-- val：声明不可变变量（只读），类似 Java 的 final
+- var：variable，声明可变变量，可以重新赋值
+- val：value，声明不可变变量（只读），类似 Java 的 final
+- val 对应 Java final（只读），var 对应非 final（可变），写代码时首选 val
+- 类属性生成：val 自动生成 private final 字段 + Getter；var 自动生成 private 字段 + Getter/Setter
 
 ## Any、Unit 和 Nothing 的区别
 - kotlin.Any::class == java.lang.Object::class 成立
