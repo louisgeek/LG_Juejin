@@ -6,7 +6,7 @@
 
 Provider：声明“一个值如何被创建”（状态/依赖） 
 ref核心工具：读状态、改状态、监听状态
-ChangeNotifierProvider：兼容旧代码，通常不推荐在新项目中使用
+StateProvider、StateNotifierProvider、ChangeNotifierProvider：兼容旧代码，通常不推荐在新项目中使用
 FutureProvider 异步数据获取 / StreamProvider监听数据流：处理异步数据。
 使用 ConsumerWidget(整个 Widget 都依赖状态)
 使用 Consumer(只有部分 Widget 依赖状态)
@@ -35,7 +35,7 @@ class MyApp extends StatelessWidget {
 ```
 
 ```dart
-//定义 StateProvider
+//定义 StateProvider 提供简单可变状态
 final counterStateProvider = StateProvider<int>((ref) {
   return 0; //初始值为 0
 });
@@ -84,17 +84,9 @@ final authRepositoryProvider = Provider(
 );
 ```
 
-## StateProvider 提供简单可变状态
-- 适合：简单计数器、开关状态、当前 tab、筛选条件等（适合简单状态） todo？
-```dart
-final counterStateProvider = StateProvider<int>((ref) => 0);
-//使用
-ref.read(counterStateProvider.notifier).state++;
-```
-
+ 
 ## NotifierProvider 提供复杂可变状态（复杂逻辑）
 - 将状态和修改状态的逻辑封装在一个 Notifier 类中
-- NotifierProvider 是 StateNotifierProvider 的替代品
 ```dart
 //把计数器逻辑改造到 Notifier 中
 //定义 Notifier
@@ -124,16 +116,6 @@ class CounterWidget extends ConsumerWidget {
 }
 ```
 
-```dart
-//旧的 StateNotifierProvider 的写法
-class CounterStateNotifier extends StateNotifier<int> {
-  final Ref ref; //把 ref 传进来才能读其他 provider
-  CounterStateNotifier(this.ref) : super(0); //初始值在构造函数
-  void increment() => state++;
-  void decrement() => state--;
-}
-final counterStateNotifierProvider = StateNotifierProvider<CounterStateNotifier, int>((ref) => CounterStateNotifier(ref)); //需要传 ref
-```
 
 ## FutureProvider 异步状态（网络请求、本地读取） 
 - 网络请求、数据库读取等异步场景，自带加载中、成功和错误的状态管理（通常 Riverpod 会自动生成和管理），通常被用来替代系统的 FutureBuilder
