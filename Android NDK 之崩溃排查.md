@@ -64,3 +64,15 @@ llvm-addr2line -e D:/temp/arm64-v8a/libpwrtcsdkandroid.so -f -C 00000000011cc48c
 mqtt::message::get_topic() const
 /home/ubuntu/rtc-build/paho.mqtt.cpp/include/mqtt/message.h:251
 ```
+
+
+
+## llvm-symbolizer：addr2line 的增强版
+在现代 LLVM 里，llvm-addr2line 本质上是 llvm-symbolizer 的一个兼容别名，只是默认参数更贴近 GNU addr2line。LLVM 官方明确说明：llvm-addr2line 是 llvm-symbolizer 的 alias，目的是替代 GNU addr2line
+
+
+
+
+
+
+三者都依赖同一个前提：必须使用与崩溃版本、ABI、Build ID 一致的未 strip .so / 调试符号

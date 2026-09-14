@@ -9,7 +9,7 @@ SharedPreferences sharedPreferences(Ref ref) {
   throw UnimplementedError('Must be overridden in main()');
 }
 
-//  sembast: ^3.7.2
+//依赖 sembast: ^3.7.2
 final sembastDbProvider = Provider<Database>(
   (ref) => throw UnimplementedError('sembastDbProvider not initialized'),
 );
@@ -38,12 +38,12 @@ runApp(
 
 
 ## 依赖注入链
-- 全部用 ref.watch
+- Provider 定义中应该用 watch 方式依赖上级（建立依赖关系，上级变化时自动重建），而不是用 read 方式
 ```dart
 // DataSource 依赖 Dio
 @riverpod
 AuthRemoteDataSource authRemoteDataSource(Ref ref) {
-  // watch：Dio 变化时自动刷新
+  // watch 方式，Dio 变化时自动刷新
   final dioClient = ref.watch(dioClientProvider);
   return AuthRemoteDataSource(dioClient);
 }
@@ -59,27 +59,35 @@ AuthRepository authRepository(Ref ref) {
 LoginUseCase loginUseCase(Ref ref) {
   return LoginUseCase(ref.watch(authRepositoryProvider));
 }
-
+//
+final getProductDetailsUseCaseProvider = Provider((ref) {
+  // 使用 watch 而非 read
+  final repository = ref.watch(productRepositoryProvider);
+  return GetProductDetailsUseCase(repository);
+});
 ```
 
 
 ## Notifier
 ```dart
-//watch 驱动 build 自动加载数据
+//方式1：watch 驱动 build 自动加载数据
 @Riverpod(keepAlive: true)
 class AutoLoadNotifier extends _$AutoLoadNotifier {
   @override
   Future<Data?> build() async {
-     // 有 watch 了就自动触发
+     //有 watch 了就自动触发
     return _fetch(CachePolicy.cacheFirst);
   }
 
   Future<void> refresh(CachePolicy policy) async {
     state = const AsyncLoading();
+    // guard 封装 try/catch，自动捕获异常转为 AsyncError，正常返回转为 AsyncData
     state = await AsyncValue.guard(() => _fetch(policy));
   }
 
   Future<Data?> _fetch(CachePolicy policy) async {
+    //build 中用 read 获取业务逻辑、工具类、不可变服务，用 watch 监听UI状态、数据状态变化（比如 authState）
+    //用 read 读取 UseCase
     final result = await ref.read(someUseCaseProvider).call(id, policy);
     switch (result) {
       case Success(:final data):
@@ -94,7 +102,7 @@ class AutoLoadNotifier extends _$AutoLoadNotifier {
 
 
 ```dart
-//外部事件驱动，build 只给初始值
+//方式2：外部事件驱动，build 只给初始值
 @Riverpod(keepAlive: true)
 class ManualLoadNotifier extends _$ManualLoadNotifier {
   @override
@@ -117,22 +125,18 @@ class ManualLoadNotifier extends _$ManualLoadNotifier {
         return null;
     }
   }
-
 }
-
 ```
 
 
-
 ## Effect Stream 监听
-- 一次性 Effect 监听也可以塞进 State 字段 + ref.listen 消费后 clearEffect 来处理（但 clearEffect 很容易遗忘），更推荐下面这种方式
+- 由于一次性 Effect 监听也可以塞进 State 字段 + ref.listen 消费后 clearEffect 来处理（但 clearEffect 很容易遗忘），所以更推荐下面这种方式
 ```dart
 //绑定 State 生命周期，且在 dispose 里统一 cancel（而不是 Provider 生命周期）
 //主要是解决了 autoDispose 导致可能会丢事件和在 build 中调用会重复订阅这两个问题
 mixin EffectListenMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
   final List<StreamSubscription> _effectSubscriptionList = [];
   final Set<Stream<dynamic>> _registeredStreams = {};
-
   /// 在 build() 里调用，可安全地被多次重建触发，反复调用而不重复订阅
   /// - 同一个 Stream 只会订阅一次（按 Stream 实例去重），避免重复注册导致 effect 被处理多次
   /// - 若底层 Notifier 被重建产生新的 Stream（新实例），会自动补充订阅新的 Stream
@@ -156,7 +160,6 @@ mixin EffectListenMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
     super.dispose();
   }
 }
-
 
 //firmware_update_page.dart 
 class _FirmwareUpdatePageState extends ConsumerState<FirmwareUpdatePage> with EffectListenMixin {
@@ -184,11 +187,10 @@ class FirmwareUpgradeNotifier extends _$FirmwareUpgradeNotifier {
 
 ## keepWatchProvider 页面级保活
 - 自定义扩展 ref.keepWatchProvider 来强化语义
-
 ```dart
 // core/extensions/widget_ref_extension.dart
 extension WidgetRefExtension on WidgetRef {
-  /// watch 持有 Provider 不被 autoDispose 释放
+  // watch 持有 Provider 不被 autoDispose 释放
   void keepWatchProvider(ProviderListenable provider) {
     watch(provider);
   }
@@ -196,5 +198,4 @@ extension WidgetRefExtension on WidgetRef {
 
 //语义上比直接写 ref.watch(xxx) 更清楚——这里不用返回值，只是为了保活
 ref.keepWatchProvider(videoPlayerSessionProvider(_playbackSessionId));
-
 ```

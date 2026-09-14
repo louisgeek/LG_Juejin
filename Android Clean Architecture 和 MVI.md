@@ -84,3 +84,31 @@ Result 对象错误处理—— 用 Result 对象统一各层的错误处理
 UI 侧	View + ViewModel(MVVM)	    Presentation:View + Presenter/ViewModel
 中间层	Use-case(可选,按需添加)	    Domain 层是核心:Entity + UseCase + Repository 接口
 数据侧	Repository + Service	   Data 层:RepositoryImpl + DataSource(remote/local)
+
+
+
+
+```
+1. 用户在 XxxPage 操作 UI。
+
+2. XxxPage 创建 XxxIntent，
+   调用 XxxNotifier.dispatchIntent(intent)。
+
+3. XxxNotifier 根据 Intent 类型，
+   分发并执行对应的 handleXxxIntent 方法。
+
+4. handleXxxIntent 按需调用 XxxUseCase，
+   获取业务成功或失败结果。
+
+5. XxxNotifier 使用 state.copyWith(...) 更新 XxxState，
+   用于描述页面可持续渲染的状态。
+
+6. XxxNotifier 按需发送 XxxEffect，
+   用于描述仅执行一次的 UI 动作。
+
+7. XxxPage 监听 XxxState：
+   - ref.watch：根据 State 重建 UI。
+
+8. XxxPage 监听 XxxEffect：
+   - Stream.listen：执行 SnackBar、Dialog、导航等副作用。
+```

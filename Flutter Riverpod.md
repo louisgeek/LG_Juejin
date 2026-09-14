@@ -1,8 +1,8 @@
 # Flutter Riverpod 
-Riverpod 是 Flutter 的状态管理/依赖注入方案（Riverpod 非常适合依赖注入，例如可以轻松提供 ApiService、Repository等）
-Riverpod是 Flutter/Dart 的响应式状态管理框架，由 Provider 的作者开发，解决了传统 Provider 的诸多痛点。
-无 Context 依赖	可在任意位置读取状态，无需 BuildContext
-自动 dispose	不再手动管理监听和资源释放
+- Riverpod 是 Flutter 的状态管理/依赖注入方案（Riverpod 非常适合依赖注入，例如可以轻松提供 ApiService、Repository等）
+- Riverpod是 Flutter/Dart 的响应式状态管理框架，由 Provider 的作者开发，解决了传统 Provider 的诸多痛点
+- 无 Context 依赖	可在任意位置读取状态，无需 BuildContext
+- 自动 dispose	不再手动管理监听和资源释放
 
 Provider：声明“一个值如何被创建”（状态/依赖） 
 ref核心工具：读状态、改状态、监听状态
@@ -60,11 +60,11 @@ class CounterWidget extends ConsumerWidget { //使用 ConsumerWidget 代替 Stat
 ```
 
 ## 读写
-- ref.watch(xxxProvider)：订阅监听状态变化（在 build 中或在其他 Provider 内使用，实现 UI 根据自动刷新），简单的说就是：1 取消上次的监听（如果不是第一次），2 设置监听，3 监听到值发生改变时，通知系统重建依赖它的 Widget（会触发重走 build 方法）
+- ref.watch(xxxProvider)：订阅监听状态变化（在 build 中或在其他 Provider 内使用，实现 UI 根据自动刷新），简单的说就是：1 取消上次的监听（如果不是第一次），2 设置监听，3 监听到值发生改变时，通知系统重建依赖它的 Widget（会触发重走 build 方法），watch 必须在"会被重新执行"的地方（build() 方法体）---watch 只有写在 provider 的 build 方法或者 widget 的 build 方法里才有意义
 - ref.read(xxxProvider)：一次性读取值或调用其方法，不订阅监听（通常在事件回调中使用，比如按钮点击等事件）
 - ref.read(xxxProvider.notifier)：获取控制器（通常是一个 StateController），用于修改状态，修改后自动通知所有 watch 了它的 Widget
 - ref.listen(xxxProvider, (prev, next) {})：监听状态变化（在 build 中使用），通常用于执行副作用（比如导航、显示 SnackBar，不会触发重走 build 方法）
-- 注意 watch 方法只能在 build 方法中使用，在异步/回调方法中应使用 read 方法
+- 注意 watch 方法只能在 build 方法中使用，在异步/回调方法中应使用 read 方法；listen/watch 的作用域,要和它服务的 UI 作用域对齐
 
 ## Provider 提供只读值（不可变）
 - 适合：配置、Repository、计算属性（由其他 Provider 推导）  固定 / 计算后的只读数据 todo
@@ -188,7 +188,7 @@ class UserWidget extends ConsumerWidget {
 ```
 
 
-
+keepAlive: true + future 的行为就是：provider 已经在运行中，read(future) 直接等当前这次的结果，不会重新执行 build()。
 
 
 ## StreamProvider
@@ -203,7 +203,6 @@ final messagesProvider = StreamProvider<List<Message>>((ref) {
 
 
 ## 注解
-
 函数式
 ```dart
 //自动生成 helloProvider = Provider<String>
@@ -284,4 +283,24 @@ final value = ref.refresh(provider);
 //相当于
 ref.invalidate(provider);
 final value = ref.read(provider); // refresh 帮你做了这一步，一次调用搞定
+```
+
+
+Riverpod 判断一个 autoDispose provider 要不要被销毁，依据是"有没有 ref.watch/ref.listen 在监听它"，而不是"有没有别的地方在读它的数据"
+
+
+watch 和 listen
+```dart
+// final hoursAsync = ref.watch(eventHoursProvider(deviceId));
+//whenData 不会阻塞 build，但 watch 会触发重建
+// hoursAsync.whenData((hours) {
+//   _pageResultController.setHourList(hours);
+// });
+
+//listen 不会触发重建
+ref.listen(eventHoursProvider(deviceId), (prev, next) {
+  next.whenData((hours) {
+    _pageResultController.setHourList(hours);
+  });
+});
 ```
