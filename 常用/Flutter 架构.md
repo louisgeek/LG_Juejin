@@ -47,13 +47,13 @@ lib/
 │       │   │   └── auth_remote_source.dart  # 登录、注册接口,只做 Dio 调用,返回 DTO,不处理业务
 │       │   ├── mappers/
 │       │   │   └── user_mapper.dart   # extension UserDtoX on UserDto { User toDomain() }
-│       │   ├── auth_repository.dart   # 具体类,不设接口;不依赖、不通知 session
+│       │   ├── auth_repository.dart   # 抽象 AuthRepository + AuthRepositoryImpl(同文件;遵循官方 Strongly recommend 抽象);不依赖、不通知 session
 │       │   │                          #   登录:构造 LoginRequest → 调 source → 存令牌 → 返回 Result<User>
 │       │   │                          #   注册:构造 RegisterRequest → 只提交 → 返回 Result<void>
 │       │   │                          #   退出:清令牌 → 返回 Result<void>
 │       │   │                          #   错误:拦截器已把 AppError 放进 DioException.error,
 │       │   │                          #         此处取出并包成 Failure,不再二次转换
-│       │   └── auth_providers.dart    # authRepositoryProvider,直接构造具体类
+│       │   └── auth_providers.dart    # authRepositoryProvider 声明为抽象类型,构造 AuthRepositoryImpl(面向接口装配)
 │       └── presentation/              # 可 import data 里的 auth_repository 和 auth_providers
 │           │                          #   不得 import dto、sources、mappers
 │           ├── login/                 # 登录页,自成一个目录
