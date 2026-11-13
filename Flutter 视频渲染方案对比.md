@@ -1,0 +1,12 @@
+# Flutter 视频渲染方案对比
+- iOS 不提供 Android 那种可直接写入的 Surface，因此 Flutter 只能由引擎每帧向插件索取一块 `CVPixelBuffer`。硬解输出的 buffer 若由 `IOSurface` 支撑（硬解输出通常如此），引擎可直接映射为 GPU 纹理、免 CPU 拷贝，效果与 Android 的 Surface 直出方案相近。
+- Android 上「Surface 直出」与「帧回调 + Texture」都能用，但不必使用后者：解码器、RTC SDK、GL 本就往 Surface 写，建好后应用侧不再逐帧参与；`pushImage` 只收 `android.media.Image`，软解的 YUV 还得经 ImageReader 承载、由引擎逐帧做 CPU 读取转换，多一次拷贝，成本更高。
+
+| # | 方案 | 平台 | 帧入口（原生类型）→ 载体 | 帧拷贝 / 转换 | 叠 Flutter UI | HDR | 推荐 |
+|---|---|---|---|---|---|---|---|
+| 1 | Surface 直出（应用可感知 Surface 生命周期） | Android | `SurfaceProducer#getSurface()` → `android.view.Surface` → Flutter `Texture` | 通常无需应用逐帧读回或复制；不保证全链路零拷贝 | 可叠加，合成开销依设备而异 | 依解码器、Surface 格式和 Flutter 合成链路；不可默认支持 | **Android 首选**（Flutter 3.24+；消费端必须能在 Surface 更换后重绑，否则用方案 2） |
+| 2 | Surface 直出（Surface 生命周期由引擎托管） | Android | `SurfaceTextureEntry#surfaceTexture()` → 自行 `new Surface(SurfaceTexture)` → Flutter `Texture` | 与方案 1 同属 Surface 写入，无逐帧读回；`setDefaultBufferSize()` 决定生产者缓冲区尺寸，与解码器输出不一致会拉伸。也是方案 1 的内部回退形态：API 29 以下或命中已知 HardwareBuffer 缺陷的设备上，`SurfaceProducer` 内部同样退回 GL 纹理（SurfaceTexture） | 可叠加，合成开销依设备而异 | 同方案 1 | **消费端无法重绑 Surface 时选本方案**；SurfaceProducer 引入前（Flutter 3.24 以前）的唯一可用方案 |
+| 3 | 帧回调 + `Texture` | Android | `android.media.Image` → `ImageTextureEntry#pushImage()` → Flutter `Texture` | 仅当 `android.media.Image` 来自 `HardwareBuffer` 时可避免 CPU 复制（需 API 29+；fence 等待需 API 33）；格式转换仍可能需要 | 可叠加 | 依帧格式及 Flutter 合成链路；不可默认支持 | Android 备选（需 API 29+） |
+| 4 | 帧回调 + `Texture` | iOS | `FlutterTexture#copyPixelBuffer()` → `CoreVideo.CVPixelBuffer` → Flutter `Texture` | `IOSurface.IOSurface` 支持共享缓冲时可避免 CPU 拷贝；其他情况可能复制或转换 | 可叠加 | 依像素格式、色彩信息和 Flutter 合成链路；不可概括为仅支持 8-bit | **iOS 首选** |
+| 5 | Platform View 承载 SDK View | 双端 | Android `View` / iOS `UIView` → Flutter `AndroidView` / `UiKitView` | 由 SDK 内部实现决定 | 可叠加，但合成可能增加开销并限制裁剪、变换 | 由 SDK、原生 View 和设备共同决定 | SDK 只提供原生 View 时可选 |
+| 6 | 原生显示层 | 双端 | Android `android.view.SurfaceView` / iOS `AVFoundation.AVSampleBufferDisplayLayer`（均由 Flutter Platform View 承载；Android 需 Hybrid Composition，默认 TLHC 合成不支持 `SurfaceView`、会黑屏） | 取决于解码器到显示层的缓冲区共享方式 | iOS 可叠加；Android `SurfaceView` 的 z 序独立于 Flutter 渲染层，叠加 Flutter UI 不可靠 | 由解码器、显示层、格式及色彩链路决定 | **HDR 首选**（Android 需无 Flutter 叠层需求；iOS 可叠层） |
